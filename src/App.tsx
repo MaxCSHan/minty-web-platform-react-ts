@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import './assets/App.css';
 import Login from './view/login/index'
-import Home from './view/auth/home/index'
+import Container from './view/auth'
 
 const App: React.FC = ()=> {
   return (
@@ -23,8 +23,8 @@ const App: React.FC = ()=> {
           <Route exact path="/Auth">
             <Login />
           </Route>
-          <Route exact path="/">
-            <Home />
+          <Route path="/">
+            <Container />
           </Route>
         </Switch>
       </div>
