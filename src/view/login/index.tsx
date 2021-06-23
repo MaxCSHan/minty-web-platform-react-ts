@@ -14,7 +14,7 @@ const SignInBtn = (props: { keyword: string, bg: string })=> {
 
     }}
     return (
-        <Link to="/Home">{btn()}</Link>
+        <Link to="/">{btn()}</Link>
     )
 }
 SignInBtn.defaultProps = {

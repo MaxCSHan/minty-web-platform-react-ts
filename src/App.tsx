@@ -3,7 +3,6 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link
 } from "react-router-dom";
 import './assets/App.css';
 import Login from './view/login/index'
@@ -12,7 +11,7 @@ import Home from './view/auth/home/index'
 const App: React.FC = ()=> {
   return (
     <Router>
-      <div>
+      <div className="font-sans ">
         {/*
           A <Switch> looks through all its children <Route>
           elements and renders the first one whose path
@@ -21,10 +20,10 @@ const App: React.FC = ()=> {
           of them to render at a time
         */}
         <Switch>
-          <Route exact path="/">
+          <Route exact path="/Auth">
             <Login />
           </Route>
-          <Route exact path="/Home">
+          <Route exact path="/">
             <Home />
           </Route>
         </Switch>
