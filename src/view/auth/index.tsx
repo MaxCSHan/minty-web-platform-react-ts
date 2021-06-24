@@ -12,6 +12,7 @@ const Container = () => {
   return (
     <div className="h-screen transition duration-100 ease-in-out">
       <Navbar></Navbar>
+      <Router>
       <div className="">
         <Switch>
           <Route exact path="/">
@@ -22,6 +23,7 @@ const Container = () => {
           </Route>
         </Switch>
       </div>
+    </Router>
     </div>
   );
 };

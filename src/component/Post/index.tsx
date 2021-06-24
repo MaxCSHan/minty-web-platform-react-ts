@@ -18,7 +18,7 @@ const Post = () => {
     <div
       className={`${
         state.loaded ? "" : "animate-pulse"
-      } w-88 sm:w-120 md:w-140 lg:w-160 xl:w-auto h-88 sm:h-120 md:h-full  xl:h-full my-3`}
+      } w-full sm:w-120 md:w-140 lg:w-160 xl:w-auto h-full sm:h-140 md:h-full  xl:h-full my-3`}
     >
       <div className="h-full flex flex-col items-center justify-evenly p-1">
         <div
@@ -46,7 +46,8 @@ const Post = () => {
             </div>
           )}
         </div>
-        <div className={`h-4 font-semibold w-5/6`}>{title}</div>
+        <div className="bg-white h-20 p-4 w-full">
+            <div className={`h-4 font-semibold w-5/6`}>{title}</div>
         <div className={`h-4 w-5/6`}>{userName}</div>
         {/* <div
           className={`h-4 w-5/6 ${state.loaded ? "" : "bg-blue-400 rounded "}`}
@@ -54,6 +55,8 @@ const Post = () => {
         <div
           className={`h-4 w-5/6 ${state.loaded ? "" : "bg-blue-400 rounded "}`}
         ></div>
+        </div>
+        
       </div>
     </div>
   );
