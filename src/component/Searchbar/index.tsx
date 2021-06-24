@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import { useState } from "react";
 
 const Skills = ["Photography", "Modeling", "Make-up Artist"];
@@ -22,8 +22,9 @@ const Searchbar = () => {
           </div>
           <div className="text-sm font-semibold mr-3 h-10 w-2/6 md:w-5/12 lg:w-2/6 2xl:w-1/4  min-w-min border border-l-0 rounded-r-full  flex items-center pl-2 md:pl-4 bg-white ">
             <div className=" hidden sm:flex items-center ">
-              {Skills.map((skill) => (
+              {Skills.map((skill,index) => (
                 <div
+                key={`${index}-${skill}`}
                   className={`h-6 rounded-full px-3 mx-2 whitespace-nowrap hidden first:flex md:flex items-center md:hover:bg-gray-100    ${
                     selectFilter === skill
                       ? "md:bg-blue-500 md:hover:bg-blue-500 md:text-white"
@@ -55,9 +56,9 @@ const Searchbar = () => {
                     aria-hidden="true"
                   >
                     <path
-                      fill-rule="evenodd"
+                      fillRule="evenodd"
                       d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clip-rule="evenodd"
+                      clipRule="evenodd"
                     />
                   </svg>
                 </button>
@@ -74,9 +75,10 @@ const Searchbar = () => {
                 <div className="py-1" role="none">
                   {Skills.map((skill, index) => (
                     <a
-                      href="#"
+                      href="/"
                       className="text-gray-700 block px-4 py-2 text-sm "
                       role="menuitem"
+                      key={`menu-item-${index}`}
                       id={`menu-item-${index}`}
                       onClick={() => {
                         setSelectFilter(skill);

@@ -1,10 +1,7 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
 
-const Skills = ["Photography", "Modeling", "Make-up Artist"];
 
 const Navbar = () => {
-  const [selectFilter, setSelectFilter] = useState("");
 
   return (
     <div>
@@ -24,7 +21,7 @@ const Navbar = () => {
           </div>
 
           <div className="h-full w-48 md:w-64  flex items-center justify-around">
-            <Link to="/auth">
+            <Link to="/Auth">
               <div>
                 <i className="sm:text-2xl far fa-comment"></i>
               </div>

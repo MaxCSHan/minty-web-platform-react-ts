@@ -20,11 +20,9 @@ const App: React.FC = ()=> {
           of them to render at a time
         */}
         <Switch>
-          <Route exact path="/Auth">
-            <Login />
+          <Route exact path="/Auth" component={Login}>
           </Route>
-          <Route path="/">
-            <Container />
+          <Route path="/" component={Container}>
           </Route>
         </Switch>
       </div>
