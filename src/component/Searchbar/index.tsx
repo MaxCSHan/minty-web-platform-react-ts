@@ -1,30 +1,57 @@
 // import { Link } from "react-router-dom";
-import { useState } from "react";
+import React, { useState } from "react";
 
-const Skills = ["Photography", "Modeling", "Make-up Artist"];
+const Skills = ["Photography", "Modeling", "Styling"];
+
+const recommendations = ["Jolie","Eric","Leo","Luke"]
 
 const Searchbar = () => {
   const [selectFilter, setSelectFilter] = useState("Photography");
+  const [inputValue, setInputValue] = useState("");
   const [isDropdown, setIsDropdown] = useState(false);
+
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>)=> {
+    const value = e.target.value;
+    if (value === "") setInputValue("") ;
+    else {setInputValue(value)}
+
+  }
 
   return (
     <div>
       <div className="flex flex-col dark:bg-gray-800 dark:text-white ">
         <div className="h-16 flex items-center  border-b">
-          <div className="ml-3 h-10 w-4/6  md:w-7/12 lg:w-4/6 2xl:w-3/4  border rounded-l-full flex items-center bg-gray-100 focus:bg-white">
+          <div className=" ml-3 h-10 w-4/6  md:w-7/12 lg:w-4/6 2xl:w-3/4  border rounded-l-full flex items-center bg-gray-100 focus:bg-white">
             <div className="ml-4 mr-2 flex items-center ">
               <i className="fas fa-search"></i>
             </div>
-            <input
-              className="w-full h-10 border-t border-b  bg-gray-100 focus:bg-white outline-none transition duration-100 ease-in-out"
+            <div className="relative w-full ">
+              <input
+              className=" w-full h-10 pl-2 border-t border-b  bg-gray-100 focus:bg-white outline-none transition duration-100 ease-in-out"
               type="text"
+              onChange={(e) => handleInput(e)}
             ></input>
+            <div
+              className={`origin-top-left ${inputValue?'opacity-100':'opacity-0'} absolute left-0 w-full z-10 shadow-lg bg-white rounded-b-xl focus:outline-none transition-all duration-200 ease-in-out`}
+              role="menu"
+              aria-orientation="vertical"
+              aria-labelledby="menu-button"
+            >
+              <div className="h-full flex flex-col">
+              {[inputValue,...recommendations].map(ele => <div className="h-10 pl-2 flex items-center hover:bg-gray-50 last:rounded-b-xl">
+                {ele}</div>)}
+
+                
+              </div>
+            </div>
+            </div>
+            
           </div>
           <div className="text-sm font-semibold mr-3 h-10 w-2/6 md:w-5/12 lg:w-2/6 2xl:w-1/4  min-w-min border border-l-0 rounded-r-full  flex items-center pl-2 md:pl-4 bg-white ">
             <div className=" hidden sm:flex items-center ">
-              {Skills.map((skill,index) => (
+              {Skills.map((skill, index) => (
                 <div
-                key={`${index}-${skill}`}
+                  key={`${index}-${skill}`}
                   className={`h-6 rounded-full px-3 mx-2 whitespace-nowrap hidden first:flex md:flex items-center md:hover:bg-gray-100    ${
                     selectFilter === skill
                       ? "md:bg-blue-500 md:hover:bg-blue-500 md:text-white"
@@ -45,6 +72,7 @@ const Searchbar = () => {
                   id="menu-button"
                   aria-expanded="true"
                   aria-haspopup="true"
+                  onBlur={() => setIsDropdown(false)}
                   onClick={() => setIsDropdown(!isDropdown)}
                 >
                   {selectFilter}
@@ -75,14 +103,14 @@ const Searchbar = () => {
                 <div className="py-1" role="none">
                   {Skills.map((skill, index) => (
                     <a
-                      href="/"
+                      href="#"
                       className="text-gray-700 block px-4 py-2 text-sm "
                       role="menuitem"
                       key={`menu-item-${index}`}
                       id={`menu-item-${index}`}
                       onClick={() => {
                         setSelectFilter(skill);
-                        setIsDropdown(!isDropdown);
+                        setIsDropdown(false);
                       }}
                     >
                       {skill}

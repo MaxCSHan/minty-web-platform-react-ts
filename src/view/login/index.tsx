@@ -31,7 +31,6 @@ const Login  = ()=> {
           <div className="box-content"><svg
               className="mx-auto"
               width="4rem"
-              height="auto"
               viewBox="0 0 48 48"
               fill="white"
               xmlns="http://www.w3.org/2000/svg"

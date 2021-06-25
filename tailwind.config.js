@@ -38,6 +38,7 @@ module.exports = {
       backgroundColor:['focus'],
       display:['first','hover'],
       textColor: ['active'],
+      borderRadius:['last']
 
 
     },
