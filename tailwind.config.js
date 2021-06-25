@@ -25,12 +25,16 @@ module.exports = {
         '140': '35rem',
         '160': '40rem',
         '200': '50rem',
-
-
       },
       backgroundImage: theme => ({
         'moctar-bg': "url('/src/assets/image/moctar.jpg')",
        }),
+       transitionDelay: {
+        '0': '0ms',
+        '10': '10ms',
+        '50': '50ms',
+        '2000': '2000ms',
+       }
     },
   },
   variants: {

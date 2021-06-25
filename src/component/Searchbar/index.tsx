@@ -19,7 +19,7 @@ const Searchbar = () => {
 
   return (
     <div>
-      <div className="flex flex-col dark:bg-gray-800 dark:text-white ">
+      <div className="flex flex-col dark:bg-gray-800 dark:text-white  z-5">
         <div className="h-16 flex items-center  border-b">
           <div className=" ml-3 h-10 w-4/6  md:w-7/12 lg:w-4/6 2xl:w-3/4  border rounded-l-full flex items-center bg-gray-100 focus:bg-white">
             <div className="ml-4 mr-2 flex items-center ">
@@ -32,7 +32,7 @@ const Searchbar = () => {
               onChange={(e) => handleInput(e)}
             ></input>
             <div
-              className={`origin-top-left ${inputValue?'opacity-100':'opacity-0'} absolute left-0 w-full z-10 shadow-lg bg-white rounded-b-xl focus:outline-none transition-all duration-200 ease-in-out`}
+              className={`origin-top-left ${inputValue?'opacity-100 visible':'opacity-0 invisible' } absolute left-0 w-full z-10 shadow-lg bg-white rounded-b-xl focus:outline-none transition-all duration-200 ease-in-out`}
               role="menu"
               aria-orientation="vertical"
               aria-labelledby="menu-button"
@@ -52,7 +52,7 @@ const Searchbar = () => {
               {Skills.map((skill, index) => (
                 <div
                   key={`${index}-${skill}`}
-                  className={`h-6 rounded-full px-3 mx-2 whitespace-nowrap hidden first:flex md:flex items-center md:hover:bg-gray-100    ${
+                  className={`h-6 rounded-full px-3 mx-2 whitespace-nowrap hidden first:flex md:flex cursor-pointer items-center md:hover:bg-gray-100    ${
                     selectFilter === skill
                       ? "md:bg-blue-500 md:hover:bg-blue-500 md:text-white"
                       : ""

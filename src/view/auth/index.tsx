@@ -1,5 +1,6 @@
 import Home from "./home/index";
 import User from "./user/index";
+import Chat from "./chat/index";
 
 import Navbar from "../../component/Navebar";
 
@@ -13,12 +14,13 @@ import {
 
 const Container = () => {
   return (
-    <div className="h-screen transition duration-100 ease-in-out">
+    <div className="h-screen  w-screen flex flex-col flex-grow  items-center transition duration-100 ease-in-out">
       <Navbar></Navbar>
-      <div className="">
+      <div className="flex flex-grow">
         <Switch>
           <Route exact path="/" component={Home}/>
           <Route  path="/User" component={User}/>
+          <Route  path="/Chat" component={Chat}/>
         </Switch>
       </div>
     </div>
