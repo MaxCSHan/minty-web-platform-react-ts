@@ -17,6 +17,15 @@ module.exports = {
       'secondary': '#ffed4a',
       'danger': '#e3342f',
      }),
+     maxHeight: {
+      '0': '0',
+      '160': '40rem',
+      '180': '45rem',
+      '200': '50rem',
+      '240': '60rem',
+      
+
+    },
     extend: {
       spacing: {
         '88': '22rem',
@@ -25,6 +34,9 @@ module.exports = {
         '140': '35rem',
         '160': '40rem',
         '200': '50rem',
+      },
+      height:{
+       '11/12': '91.666667%',
       },
       backgroundImage: theme => ({
         'moctar-bg': "url('/src/assets/image/moctar.jpg')",

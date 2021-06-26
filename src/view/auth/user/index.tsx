@@ -1,5 +1,4 @@
 import React from "react";
-import {withRouter} from 'react-router';
 
 const User = () => {
   return (
@@ -16,4 +15,4 @@ const User = () => {
   );
 };
 
-export default withRouter(User);
+export default User;

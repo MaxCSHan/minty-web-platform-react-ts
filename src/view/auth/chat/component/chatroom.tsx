@@ -67,7 +67,7 @@ const Chatroom = () => {
   }, [mes.length]);
 
   return (
-    <div className=" w-160 bg-white  border flex flex-col">
+    <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col">
       <div className="h-14 flex items-center px-8">
         <div className="h-14 flex items-center ">{user}</div>
       </div>
