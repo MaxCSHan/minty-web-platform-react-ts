@@ -73,7 +73,7 @@ const Login  = ()=> {
               className="h-35 w-full mt-10 sd:mt-20 flex flex-col items-center"
             >
               <div className="pb-3">Continue with</div>
-              <SignInBtn keyword={"Sign in with Apple"}></SignInBtn>
+              <SignInBtn keyword={"Sign in with Apple"} bg={'black'}></SignInBtn>
               <SignInBtn keyword={"Sign in with Google"} bg={'white'}></SignInBtn>
             </div>
 
