@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import User from "../../user";
 
 const mes = [
   { user: "Charlie", message: "我們在西門威秀的時候" },
@@ -23,13 +24,30 @@ const mes = [
   },
 ];
 
-const Chatroom = () => {
+type ChatroomProps = {
+  userName: string,
+  myUserName: string
+}
+
+type Message = {
+  user:string,
+  message:string
+}
+
+type messageList= Message[];
+
+const Chatroom = ({userName,myUserName}:ChatroomProps) => {
   // const [keyPress,setKeyPress] = useState('');
-  const [user, setUser] = useState("Account Name");
+  
+  const [user, setUser] = useState(userName);
+  const [messages,setMes] = useState<messageList>([]);
+  
+  useEffect(()=>{
+    setUser(userName);
+  },[userName]);
 
   const [inputValue, setInputValue] = useState("");
 
-  let messagesEnd: HTMLDivElement;
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -39,6 +57,7 @@ const Chatroom = () => {
     }
   };
 
+  // let messagesEnd: HTMLDivElement;
   //   const scrollToBottom = () => {
   //     // console.log(messagesEnd)
   //     // messagesEnd.scrollIntoView({ behavior: "smooth" , block: "start", inline: "nearest"});
@@ -56,35 +75,43 @@ const Chatroom = () => {
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       if (inputValue.match(/^(?!\s*$).+/)) {
-        mes.push({ user: user, message: inputValue });
+        messages.push({ user: myUserName, message: inputValue });
         setInputValue("");
       }
     }
   };
 
   useEffect(() => {
-    scrollToBottom(mes.length - 1);
-  }, [mes.length]);
+    if(messages.length>0)    scrollToBottom(messages.length - 1);
+  }, [messages.length]);
 
-  return (
-    <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col">
+const starterTemplate = (
+  <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col items-center justify-center text-2xl">
+    Please select a user to start the chat.
+</div>
+);
+
+  const chatroomTemplate = (
+<div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col">
       <div className="h-14 flex items-center px-8">
         <div className="h-14 flex items-center ">{user}</div>
       </div>
       <div className="flex flex-col flex-grow px-4 overflow-scroll">
-        {[...mes].map((ele, index) => (
+        {messages?messages.map((ele, index) => (
           <div
             className={`flex w-full ${
-              ele.user === user ? "flex-row-reverse" : ""
+              ele.user === myUserName ? "flex-row-reverse" : ""
             }`}
             id={`message_${index}`}
-            ref={(el) => {
-              messagesEnd = el!;
-            }}
+            key={`message_${index}`}
+
+            // ref={(el) => {
+            //   messagesEnd = el!;
+            // }}
           >
             <div
               className={`flex my-2 max-w-lg ${
-                ele.user === user ? "flex-row-reverse" : ""
+                ele.user === myUserName ? "flex-row-reverse" : ""
               }`}
             >
               <img
@@ -97,7 +124,7 @@ const Chatroom = () => {
               </div>
             </div>
           </div>
-        ))}
+        )):"hi"}
       </div>
       <div className="h-14 py-2 flex items-center px-4">
         <div className="w-full h-10 px-4 border rounded-full flex items-center ">
@@ -117,6 +144,10 @@ const Chatroom = () => {
         </div>
       </div>
     </div>
+  );
+
+  return (
+    user?chatroomTemplate:starterTemplate
   );
 };
 

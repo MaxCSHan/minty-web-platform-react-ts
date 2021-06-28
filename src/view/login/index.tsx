@@ -9,7 +9,7 @@ const SignInBtn = (props: { keyword: string, bg: string })=> {
         case 'white':
           return  <div className="cursor-pointer flex justify-center w-56 bg-white border-2 border-black text-black rounded-full mb-5 p-2">{keyword}</div>
         default:
-            return <div className={`cursor-pointer flex justify-center w-56 bg-${bg?bg:'black'} text-white rounded-full mb-5 p-2`}>{keyword}</div>
+            return <div className={`cursor-pointer flex justify-center w-56 bg-black text-white rounded-full mb-5 p-2`}>{keyword}</div>
 
     }}
     return (

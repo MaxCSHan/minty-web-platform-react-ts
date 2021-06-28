@@ -18,8 +18,8 @@ const Searchbar = () => {
   }
 
   return (
-    <div>
-      <div className="flex flex-col dark:bg-gray-800 dark:text-white  z-5">
+    <div className="fixed w-screen bg-white dark:bg-gray-800 dark:text-white z-10">
+      <div className=" flex flex-col  ">
         <div className="h-16 flex items-center  border-b">
           <div className=" ml-3 h-10 w-4/6  md:w-7/12 lg:w-4/6 2xl:w-3/4  border rounded-l-full flex items-center bg-gray-100 focus:bg-white">
             <div className="ml-4 mr-2 flex items-center ">
@@ -27,7 +27,7 @@ const Searchbar = () => {
             </div>
             <div className="relative w-full ">
               <input
-              className=" w-full h-10 pl-2 border-t border-b  bg-gray-100 focus:bg-white outline-none transition duration-100 ease-in-out"
+              className="appearance-none w-full h-10 pl-2 border-t border-b  bg-gray-100 focus:bg-white outline-none transition duration-100 ease-in-out"
               type="text"
               onChange={(e) => handleInput(e)}
             ></input>

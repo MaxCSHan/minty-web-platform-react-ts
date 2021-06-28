@@ -16,7 +16,7 @@ const Container = () => {
   return (
     <div className="h-screen  w-screen flex flex-col flex-grow  items-center transition duration-100 ease-in-out">
       <Navbar></Navbar>
-      <div className="flex flex-grow">
+      <div className="flex flex-grow mt-14 ">
         <Switch>
           <Route exact path="/" component={Home}/>
           <Route  path="/User" component={User}/>
