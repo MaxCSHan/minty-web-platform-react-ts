@@ -13,11 +13,13 @@ type SearchbarProps = {
 const Searchbar = ({ placeholder }: SearchbarProps) => {
   const history = useHistory();
   const search = new URLSearchParams(useLocation().search);
-  const [selectFilter, setSelectFilter] = useState(search.get('cate')||"Photography");
-  const [inputValue, setInputValue] = useState(search.get('keyword') || "");
+  const [selectFilter, setSelectFilter] = useState(
+    search.get("cate") || "Photography"
+  );
+  const [inputValue, setInputValue] = useState(search.get("keyword") || "");
   const [isDropdown, setIsDropdown] = useState(false);
   const [isFocus, setIsFocus] = useState(false);
-
+  const [grid, setGrid] = useState(false);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -38,6 +40,27 @@ const Searchbar = ({ placeholder }: SearchbarProps) => {
     }
   };
 
+  const gridSwitch = (
+    <div className="flex mx-2 px-5 justify-around rounded-full py-1 bg-gray-100 bg-opacity-0 hover:bg-opacity-100 transition ease-in-out duration-300 ">
+      <div
+        className={`h-6 rounded-full mr-6 flex items-center cursor-pointer transition ease-in-out duration-200 ${
+          !grid ? "text-gray-900" : "text-gray-300 hover:text-gray-500"
+        }`}
+        onClick={() => setGrid(false)}
+      >
+        <i className="fas fa-square"></i>
+      </div>
+      <div
+        className={`h-6 rounded-full  flex items-center cursor-pointer transition ease-in-out duration-200 ${
+          grid ? "text-gray-900" : "text-gray-300 hover:text-gray-500"
+        }`}
+        onClick={() => setGrid(true)}
+      >
+        <i className="fas fa-th-large"></i>
+      </div>
+    </div>
+  );
+
   return (
     <div className="fixed w-screen bg-white dark:bg-gray-800 dark:text-white z-10">
       <div className=" flex flex-col  ">
@@ -53,13 +76,14 @@ const Searchbar = ({ placeholder }: SearchbarProps) => {
                 value={inputValue}
                 onChange={(e) => handleInput(e)}
                 onKeyPress={(e) => handleKeyPress(e)}
-                onFocus={()=>setIsFocus(true)}
-                onBlur={()=>setIsFocus(false)}
-
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
               ></input>
               <div
                 className={`origin-top-left ${
-                  inputValue && isFocus ? "opacity-100 visible" : "opacity-0 invisible"
+                  inputValue && isFocus
+                    ? "opacity-100 visible"
+                    : "opacity-0 invisible"
                 } absolute left-0 w-full z-10 shadow-lg bg-white rounded-b-xl focus:outline-none transition-all duration-200 ease-in-out`}
                 role="menu"
                 aria-orientation="vertical"
@@ -76,7 +100,7 @@ const Searchbar = ({ placeholder }: SearchbarProps) => {
             </div>
           </div>
           <div className="text-sm font-semibold mr-3 h-10 w-2/6 md:w-5/12 lg:w-2/6 2xl:w-1/4  min-w-min border border-l-0 rounded-r-full  flex items-center pl-2 md:pl-4 bg-white ">
-            <div className=" hidden sm:flex items-center ">
+            <div className=" hidden md:flex items-center ">
               {Skills.map((skill, index) => (
                 <div
                   key={`${index}-${skill}`}
@@ -90,9 +114,10 @@ const Searchbar = ({ placeholder }: SearchbarProps) => {
                   {skill}
                 </div>
               ))}
+              {gridSwitch}
             </div>
 
-            <div className="relative inline-block text-left sm:hidden">
+            <div className="relative inline-block text-left md:hidden">
               <div>
                 <button
                   type="button"

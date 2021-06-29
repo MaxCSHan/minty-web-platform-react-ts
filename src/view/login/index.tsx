@@ -28,7 +28,8 @@ const Login  = ()=> {
     <div className="m-auto justify-around flex flex-col items-center md:justify-center">
       <div className=" md:w-3/5 flex flex-col  items-center justify-items-center rounded-lg p-5">
         <div className="content-center pb-20 sd:pb-40 md:pb-8 ">
-          <div className="box-content"><svg
+          <div className="box-content">
+            <svg
               className="mx-auto"
               width="4rem"
               viewBox="0 0 48 48"

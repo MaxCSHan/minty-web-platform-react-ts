@@ -39,7 +39,18 @@ const MiniSearchbar = () => {
       }
     }
   };
-  const clickSearch = (category:string) => {
+
+  const clickSearch = (clickValue:string) => {
+    if (inputValue.match(/^(?!\s*$).+/)) {
+      history.push({
+        pathname: "/search",
+        search: `?keyword=${clickValue}&cate=${selectFilter}`,
+        state: { keyword: clickValue },
+      });
+    }
+};
+
+  const clickCatSearch = (category:string) => {
       if (inputValue.match(/^(?!\s*$).+/)) {
         history.push({
           pathname: "/search",
@@ -50,7 +61,7 @@ const MiniSearchbar = () => {
   };
 
   return (
-    <div className={`relative ml-1 sm:ml-3 h-8 sm:h-10 w-60 z-20  border rounded-full flex items-center ${ inputValue && isFocus ?"border-b-0":""}`}>
+    <div className={`relative ml-1 sm:ml-3 h-8 sm:h-10 w-60 sm:w-160 z-20  border rounded-full flex items-center ${ inputValue && isFocus ?"border-b-0":""}`}>
       <div className="ml-4 mr-2 flex items-center z-20">
         <i className="text-sm sm:text-base fas fa-search"></i>
       </div>
@@ -58,6 +69,7 @@ const MiniSearchbar = () => {
         className={`appearance-none w-full h-8 sm:h-10 z-20  border-t rounded-r-full bg-gray-100 focus:bg-white outline-none transition duration-200 ease-in-out ${ inputValue && isFocus ?"border-b-0":" border-b"}`}
         type="text"
         value={inputValue}
+        placeholder={"What are you looking for?"}
         onChange={(e) => handleInput(e)}
         onKeyPress={(e) => handleKeyPress(e)}
         onFocus={() => setIsFocus(true)}
@@ -73,19 +85,19 @@ const MiniSearchbar = () => {
         aria-labelledby="menu-button"
       >
         <div className="h-full flex flex-col pt-8 ">
-          {[inputValue, ...recommendations].map((ele) => (
-            <div className="h-10 pl-10  flex items-center hover:bg-gray-50 last:rounded-b-xl"
-            onClick={()=>setInputValue(ele)}
+          {recommendations.map((ele) => (
+            <div className="h-10 pl-10  flex items-center hover:bg-gray-50 "
+            onClick={()=>clickSearch(ele)}
             >
               {ele}
             </div>
           ))}
-          <div className="pl-6 text-sm text-gray-600 ">In:</div>
+          <div className="pl-6 text-sm text-gray-600 ">Filter:</div>
           {
             Skills.map((skill,index)=>(
-              <div className="h-10 pl-10  flex items-center hover:bg-gray-50 last:rounded-b-xl font-bold"
+              <div className="h-10 pl-10  flex items-center hover:bg-gray-50 last:rounded-b-3xl font-bold"
               key={`miniSearchbarOption_${index}`}
-              onClick={()=>clickSearch(skill)}
+              onClick={()=>clickCatSearch(skill)}
               >
                 {skill}
               </div>
@@ -93,8 +105,6 @@ const MiniSearchbar = () => {
           }
         </div>
       </div>
-      
-      
     </div>
   );
 };
