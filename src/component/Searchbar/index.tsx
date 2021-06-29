@@ -1,21 +1,42 @@
 // import { Link } from "react-router-dom";
 import React, { useState } from "react";
+import { useHistory, useLocation } from "react-router-dom";
 
 const Skills = ["Photography", "Modeling", "Styling"];
 
-const recommendations = ["Jolie","Eric","Leo","Luke"]
+const recommendations = ["Jolie", "Eric", "Leo", "Luke"];
 
-const Searchbar = () => {
-  const [selectFilter, setSelectFilter] = useState("Photography");
-  const [inputValue, setInputValue] = useState("");
+type SearchbarProps = {
+  placeholder?: string;
+};
+
+const Searchbar = ({ placeholder }: SearchbarProps) => {
+  const history = useHistory();
+  const search = new URLSearchParams(useLocation().search);
+  const [selectFilter, setSelectFilter] = useState(search.get('cate')||"Photography");
+  const [inputValue, setInputValue] = useState(search.get('keyword') || "");
   const [isDropdown, setIsDropdown] = useState(false);
+  const [isFocus, setIsFocus] = useState(false);
 
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>)=> {
+
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (value === "") setInputValue("") ;
-    else {setInputValue(value)}
-
-  }
+    if (value === "") setInputValue("");
+    else {
+      setInputValue(value);
+    }
+  };
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (inputValue.match(/^(?!\s*$).+/)) {
+        history.push({
+          pathname: "/search",
+          search: `?keyword=${inputValue}&cate=${selectFilter}`,
+          state: { keyword: inputValue },
+        });
+      }
+    }
+  };
 
   return (
     <div className="fixed w-screen bg-white dark:bg-gray-800 dark:text-white z-10">
@@ -27,25 +48,32 @@ const Searchbar = () => {
             </div>
             <div className="relative w-full ">
               <input
-              className="appearance-none w-full h-10 pl-2 border-t border-b  bg-gray-100 focus:bg-white outline-none transition duration-100 ease-in-out"
-              type="text"
-              onChange={(e) => handleInput(e)}
-            ></input>
-            <div
-              className={`origin-top-left ${inputValue?'opacity-100 visible':'opacity-0 invisible' } absolute left-0 w-full z-10 shadow-lg bg-white rounded-b-xl focus:outline-none transition-all duration-200 ease-in-out`}
-              role="menu"
-              aria-orientation="vertical"
-              aria-labelledby="menu-button"
-            >
-              <div className="h-full flex flex-col">
-              {[inputValue,...recommendations].map(ele => <div className="h-10 pl-2 flex items-center hover:bg-gray-50 last:rounded-b-xl">
-                {ele}</div>)}
+                className="appearance-none w-full h-10 pl-2 border-t border-b  bg-gray-100 focus:bg-white outline-none transition duration-100 ease-in-out"
+                type="text"
+                value={inputValue}
+                onChange={(e) => handleInput(e)}
+                onKeyPress={(e) => handleKeyPress(e)}
+                onFocus={()=>setIsFocus(true)}
+                onBlur={()=>setIsFocus(false)}
 
-                
+              ></input>
+              <div
+                className={`origin-top-left ${
+                  inputValue && isFocus ? "opacity-100 visible" : "opacity-0 invisible"
+                } absolute left-0 w-full z-10 shadow-lg bg-white rounded-b-xl focus:outline-none transition-all duration-200 ease-in-out`}
+                role="menu"
+                aria-orientation="vertical"
+                aria-labelledby="menu-button"
+              >
+                <div className="h-full flex flex-col">
+                  {[inputValue, ...recommendations].map((ele) => (
+                    <div className="h-10 pl-2 flex items-center hover:bg-gray-50 last:rounded-b-xl">
+                      {ele}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-            </div>
-            
           </div>
           <div className="text-sm font-semibold mr-3 h-10 w-2/6 md:w-5/12 lg:w-2/6 2xl:w-1/4  min-w-min border border-l-0 rounded-r-full  flex items-center pl-2 md:pl-4 bg-white ">
             <div className=" hidden sm:flex items-center ">

@@ -23,6 +23,9 @@ module.exports = {
       '180': '45rem',
       '200': '50rem',
       '240': '60rem',
+      '280': '70rem',
+      '320': '80rem',
+
       
 
     },
@@ -37,6 +40,8 @@ module.exports = {
       },
       height:{
        '11/12': '91.666667%',
+       '95/100': '95%',
+
       },
       backgroundImage: theme => ({
         'moctar-bg': "url('/src/assets/image/moctar.jpg')",
