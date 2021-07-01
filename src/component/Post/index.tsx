@@ -9,10 +9,10 @@ const Post = () => {
   const title = "La belle Famme";
   const userName = "Max";
 
-  //   const loaded = () => {
-  //     setInterval(() => setState({ loaded: true }), 2000);
-  //   };
-
+  const loaded = () => {
+    setInterval(() => setState({ loaded: true }), 2000);
+  };
+  loaded();
   return (
     <div
       className={`${
@@ -25,16 +25,22 @@ const Post = () => {
           onMouseEnter={() => setBookmarkShown(true)}
           onMouseLeave={() => setBookmarkShown(false)}
         >
-          <img
-            src="https://www.creative-tim.com/learning-lab/tailwind-starter-kit/img/team-2-800x800.jpg"
-            alt="..."
-            className=" object-cover w-full h-full align-middle border-none"
-            onLoad={() => setState({ loaded: true })}
-          />
+          {state.loaded ? (
+            <img
+              src="https://www.creative-tim.com/learning-lab/tailwind-starter-kit/img/team-2-800x800.jpg"
+              alt="..."
+              className=" object-cover w-full h-full align-middle border-none"
+              onLoad={() => setState({ loaded: true })}
+            />
+          ) : (
+            <div className="h-72 sm:h-96 w-full bg-gray-200"></div>
+          )}
 
-          {(
+          {
             <div
-              className={`absolute top-2 right-4 w-10 h-10 rounded-full bg-gray-100 bg-opacity-50 flex items-center justify-center ${bookmarkShown?'opacity-100':'opacity-0'} transition-all duration-100 ease-in-out`}
+              className={`absolute top-2 right-4 w-10 h-10 rounded-full bg-gray-100 bg-opacity-50 flex items-center justify-center ${
+                bookmarkShown ? "opacity-100" : "opacity-0"
+              } transition-all duration-100 ease-in-out`}
               onClick={() => setBookmarked({ save: !bookmarked.save })}
             >
               {bookmarked.save ? (
@@ -43,19 +49,19 @@ const Post = () => {
                 <i className={`far fa-bookmark text-2xl  text-primary`}></i>
               )}
             </div>
-          )}
+          }
         </div>
-        <div className="bg-white h-20 p-4 w-full">
+        {state.loaded ? (
+          <div className="bg-white h-20 p-4 w-full">
             <div className={`h-4 font-semibold w-5/6`}>{title}</div>
-        <div className={`h-4 w-5/6`}>{userName}</div>
-        {/* <div
-          className={`h-4 w-5/6 ${state.loaded ? "" : "bg-blue-400 rounded "}`}
-        ></div> */}
-        <div
-          className={`h-4 w-5/6 ${state.loaded ? "" : "bg-blue-400 rounded "}`}
-        ></div>
-        </div>
-        
+            <div className={`h-4 w-5/6`}>{userName}</div>
+          </div>
+        ) : (
+          <div className="animate-pulse bg-white h-20 p-4 w-full">
+            <div className={`h-4 w-60 sm:w-88 md:w-140 bg-gray-200 rounded my-1`}></div>
+            <div className={`h-4 w-14 sm:w-32 md:w-88 bg-gray-200 rounded my-2`}></div>
+          </div>
+        )}
       </div>
     </div>
   );
