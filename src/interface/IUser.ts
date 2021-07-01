@@ -5,6 +5,7 @@ interface User {
     latest: string;
     latestMessage: string;
     avatar: string;
+    intro:string;
   }
 
   export default User;

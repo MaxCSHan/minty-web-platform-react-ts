@@ -34,13 +34,13 @@ const list = [
 
 type ChatlistProps = {
   myUsername: string;
-  onSelectedUser: (user: string) => void;
+  onSelectedUser: (user: User) => void;
 };
 
 
 const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
   const [inputValue, setInputValue] = useState("");
-  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedUser, setSelectedUser] = useState<User>();
 
   const [userList, setUserList] = useState<User[]>([]);
 
@@ -63,10 +63,10 @@ const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
     return res;
   };
 
-  const onSelect = (username:string) =>
+  const onSelect = (user:User) =>
   {
-    onSelectedUser(username);
-    setSelectedUser(username);
+    onSelectedUser(user);
+    setSelectedUser(user);
   }
 
   const loadingListComponent = [0,1,2,3,4,5,6,7,8,9].map((ele,index) =>(
@@ -87,9 +87,9 @@ const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
   const searchResultComponent = (
     searchResult().map((ele, index) => (
       <div
-        className={`w-full px-4 h-20 flex items-center ${ele.username===selectedUser?"bg-gray-100 hover:bg-gray-100 ":"bg-white hover:bg-gray-50 "}`}
+        className={`w-full px-4 h-20 flex items-center ${ele.username===selectedUser?.username?"bg-gray-100 hover:bg-gray-100 ":"bg-white hover:bg-gray-50 "}`}
         key={`chatroom_${index}`}
-        onClick={() => onSelect(ele.username)}
+        onClick={() => onSelect(ele)}
       >
         <div className="relative h-16 w-16 rounded-full bg-green-100">
           <img className="rounded-full" src={ele.avatar} />

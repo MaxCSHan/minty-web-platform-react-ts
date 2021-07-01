@@ -8,9 +8,10 @@ const recommendations = ["Jolie", "Eric", "Leo", "Luke"];
 
 type SearchbarProps = {
   placeholder?: string;
+  onGridSwitch:(isGrid:boolean)=>void
 };
 
-const Searchbar = ({ placeholder }: SearchbarProps) => {
+const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
   const history = useHistory();
   const search = new URLSearchParams(useLocation().search);
   const [selectFilter, setSelectFilter] = useState(
@@ -40,13 +41,18 @@ const Searchbar = ({ placeholder }: SearchbarProps) => {
     }
   };
 
+  const switchGrid = (isGrid:boolean) => {
+    setGrid(isGrid);
+    onGridSwitch(isGrid);
+  }
+
   const gridSwitch = (
     <div className="flex mx-2 px-5 justify-around rounded-full py-1 bg-gray-100 bg-opacity-0 hover:bg-opacity-100 transition ease-in-out duration-300 ">
       <div
         className={`h-6 rounded-full mr-6 flex items-center cursor-pointer transition ease-in-out duration-200 ${
           !grid ? "text-gray-900" : "text-gray-300 hover:text-gray-500"
         }`}
-        onClick={() => setGrid(false)}
+        onClick={() => switchGrid(false)}
       >
         <i className="fas fa-square"></i>
       </div>
@@ -54,7 +60,7 @@ const Searchbar = ({ placeholder }: SearchbarProps) => {
         className={`h-6 rounded-full  flex items-center cursor-pointer transition ease-in-out duration-200 ${
           grid ? "text-gray-900" : "text-gray-300 hover:text-gray-500"
         }`}
-        onClick={() => setGrid(true)}
+        onClick={() => switchGrid(true)}
       >
         <i className="fas fa-th-large"></i>
       </div>

@@ -1,4 +1,4 @@
-import React from "react";
+import {useState} from "react";
 import Searchbar from "../../../component/Searchbar/index";
 import { useHistory } from 'react-router-dom'
 
@@ -11,10 +11,15 @@ type searchProps = {
 };
 
 const Search = () => {
+  const [grid,setGrid] =useState(false);
+
+  const onGridSwitch = (isGrid:boolean) => { setGrid(isGrid);}
+
+
   return (
     <div className="h-screen w-screen transition duration-100 ease-in-out mt-14">
-      <Searchbar></Searchbar>
-      <div className="mt-16 flex flex-wrap justify-center items-center transition duration-100 ease-in-out sm:bg-gray-100 bg-opacity-80">
+      <Searchbar onGridSwitch={onGridSwitch}></Searchbar>
+      <div className={`mt-16 flex ${grid?"flex-row flex-wrap":"flex-col"}  justify-center items-center transition duration-100 ease-in-out sm:bg-gray-100 bg-opacity-80`}>
         {posts.map((ele,index) =><Post key={index}></Post> )}
       </div>
     </div>
