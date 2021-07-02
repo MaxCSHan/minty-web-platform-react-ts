@@ -51,13 +51,23 @@ module.exports = {
         '10': '10ms',
         '50': '50ms',
         '2000': '2000ms',
+       },
+       keyframes: {
+        "wiggle": {
+          '0%, 100%': { transform: 'rotate(-3deg)' },
+          '50%': { transform: 'rotate(3deg)' },
+        }
+      }
+       ,
+       animation:{
+        "wiggle":"wiggle 0.2s ease-in-out infinite"
        }
     },
   },
   variants: {
     extend: {
       backgroundColor:['focus'],
-      display:['first','hover'],
+      display:['first','last','hover',"group-hover"],
       textColor: ['active'],
       borderRadius:['last']
 

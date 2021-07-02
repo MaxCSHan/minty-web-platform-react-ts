@@ -8,29 +8,6 @@ const message = {
   userId: "max",
 };
 
-const list = [
-  {
-    username: "May",
-    loginStatus: true,
-    latest: "11:07",
-    latestMessage: "message",
-    avatar: "link",
-  },
-  {
-    username: "Casper",
-    loginStatus: false,
-    latest: "11:08",
-    latestMessage: "message",
-    avatar: "link",
-  },
-  {
-    username: "Shawn",
-    loginStatus: true,
-    latest: "11:09",
-    latestMessage: "message",
-    avatar: "link",
-  },
-];
 
 type ChatlistProps = {
   myUsername: string;
@@ -69,6 +46,7 @@ const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
     setSelectedUser(user);
   }
 
+
   const loadingListComponent = [0,1,2,3,4,5,6,7,8,9].map((ele,index) =>(
     <div
       className="w-full animate-pulse px-4 h-20 flex items-center"
@@ -99,8 +77,8 @@ const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
         </div>
         <div className="ml-2 flex flex-col">
           <div>{ele.username}</div>
-          <div>
-            {ele.latestMessage.slice(0, 20)} {"11:09PM"}
+          <div className={`${!ele.read?"font-semibold":""}`}>
+            {ele?.latestMessage!.slice(0, 20)} {"11:09PM"}
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import IReplyMessage from "./IReplyMessage"
 /**
  username:string;
  message:string;
@@ -9,6 +10,9 @@ interface Message {
     message:string;
     date:number;
     timeHint:boolean;
+    reply?:IReplyMessage;
+    id:number;
+    heart?:boolean;
   }
 
   export default Message;
