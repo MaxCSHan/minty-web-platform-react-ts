@@ -1,6 +1,7 @@
 import { timeStamp } from "console";
 import { useState, useEffect } from "react";
-import { getUsers } from "../../../../services/userService";
+import { getUsers,getChatrooms } from "../../../../services/userService";
+import Chatroom from "../../../../interface/IChatroom";
 import User from "../../../../interface/IUser";
 const message = {
   text: "Hi Enchente",
@@ -18,11 +19,15 @@ type ChatlistProps = {
 const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
   const [inputValue, setInputValue] = useState("");
   const [selectedUser, setSelectedUser] = useState<User>();
+  const [selectedRoom, setSelectedRoom] = useState<Chatroom>();
 
   const [userList, setUserList] = useState<User[]>([]);
+  const [roomList, setRoomList] = useState<Chatroom[]>([]);
 
   useEffect(() => {
     getUsers().subscribe((response) => setUserList(response));
+    getChatrooms().subscribe((response) => setRoomList(response));
+    console.log(roomList)
   }, []);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +41,10 @@ const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
   const searchResult = () => {
     const res = userList.filter((ele) =>
       ele.username.toLocaleLowerCase().includes(inputValue)
-    );
+    ); 
+  //   const res = roomList.filter((ele) =>
+  //   ele.title.toLocaleLowerCase().includes(inputValue)
+  // );
     return res;
   };
 
@@ -65,7 +73,7 @@ const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
   const searchResultComponent = (
     searchResult().map((ele, index) => (
       <div
-        className={`w-full px-4 h-20 flex items-center ${ele.username===selectedUser?.username?"bg-gray-100 hover:bg-gray-100 ":"bg-white hover:bg-gray-50 "}`}
+        className={`w-full px-4 h-20 flex items-center ${ele.id===selectedUser?.username?"bg-gray-100 hover:bg-gray-100 ":"bg-white hover:bg-gray-50 "}`}
         key={`chatroom_${index}`}
         onClick={() => onSelect(ele)}
       >

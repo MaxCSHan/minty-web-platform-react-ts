@@ -13,6 +13,7 @@ interface Message {
     reply?:IReplyMessage;
     id:number;
     heart?:boolean;
+    reaction:""
   }
 
   export default Message;

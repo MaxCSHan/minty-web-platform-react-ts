@@ -71,11 +71,11 @@ const Chatblock = ({
           </div>:
           <div className={`flex flex-col  ${isForward?"items-end":""}`}>
             {message.reply && (
-              <div className={`absolute -top-14 max-w-xs  flex flex-col  ${isForward?"items-end":""}`} 
+              <div className={`absolute -top-14 right-2 max-w-xs  flex flex-col  ${isForward?"items-end":""}`} 
               onClick={()=>onCheckReply()}
               >
                 <div className="text-sm  whitespace-nowrap">You replied to <span className="font-semibold">{message.reply.to}</span></div>
-                <div className="bg-gray-200 rounded-3xl px-4 py-4 text-xs max-w-xs whitespace-nowrap overflow-hidden overflow-ellipsis">
+                <div className="bg-gray-200 rounded-3xl px-4 py-3 text-xs max-w-xs whitespace-nowrap overflow-hidden overflow-ellipsis">
                   {message.reply.message}
                 </div>
               </div>

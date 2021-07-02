@@ -106,12 +106,11 @@ const Chatroom = ({ myUserName, userSelected }: ChatroomProps) => {
     }
   };
   const handleHeartClick = () => {
-      if (inputValue.match(/^(?!\s*$).+/)) {
         setMes([
           ...messages,
           {
             username: myUserName,
-            message: inputValue,
+            message: "❤️",
             date: new Date().getTime(),
             timeHint:
               (new Date().getTime() - messages[messages.length - 1]?.date) /
@@ -122,8 +121,6 @@ const Chatroom = ({ myUserName, userSelected }: ChatroomProps) => {
             heart:true
           } as Message,
         ]);
-      }
-
   };
 
   useEffect(() => {
