@@ -1,7 +1,7 @@
 import { timeStamp } from "console";
 import { useState, useEffect } from "react";
 import { getUsers,getChatrooms } from "../../../../services/userService";
-import Chatroom from "../../../../interface/IChatroom";
+import IChatroom from "../../../../interface/IChatroom";
 import User from "../../../../interface/IUser";
 const message = {
   text: "Hi Enchente",
@@ -13,21 +13,22 @@ const message = {
 type ChatlistProps = {
   myUsername: string;
   onSelectedUser: (user: User) => void;
+  onSelectedRoom:(room:IChatroom) =>  void;
 };
 
 
-const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
+const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) => {
   const [inputValue, setInputValue] = useState("");
   const [selectedUser, setSelectedUser] = useState<User>();
-  const [selectedRoom, setSelectedRoom] = useState<Chatroom>();
+  const [selectedRoom, setSelectedRoom] = useState<IChatroom>();
 
   const [userList, setUserList] = useState<User[]>([]);
-  const [roomList, setRoomList] = useState<Chatroom[]>([]);
+  const [roomList, setRoomList] = useState<IChatroom[]>([]);
 
   useEffect(() => {
-    getUsers().subscribe((response) => setUserList(response));
+    // getUsers().subscribe((response) => setUserList(response));
     getChatrooms().subscribe((response) => setRoomList(response));
-    console.log(roomList)
+    console.log("API CHatroom =>",roomList)
   }, []);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,19 +40,24 @@ const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
   };
 
   const searchResult = () => {
-    const res = userList.filter((ele) =>
-      ele.username.toLocaleLowerCase().includes(inputValue)
-    ); 
-  //   const res = roomList.filter((ele) =>
-  //   ele.title.toLocaleLowerCase().includes(inputValue)
-  // );
+    // const res = userList.filter((ele) =>
+    //   ele.username.toLocaleLowerCase().includes(inputValue)
+    // ); 
+    const res = roomList.filter((ele) =>
+    ele.title.toLocaleLowerCase().includes(inputValue)
+  );
     return res;
   };
 
-  const onSelect = (user:User) =>
+  // const onSelect = (user:User) =>
+  // {
+  //   onSelectedUser(user);
+  //   setSelectedUser(user);
+  // }
+  const onSelect = (room: IChatroom) =>
   {
-    onSelectedUser(user);
-    setSelectedUser(user);
+    onSelectedRoom(room);
+    setSelectedRoom(room);
   }
 
 
@@ -73,18 +79,18 @@ const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
   const searchResultComponent = (
     searchResult().map((ele, index) => (
       <div
-        className={`w-full px-4 h-20 flex items-center ${ele.id===selectedUser?.username?"bg-gray-100 hover:bg-gray-100 ":"bg-white hover:bg-gray-50 "}`}
+        className={`w-full px-4 h-20 flex items-center ${ele.id===selectedRoom?.id?"bg-gray-100 hover:bg-gray-100 ":"bg-white hover:bg-gray-50 "}`}
         key={`chatroom_${index}`}
         onClick={() => onSelect(ele)}
       >
         <div className="relative h-16 w-16 rounded-full bg-green-100">
-          <img className="rounded-full" src={ele.avatar} />
-          {ele.loginStatus && (
+          <img className="h-16 w-16 rounded-full object-cover" src={ele.roomPhoto} />
+          {ele?.loginStatus && (
             <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500"></div>
           )}
         </div>
         <div className="ml-2 flex flex-col">
-          <div>{ele.username}</div>
+          <div>{ele.title}</div>
           <div className={`${!ele.read?"font-semibold":""}`}>
             {ele?.latestMessage!.slice(0, 20)} {"11:09PM"}
           </div>
@@ -93,14 +99,17 @@ const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
     ))
   )
 
+  const searchArea = () => searchResultComponent.length >0?searchResultComponent: <div className="flex h-full items-center justify-center flex-grow">No result matched</div> 
+  
+
   return (
     <div className="w-screen sm:w-96 flex h-16 sm:h-auto">
       <div className="w-full bg-white border hidden sm:flex flex-col items-center">
         <div className="flex flex-col w-full">
-          <div className="h-10 flex items-center justify-center font-semibold text-lg">
-            {myUsername}
+          <div className="relative h-16 flex items-center justify-center font-semibold text-lg border-b">
+            {myUsername} <div className="absolute right-10 h-10 w-10 flex items-center justify-center cursor-pointer rounded-full  hover:bg-gray-50"><i className="fas fa-paper-plane"></i></div>
           </div>
-          <div className="h-6 px-4">
+          <div className="h-12 flex items-center px-4">
             <input
               className="w-full appearance-none outline-none"
               placeholder="Search"
@@ -108,9 +117,9 @@ const Chatlist = ({ myUsername, onSelectedUser }: ChatlistProps) => {
             ></input>
           </div>
         </div>
-        <div className="w-full border-t overflow-y-scroll">
+        <div className="w-full flex-grow border-t overflow-y-scroll">
           {/* {loadingListComponent} */}
-          {userList.length>0?searchResultComponent:loadingListComponent}
+          {roomList.length>0?searchArea():loadingListComponent}
         </div>
       </div>
       <div className="sm:hidden">Hi</div>

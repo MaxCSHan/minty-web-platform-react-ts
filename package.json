@@ -13,6 +13,7 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "axios": "^0.21.1",
+    "express": "^4.17.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.4",
@@ -26,7 +27,9 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint:mock": "eslint ./mock/**/*.js --ext .js",
+    "serve:mock": "nodemon ./mock/app.js --exec \"npm run lint:mock && node\""
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +52,12 @@
   "devDependencies": {
     "@types/react-router-dom": "^5.1.7",
     "autoprefixer": "^9.8.6",
+    "body-parser": "^1.19.0",
+    "eslint": "^7.29.0",
+    "eslint-plugin-node": "^11.1.0",
+    "faker": "^5.5.3",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.9",
     "postcss": "^7.0.36",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.2"
   }

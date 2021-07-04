@@ -1,4 +1,5 @@
 import IReplyMessage from "./IReplyMessage"
+import IReaction from "./IReaction"
 /**
  username:string;
  message:string;
@@ -13,7 +14,7 @@ interface Message {
     reply?:IReplyMessage;
     id:number;
     heart?:boolean;
-    reaction:""
+    reaction:IReaction[]
   }
 
   export default Message;

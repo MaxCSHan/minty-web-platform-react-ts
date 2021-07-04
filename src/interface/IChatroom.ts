@@ -1,12 +1,16 @@
 import Message from "./IMessage"
-interface Chatroom {
+interface IChatroom {
+    id:string;
     title:string;
     roomPhoto:string;
-    members:string[];
+    members:any[];
     latestMessage:string;
     lastActiveDate:Date;
     messages:Message[];
     read:boolean;
+    loginStatus:boolean;
+    group:boolean;
+    createdDate:string;
   }
 
-  export default Chatroom;
+  export default IChatroom;

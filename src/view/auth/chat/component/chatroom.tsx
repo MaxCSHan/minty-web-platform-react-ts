@@ -1,68 +1,77 @@
-import React, { useState, useEffect, useRef } from "react";
-import { getMessages } from "../../../../services/userService";
-import Message from "../../../../interface/IMessage";
-import User from "../../../../interface/IUser";
-import Chatblock from "./chatBlock";
-import IReplyMessage from "../../../../interface/IReplyMessage";
-import { randomInt } from "crypto";
+import React, { useState, useEffect, useRef } from 'react'
+import { getMessages } from '../../../../services/userService'
+import Message from '../../../../interface/IMessage'
+import User from '../../../../interface/IUser'
+import Chatblock from './chatBlock'
+import IChatroom from '../../../../interface/IChatroom'
+import IReplyMessage from '../../../../interface/IReplyMessage'
+import { randomInt } from 'crypto'
 type ChatroomProps = {
-  userSelected?: User;
-  myUserName: string;
-  selfIntro?: string;
-};
+  userSelected?: User
+  roomSelected?: IChatroom
 
-const Chatroom = ({ myUserName, userSelected }: ChatroomProps) => {
+  myUserName: string
+  selfIntro?: string
+}
+
+const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => {
   // const [keyPress,setKeyPress] = useState('');
 
-  const [forwardingUser, setForwardingUser] = useState<User>(
-    userSelected || ({} as User)
-  );
-
-  const [messages, setMes] = useState<Message[]>([]);
+  // const [forwardingUser, setForwardingUser] = useState<User>(
+  //   userSelected || ({} as User)
+  // );
+  const [forwardingRoom, setForwardingRoom] = useState<IChatroom>(roomSelected || ({} as IChatroom))
+  const [isDetailed, setIsDetailed] = useState(false)
+  const [messages, setMes] = useState<Message[]>([])
 
   useEffect(() => {
-    setForwardingUser(userSelected!);
-    setMes([]);
-    getMessages().subscribe((res) => {
-      console.log("Success =>", res);
-      setMes(res);
-      scrollToBottom();
-    });
-  }, [userSelected]);
+    setForwardingRoom(forwardingRoom)
+    // setForwardingUser(userSelected!);
+    setIsDetailed(false)
+    setMes([])
+    setMes(roomSelected?.messages!)
+    console.log('CHeck in chatroom====> ', roomSelected)
 
-  const [inputValue, setInputValue] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+    // getMessages(roomSelected?.id!).subscribe((res) => {
+    //   console.log("Success =>", res);
+    //   setMes(res);
+    //   scrollToBottom();
+    // });
+  }, [roomSelected])
+
+  const [inputValue, setInputValue] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "") setInputValue("");
+    const value = e.target.value
+    if (value === '') setInputValue('')
     else {
-      setInputValue(value);
+      setInputValue(value)
     }
-  };
+  }
 
   const [replyMessage, setReplyMessage] = useState({
     id: -1,
-    from: "",
-    to: "",
-    message: "",
-  });
+    from: '',
+    to: '',
+    message: ''
+  })
   const onReply = (id: number, to: string, message: string) => {
-    setReplyMessage({ id, from: myUserName, to, message });
-    inputRef!.current?.focus();
-  };
+    setReplyMessage({ id, from: myUserName, to, message })
+    inputRef!.current?.focus()
+  }
 
-  const resetReply = () => onReply(-1, "", "");
+  const resetReply = () => onReply(-1, '', '')
   const jumpTo = (id: number) => {
-    const elmnt = document.getElementById(`message_${id}`);
-    console.log("Check =>", elmnt);
+    const elmnt = document.getElementById(`message_${id}`)
+    console.log('Check =>', elmnt)
     if (elmnt) {
-      elmnt.scrollIntoView();
-      const originStyle = elmnt?.getAttribute || "";
-      elmnt.setAttribute("class", `animate-wiggle ${originStyle}`);
-      setInterval(() => elmnt.setAttribute("class", `${originStyle}`), 200);
+      elmnt.scrollIntoView()
+      const originStyle = elmnt?.getAttribute || ''
+      elmnt.setAttribute('class', `animate-wiggle ${originStyle}`)
+      setInterval(() => elmnt.setAttribute('class', `${originStyle}`), 200)
     }
-  };
+  }
 
   // let messagesEnd: HTMLDivElement;
   //   const scrollToBottom = () => {
@@ -75,16 +84,16 @@ const Chatroom = ({ myUserName, userSelected }: ChatroomProps) => {
   //   };
 
   const scrollTo = (index: number) => {
-    const elmnt = document.getElementById(`message_${index}`);
-    if (elmnt) elmnt.scrollIntoView();
-  };
+    const elmnt = document.getElementById(`message_${index}`)
+    if (elmnt) elmnt.scrollIntoView()
+  }
 
   const scrollToBottom = () => {
-    scrollTo(messages[messages.length - 1]?.id);
-  };
+    scrollTo(messages[messages.length - 1]?.id)
+  }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       if (inputValue.match(/^(?!\s*$).+/)) {
         setMes([
           ...messages,
@@ -92,57 +101,47 @@ const Chatroom = ({ myUserName, userSelected }: ChatroomProps) => {
             username: myUserName,
             message: inputValue,
             date: new Date().getTime(),
-            timeHint:
-              (new Date().getTime() - messages[messages.length - 1]?.date) /
-                (1000 * 60) >
-              5,
+            timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
             reply: replyMessage.id > 0 ? replyMessage : null,
-            id: Math.random(),
-          } as Message,
-        ]);
-        setInputValue("");
-        resetReply();
+            id: Math.random()
+          } as Message
+        ])
+        setInputValue('')
+        resetReply()
       }
     }
-  };
+  }
   const handleHeartClick = () => {
-        setMes([
-          ...messages,
-          {
-            username: myUserName,
-            message: "❤️",
-            date: new Date().getTime(),
-            timeHint:
-              (new Date().getTime() - messages[messages.length - 1]?.date) /
-                (1000 * 60) >
-              5,
-            reply: replyMessage.id > 0 ? replyMessage : null,
-            id: Math.random(),
-            heart:true
-          } as Message,
-        ]);
-  };
+    setMes([
+      ...messages,
+      {
+        username: myUserName,
+        message: '❤️',
+        date: new Date().getTime(),
+        timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
+        reply: replyMessage.id > 0 ? replyMessage : null,
+        id: Math.random(),
+        heart: true
+      } as Message
+    ])
+  }
 
   useEffect(() => {
-    if (messages?.length > 0) scrollToBottom();
-  }, [messages]);
+    if (messages?.length > 0) scrollToBottom()
+  }, [messages])
 
   const starterTemplate = (
     <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col items-center justify-center text-2xl">
       Please select a user to start the chat.
     </div>
-  );
+  )
 
   const messagesLoading = (
     <div className="animate-puls">
       {userSelected?.latestMessage &&
         [...Array(15)].map((ele, index) => (
           <div className="w-full">
-            <div
-              className={`flex w-full `}
-              id={`message_${index}`}
-              key={`message_${index}`}
-            >
+            <div className={`flex w-full `} id={`message_${index}`} key={`message_${index}`}>
               <div className={`flex my-2 w-full`}>
                 <div className="h-10 w-10  rounded-full bg-gray-200"></div>
                 <div className={`mx-2  w-5/6`}>
@@ -153,7 +152,7 @@ const Chatroom = ({ myUserName, userSelected }: ChatroomProps) => {
           </div>
         ))}
     </div>
-  );
+  )
 
   // const messagesList = (
   //   <div>
@@ -203,35 +202,21 @@ const Chatroom = ({ myUserName, userSelected }: ChatroomProps) => {
   //   </div>
   // );
 
-  const messagesList = messages.map((ele, index) => (
+  const messagesList = messages?.map((ele, index) => (
     <Chatblock
       onReply={onReply}
       jumpTo={jumpTo}
-      avatar={forwardingUser?.avatar}
+      avatar={roomSelected?.roomPhoto}
       isForward={ele.username === myUserName}
       index={index}
       message={ele}
     ></Chatblock>
-  ));
+  ))
 
-  const chatroomTemplate = (
-    <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col">
-      <div className="h-18 w-full flex flex-col items-center justify-center py-2 px-8 border-b">
-        <div className="w-full flex text-lg font-semibold">
-          {forwardingUser ? forwardingUser.username : "Select a user"}
-        </div>
-        <div className="w-full text-sm">
-          {forwardingUser ? forwardingUser.intro : "text"}
-        </div>
-      </div>
-      <div className="flex flex-col flex-grow px-4 overflow-y-scroll">
-        {messages && messages.length > 0 ? messagesList : messagesLoading}
-      </div>
-      <div
-        className={`${
-          replyMessage.id > 0 ? "h-34" : "h-14"
-        } py-2 flex flex-col items-center px-4`}
-      >
+  const messengerComponent = (
+    <div className="flex flex-col flex-grow overflow-hidden">
+      <div className="flex flex-col flex-grow px-4 overflow-y-scroll">{messages && messages.length > 0 ? messagesList : messagesLoading}</div>
+      <div className={`${replyMessage.id > 0 ? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
         {replyMessage.id > 0 && (
           <div className="w-full h-16 px-4  flex flex-col ">
             <div className="flex items-center justify-between">
@@ -239,16 +224,11 @@ const Chatroom = ({ myUserName, userSelected }: ChatroomProps) => {
                 Replying to:
                 <span className="font-semibold"> {replyMessage.to} </span>
               </div>
-              <div
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => resetReply()}
-              >
+              <div className="text-gray-400 hover:text-gray-600" onClick={() => resetReply()}>
                 <i className="fas fa-times"></i>
               </div>
             </div>
-            <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">
-              {replyMessage.message}
-            </div>
+            <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">{replyMessage.message}</div>
           </div>
         )}
         <div className="w-full h-10 px-4 border rounded-full flex items-center ">
@@ -263,17 +243,84 @@ const Chatroom = ({ myUserName, userSelected }: ChatroomProps) => {
               onKeyPress={(e) => handleKeyPress(e)}
             ></input>
           </div>
-          <div className="w-8 ml-2 "
-          onClick={() => handleHeartClick()}
-          >
+          <div className="w-8 ml-2 " onClick={() => handleHeartClick()}>
             <i className="sm:text-2xl far fa-heart cursor-pointer "></i>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
+  const detailedComponent = (
+    <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col">
+      <div className="h-16 w-full flex  items-center justify-center px-8 border-b">
+        <div className="h-16  w-full flex flex-col items-start justify-center">
+          <div className="w-full flex items-center text-xl font-semibold">Chatroom settings</div>
+        </div>
+        <div
+          className="cursor-pointer text-lg text-gray-400 hover:text-gray-600 bg-gray-600 hover:bg-gray-600 rounded-full h-10 w-10 flex items-center justify-center"
+          onClick={() => setIsDetailed(false)}
+        >
+          <i className="text-white fas fa-ellipsis-v"></i>
+        </div>
+      </div>
+      {
+        roomSelected?.group && 
+        <div className="w-full flex flex-col justify-center px-8 py-4 border-b">
+        <div className="font-semibold text-lg mb-2">Room name</div>
+        <div className="flex items-center justify-between">
+          <div className="mx-2 my-2 flex items-center">{roomSelected?.title}</div>
+          {roomSelected?.title && <div className="font-semibold cursor-pointer text-blue-500">Change Name</div>}
+        </div>
+      </div>
+      }
+      
+      <div className="w-full flex flex-col justify-center px-8 py-4 border-b">
+        <div className="flex items-center justify-between  mb-2">
+          <div className="font-semibold text-lg">Members</div>
+          {roomSelected?.group && <div className="font-semibold cursor-pointer">+ Add member</div>}
+        </div>
+        <div className="flex flex-col">
+          {roomSelected?.members.map((member, index) => (
+            <div className="mx-2 my-2 flex items-center">
+              <img className="h-14 w-14 bg-red-200 rounded-full" src={member.avatar} />
+              <div className="ml-4">{member.username}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="w-full flex flex-col justify-center px-8 py-4 border-b">
+        <div className="font-semibold text-lg mb-2">Created Date</div>
+        <div className="flex flex-col">
+          <div className="mx-2 my-2 flex items-center">{new Date(roomSelected?.createdDate!).toLocaleDateString()}</div>
+        </div>
+      </div>
+      <div className="w-full flex flex-col justify-center px-8 py-3 border-b">
+        <div className="font-semibold text-lg text-red-500 cursor-pointer">Leave this chatroom</div>
+        <div className=" my-2 flex items-center text-sm">You won't get messages from this group unless someone adds you back to the chat.</div>
 
-  return forwardingUser ? chatroomTemplate : starterTemplate;
-};
+      </div>
+    </div>
+  )
 
-export default Chatroom;
+  const chatroomTemplate = (
+    <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col">
+      <div className="h-16 w-full flex  items-center justify-center px-8 border-b">
+        <div className="h-16  w-full flex flex-col items-start justify-center">
+          <div className="w-full flex items-center text-xl font-semibold">{roomSelected ? roomSelected.title : 'Select a user'}</div>
+          <div className="w-full items-center text-sm">{roomSelected ? "some intro" : 'text'}</div>
+        </div>
+        <div
+          className="cursor-pointer text-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full h-10 w-10 flex items-center justify-center"
+          onClick={() => setIsDetailed(true)}
+        >
+          <i className="fas fa-ellipsis-v"></i>
+        </div>
+      </div>
+      {messengerComponent}
+    </div>
+  )
+
+  return roomSelected ? (isDetailed ? detailedComponent : chatroomTemplate) : starterTemplate
+}
+
+export default Chatroom
