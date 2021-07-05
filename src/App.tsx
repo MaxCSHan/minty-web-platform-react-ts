@@ -7,6 +7,8 @@ import {
 import './assets/App.css';
 import Login from './view/login/index'
 import Container from './view/auth'
+import PrivateRoute from "./router/PrivateRoute"
+
 
 const App: React.FC = ()=> {
   return (
@@ -20,10 +22,8 @@ const App: React.FC = ()=> {
           of them to render at a time
         */}
         <Switch>
-          <Route exact path="/Auth" component={Login}>
-          </Route>
-          <Route path="/" component={Container}>
-          </Route>
+        <Route path="/auth"　 component={Login}  />
+        <PrivateRoute isAuthenticated={false} component={Container} path="/"  />
         </Switch>
       </div>
     </Router>

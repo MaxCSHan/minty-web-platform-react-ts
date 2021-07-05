@@ -33,14 +33,14 @@ const loginWithGoogle = () => {
     });
 };
 
-// const isLoggedIn = () => {
-//     const user = JSON.parse(sessionStorage.getItem('user'));
-//     return user !== null;
-//   }
-//   const loginUser = () => {
-//     const user = JSON.parse(sessionStorage.getItem('user'));
-//     return user;
-//   }
+const isLoggedIn = () => {
+    const user = JSON.parse(sessionStorage.getItem('user')!);
+    return user !== null;
+  }
+  const loginUser = () => {
+    const user = JSON.parse(sessionStorage.getItem('user')!);
+    return user;
+  }
 
 
-// export { loginWithGoogle,isLoggedIn,loginUser };
+export { loginWithGoogle,isLoggedIn,loginUser };
