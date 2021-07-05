@@ -13,6 +13,7 @@ interface Message {
     timeHint:boolean;
     reply?:IReplyMessage;
     id:number;
+    uid:string;
     heart?:boolean;
     reaction:IReaction[]
   }

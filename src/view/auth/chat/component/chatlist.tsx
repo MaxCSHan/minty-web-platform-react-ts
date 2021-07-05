@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { getUsers,getChatrooms } from "../../../../services/userService";
 import IChatroom from "../../../../interface/IChatroom";
 import User from "../../../../interface/IUser";
+import {chatRef} from "../../../../setup/setupFirebase"
+
 const message = {
   text: "Hi Enchente",
   time: "11:07",
@@ -27,7 +29,16 @@ const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) 
 
   useEffect(() => {
     // getUsers().subscribe((response) => setUserList(response));
-    getChatrooms().subscribe((response) => setRoomList(response));
+    // getChatrooms().subscribe((response) => setRoomList(response));
+    chatRef.child("chatrooms").limitToLast(3).on('value', (snapshot) => {
+      const data = snapshot.val();
+      console.log(data)
+      const objectReducer = (acc:any,curr: any[]) => {
+        acc = [...acc,{...curr[1],id:curr[0]}] as IChatroom[]
+      }
+      const arr = Object.keys(data).map((key) => [key, data[key]]).map(ele => ({...ele[1],id:ele[0]})) as IChatroom[];
+      setRoomList(arr)
+    });
     console.log("API CHatroom =>",roomList)
   }, []);
 

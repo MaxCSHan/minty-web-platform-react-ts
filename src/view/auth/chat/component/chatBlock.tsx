@@ -13,6 +13,7 @@ const emojiList = [
 ];
 
 type chatBlockProps = {
+  myUserName:string;
   message: Message;
   index: number;
   isForward: boolean;
@@ -22,6 +23,7 @@ type chatBlockProps = {
 };
 
 const Chatblock = ({
+  myUserName,
   message,
   index,
   isForward,
@@ -41,8 +43,8 @@ const Chatblock = ({
   },[message])
 
   useEffect(() => {
-    const filter = messageData.reaction.filter(ele => ele.from!=="You" )
-    if(filter[0]) setSelectedReaction(filter[0]);
+    const filter = messageData?.reaction?.filter(ele => ele.from!==myUserName )
+    if(filter) setSelectedReaction(filter[0]);
   },[])
 
   const dateController = (ele: Message) => {
@@ -80,9 +82,9 @@ const Chatblock = ({
   const setEmoji = (emojiToSet:IEmoji) =>{
     // console.log(messageData.reaction)
     // console.log(`Id ${messageData.id}: set emoji ${emojiToSet}`)
-    const filter = messageData.reaction.filter(ele => ele.from!=="You" || ele.emoji != emojiToSet)
+    const filter = messageData.reaction.filter(ele => ele.from!==myUserName || ele.emoji != emojiToSet)
     if(filter.length === messageData.reaction.length)
-    {    const newReaction =[...messageData.reaction.filter(ele => ele.from!=="You"),{from:"You",emoji:emojiToSet}]
+    {    const newReaction =[...messageData.reaction.filter(ele => ele.from!==myUserName),{from:myUserName,emoji:emojiToSet}]
     setMessageData({...messageData,reaction:newReaction})}
     else{
       setMessageData({...messageData,reaction:filter})
@@ -134,7 +136,7 @@ const Chatblock = ({
               <div className="relative px-4 py-3 max-w-xs flex flex-wrap break-all  items-center justify-around ">
                 {messageData.message}
                 {messageData?.reaction?.length>0 && 
-                <div className="absolute z-20 -bottom-4 right-4 text-xl bg-white border  rounded-full h-8 px-0.5 flex items-center justify-center cursor-default"
+                <div className="absolute z-20 -bottom-4 right-4 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
                 onMouseEnter={() => setIsHoverReaction(true)}
                 onMouseLeave={() => setIsHoverReaction(false)}
                 >
@@ -153,7 +155,7 @@ const Chatblock = ({
               }`}
             >
               {onClikReaction && <div className={`${isForward ? "-right-8" : "-left-12"} absolute -top-14  z-50  w-64 h-12 shadow-lg rounded-full bg-white flex items-center justify-around px-2`}>
-                  {emojiList.map(ele => <span className="text-3xl cursor-pointer" onMouseDownCapture={()=>setEmoji(ele)} >{ele.emoji}</span>)}
+                  {emojiList.map(ele => <span className="text-3xl cursor-pointer " onMouseDownCapture={()=>setEmoji(ele)} >{ele.emoji}</span>)}
                 </div>}
               <button className="appearance-none focus:outline-none hover:text-gray-500"
               onClick={()=>setOnClikReaction(!onClikReaction)}

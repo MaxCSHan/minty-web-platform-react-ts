@@ -6,7 +6,7 @@ import Chatblock from './chatBlock'
 import IChatroom from '../../../../interface/IChatroom'
 import IReplyMessage from '../../../../interface/IReplyMessage'
 import IReaction from "../../../../interface/IReaction";
-
+import {chatRef} from "../../../../setup/setupFirebase"
 type ChatroomProps = {
   userSelected?: User
   roomSelected?: IChatroom
@@ -30,7 +30,16 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
     // setForwardingUser(userSelected!);
     setIsDetailed(false)
     setMes([])
-    setMes(roomSelected?.messages!)
+    chatRef.child("Messages/-Mdom15qsne7LDcI3tly").on('value', (snapshot) => {
+      const data = snapshot.val();
+      console.log(data)
+
+      const arr = Object.keys(data).map((key) => [key, data[key]]).map(ele => ({...ele[1],uid:ele[0]})) as Message[];
+      console.log(arr);
+      setMes(arr);
+    });
+    
+    // setMes(roomSelected?.messages!)
     console.log('CHeck in chatroom====> ', roomSelected)
 
     // getMessages(roomSelected?.id!).subscribe((res) => {
@@ -105,6 +114,7 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
             timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
             reply: replyMessage.id > 0 ? replyMessage : null,
             id: Math.random(),
+            uid:"temp",
             reaction:[] 
           } as Message
         ])
@@ -123,6 +133,7 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
         timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
         reply: replyMessage.id > 0 ? replyMessage : null,
         id: Math.random(),
+        uid:"temp",
         heart: true,
         reaction:[] 
 
@@ -214,6 +225,7 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
       isForward={ele.username === myUserName}
       index={index}
       message={ele}
+      myUserName={myUserName}
     ></Chatblock>
   ))
 
