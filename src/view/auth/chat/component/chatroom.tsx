@@ -15,6 +15,8 @@ type ChatroomProps = {
   selfIntro?: string
 }
 
+const tempRef = "-MdpPfvCUhr5toXVuX1r";
+
 const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => {
   // const [keyPress,setKeyPress] = useState('');
 
@@ -24,19 +26,22 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
   const [forwardingRoom, setForwardingRoom] = useState<IChatroom>(roomSelected || ({} as IChatroom))
   const [isDetailed, setIsDetailed] = useState(false)
   const [messages, setMes] = useState<Message[]>([])
+  const [stay, setStay] = useState(false)
+
 
   useEffect(() => {
     setForwardingRoom(forwardingRoom)
     // setForwardingUser(userSelected!);
     setIsDetailed(false)
     setMes([])
-    chatRef.child("Messages/-Mdom15qsne7LDcI3tly").on('value', (snapshot) => {
+    chatRef.child(`Messages/${tempRef}`).on('value', (snapshot) => {
       const data = snapshot.val();
-      console.log(data)
-
-      const arr = Object.keys(data).map((key) => [key, data[key]]).map(ele => ({...ele[1],uid:ele[0]})) as Message[];
-      console.log(arr);
+      // console.log(data)
+      if(data){
+              const arr = Object.keys(data).map((key) => [key, data[key]]).map(ele => ({...ele[1],uid:ele[0]})) as Message[];
       setMes(arr);
+      }
+
     });
     
     // setMes(roomSelected?.messages!)
@@ -48,6 +53,7 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
     //   scrollToBottom();
     // });
   }, [roomSelected])
+
 
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -62,19 +68,26 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
 
   const [replyMessage, setReplyMessage] = useState({
     id: -1,
+    uid:"",
     from: '',
     to: '',
     message: ''
   })
-  const onReply = (id: number, to: string, message: string) => {
-    setReplyMessage({ id, from: myUserName, to, message })
+  const onReply = (id:number ,uid: string, to: string, message: string) => {
+    setReplyMessage({ id,uid, from: myUserName, to, message })
     inputRef!.current?.focus()
   }
 
-  const resetReply = () => onReply(-1, '', '')
-  const jumpTo = (id: number) => {
-    const elmnt = document.getElementById(`message_${id}`)
-    console.log('Check =>', elmnt)
+  const onReaction = () => setStay(true);
+
+  // useEffect(()=>{
+  //   console.log(replyMessage)
+  // },[replyMessage])
+
+  const resetReply = () => onReply(-1,"", '', '')
+  const jumpTo = (uid: string) => {
+    const elmnt = document.getElementById(`message_${uid}`)
+    // console.log('Check =>', elmnt)
     if (elmnt) {
       elmnt.scrollIntoView()
       const originStyle = elmnt?.getAttribute || ''
@@ -93,13 +106,13 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
   //     elmnt!.scrollIntoView();
   //   };
 
-  const scrollTo = (index: number) => {
+  const scrollTo = (index: string) => {
     const elmnt = document.getElementById(`message_${index}`)
     if (elmnt) elmnt.scrollIntoView()
   }
 
   const scrollToBottom = () => {
-    scrollTo(messages[messages.length - 1]?.id)
+    scrollTo(messages[messages.length - 1]?.uid)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -118,6 +131,17 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
             reaction:[] 
           } as Message
         ])
+        const newMessageRef = chatRef.child(`Messages/${tempRef}`).push();
+        newMessageRef.set( {
+          username: myUserName,
+          message: inputValue,
+          date: new Date().getTime(),
+          timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
+          reply: replyMessage.id > 0 ? replyMessage : null,
+          id: Math.random(),
+          uid:newMessageRef.key,
+          reaction:[] 
+        } );
         setInputValue('')
         resetReply()
       }
@@ -139,10 +163,26 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
 
       } as Message
     ])
+
+    const newMessageRef = chatRef.child(`Messages/${tempRef}`).push();
+    newMessageRef.set( {
+      username: myUserName,
+      message: '❤️',
+      date: new Date().getTime(),
+      timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
+      reply: replyMessage.id > 0 ? replyMessage : null,
+      id: Math.random(),
+      uid:newMessageRef.key,
+      heart: true,
+      reaction:[] 
+    });
+    setInputValue('')
+    resetReply()
   }
 
   useEffect(() => {
-    if (messages?.length > 0) scrollToBottom()
+    if (messages?.length > 0 && !stay) scrollToBottom()
+    setStay(false);
   }, [messages])
 
   const starterTemplate = (
@@ -223,9 +263,10 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
       jumpTo={jumpTo}
       avatar={roomSelected?.roomPhoto}
       isForward={ele.username === myUserName}
-      index={index}
+      uid={tempRef}
       message={ele}
       myUserName={myUserName}
+      onReaction={onReaction}
     ></Chatblock>
   ))
 

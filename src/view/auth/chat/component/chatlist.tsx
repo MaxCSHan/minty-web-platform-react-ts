@@ -32,14 +32,14 @@ const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) 
     // getChatrooms().subscribe((response) => setRoomList(response));
     chatRef.child("chatrooms").limitToLast(3).on('value', (snapshot) => {
       const data = snapshot.val();
-      console.log(data)
+      // console.log(data)
       const objectReducer = (acc:any,curr: any[]) => {
         acc = [...acc,{...curr[1],id:curr[0]}] as IChatroom[]
       }
       const arr = Object.keys(data).map((key) => [key, data[key]]).map(ele => ({...ele[1],id:ele[0]})) as IChatroom[];
       setRoomList(arr)
     });
-    console.log("API CHatroom =>",roomList)
+    // console.log("API CHatroom =>",roomList)
   }, []);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {

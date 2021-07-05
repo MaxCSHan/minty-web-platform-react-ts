@@ -2,6 +2,7 @@ import Message from "../../../../interface/IMessage";
 import { useEffect, useState } from "react";
 import IReaction from "../../../../interface/IReaction";
 import IEmoji from "../../../../interface/IEmoji";
+import {chatRef} from "../../../../setup/setupFirebase"
 
 const emojiList = [
   {"emoji": "❤️", "name": "red heart", "shortname": ":heart:", "unicode": "2764", "html": "&#10084;", "category": "Smileys & Emotion (emotion)", "order": "1286"},
@@ -15,20 +16,22 @@ const emojiList = [
 type chatBlockProps = {
   myUserName:string;
   message: Message;
-  index: number;
+  uid: string;
   isForward: boolean;
   avatar?: string;
-  onReply: (id: number, to:string, message: string) => void;
-  jumpTo: (id:number) => void
+  onReply: (id:number ,uid: string, to: string, message: string) => void;
+  jumpTo: (uid:string) => void
+  onReaction: ()=> void
 };
 
 const Chatblock = ({
   myUserName,
   message,
-  index,
+  uid,
   isForward,
   avatar,
   onReply,
+  onReaction,
   jumpTo
 }: chatBlockProps) => {
   const [isHover, setIsHover] = useState(false);
@@ -46,6 +49,13 @@ const Chatblock = ({
     const filter = messageData?.reaction?.filter(ele => ele.from!==myUserName )
     if(filter) setSelectedReaction(filter[0]);
   },[])
+
+  // useEffect(()=>{
+  //   ref.on('value', (snapshot) => {
+  //     const data = snapshot.val();
+  //     console.log("value",data)
+  //   })
+  // },[messageData])
 
   const dateController = (ele: Message) => {
     const mesDate = new Date(ele.date);
@@ -71,7 +81,7 @@ const Chatblock = ({
 
   const onCheckReply = () =>
   {
-    jumpTo(messageData.reply!.id);
+    jumpTo(messageData.reply!.uid);
   }
 
   const reduceDuplicateEmoji = 
@@ -82,12 +92,26 @@ const Chatblock = ({
   const setEmoji = (emojiToSet:IEmoji) =>{
     // console.log(messageData.reaction)
     // console.log(`Id ${messageData.id}: set emoji ${emojiToSet}`)
-    const filter = messageData.reaction.filter(ele => ele.from!==myUserName || ele.emoji != emojiToSet)
-    if(filter.length === messageData.reaction.length)
-    {    const newReaction =[...messageData.reaction.filter(ele => ele.from!==myUserName),{from:myUserName,emoji:emojiToSet}]
-    setMessageData({...messageData,reaction:newReaction})}
+    const ref = chatRef.child(`Messages/${uid}/${message.uid}`)
+    onReaction()
+
+    if(messageData && !messageData.reaction) {
+      ref.set({...messageData,reaction:[{from:myUserName,emoji:emojiToSet}]})
+      return 
+    };
+
+    const filter = messageData?.reaction?.filter(ele => !(ele.from===myUserName && ele.emoji.emoji == emojiToSet.emoji))
+        // console.log(`Filter : ${filter}`)
+
+    if(filter && filter.length === messageData.reaction.length)
+    {    
+      const newReaction =[...messageData?.reaction?.filter(ele => ele.from!==myUserName),{from:myUserName,emoji:emojiToSet}]
+      ref.set({...messageData,reaction:newReaction});
+      // setMessageData({...messageData,reaction:newReaction})
+  }
     else{
-      setMessageData({...messageData,reaction:filter})
+      ref.set({...messageData,reaction:filter});
+      // setMessageData({...messageData,reaction:filter})
     }
 
   }
@@ -102,8 +126,8 @@ const Chatblock = ({
 
       <div
         className={`flex w-full ${isForward ? "flex-row-reverse" : "flex-row"}`}
-        id={`message_${messageData.id}`}
-        key={`message_${messageData.id}`}
+        id={`message_${messageData.uid}`}
+        key={`message_${messageData.uid}`}
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
       >
@@ -166,7 +190,7 @@ const Chatblock = ({
               <div
                 className="hover:text-gray-500"
                 onClick={() =>
-                  onReply( messageData.id,messageData.username, messageData.message)
+                  onReply(1, messageData.uid,messageData.username, messageData.message)
                 }
               >
                 <i className="fas fa-reply"></i>
