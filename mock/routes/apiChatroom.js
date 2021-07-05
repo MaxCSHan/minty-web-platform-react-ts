@@ -5,10 +5,13 @@ const { genDatas, padStartWithZero, convertDateToFormatString } = require('../ut
 
 const emojiOrigin = ("😀 😃 😄 😁 😆 😅 😂 🤣 🥲 ☺️ 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😛 😝 😜 🤪 🤨 🧐 🤓 😎 🥸 🤩 🥳 😏 😒 😞 😔 😟 😕 🙁 ☹️ 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 🤯 😳 🥵 🥶 😱 😨 😰 😥 😓 🤗 🤔 🤭 🤫 🤥 😶 😐 😑 😬 🙄 😯 😦 😧 😮 😲 🥱 😴 🤤 😪 😵 🤐 🥴 🤢 🤮 🤧 😷 🤒 🤕 🤑 🤠 😈 👿 👹 👺 🤡 💩 👻 💀 ☠️ 👽 👾 🤖 🎃 😺 😸 😹 😻 😼 😽 🙀 😿 😾")
 
-const emojiList = [{"emoji": "🙌", "name": "raising hands", "shortname": ":raised_hands:", "unicode": "1f64c", "html": "&#128588;", "category": "People & Body (hands)", "order": "1242"},
-{"emoji": "🙈", "name": "see-no-evil monkey", "shortname": ":see_no_evil:", "unicode": "1f648", "html": "&#128584;", "category": "Smileys & Emotion (monkey-face)", "order": "96"},
-{"emoji": "😢", "name": "crying face", "shortname": ":cry:", "unicode": "1f622", "html": "&#128546;", "category": "Smileys & Emotion (face-concerned)", "order": "54"},
-{"emoji": "😎", "name": "smiling face with sunglasses", "shortname": ":sunglasses:", "unicode": "1f60e", "html": "&#128526;", "category": "Smileys & Emotion (face-glasses)", "order": "12"},
+const emojiList = [
+    {"emoji": "❤️", "name": "red heart", "shortname": ":heart:", "unicode": "2764", "html": "&#10084;", "category": "Smileys & Emotion (emotion)", "order": "1286"},
+    {"emoji": "😂", "name": "face with tears of joy", "shortname": ":joy:", "unicode": "1f602", "html": "&#128514;", "category": "Smileys & Emotion (face-smiling)", "order": "3"},
+    {"emoji": "😢", "name": "crying face", "shortname": ":cry:", "unicode": "1f622", "html": "&#128546;", "category": "Smileys & Emotion (face-concerned)", "order": "54"},
+    {"emoji": "😮", "name": "face with open mouth", "shortname": ":open_mouth:", "unicode": "1f62e", "html": "&#128558;", "category": "Smileys & Emotion (face-concerned)", "order": "29"},
+    {"emoji": "🔥", "name": "fire", "shortname": ":fire:", "unicode": "1f525", "html": "&#128293;", "category": "Travel & Places (sky & weather)", "order": "1753"},
+    {"emoji": "👍", "name": "thumbs up", "shortname": ":thumbsup:", "unicode": "1f44d", "html": "&#128077;", "category": "People & Body (hand-fingers-closed)", "order": "1176"},
 ];
 
 const messages = () => genDatas(20,()=>{
@@ -21,7 +24,7 @@ const messages = () => genDatas(20,()=>{
     reply:null,
     id:faker.datatype.number(),
     heart:isHeart,
-    reaction:  genDatas(faker.datatype.number(3),()=>emojiList[faker.datatype.number(emojiList.length-1)]).map(ele => {return {...ele,from:faker.name.findName()}})
+    reaction:  genDatas(faker.datatype.number(3),()=>({ from:faker.internet.userName(),emoji:emojiList[faker.datatype.number(emojiList.length-1)]}))
     }
 });
 

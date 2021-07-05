@@ -1,12 +1,7 @@
+import IEmoji from "./IEmoji"
 interface IReaction {
   from: string
-  emoji: string
-  category: string
-  html: string
-  name: string
-  order: string
-  shortname: string
-  unicode: string
+  emoji: IEmoji
 }
 
 export default IReaction

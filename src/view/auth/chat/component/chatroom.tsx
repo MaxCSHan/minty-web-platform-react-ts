@@ -5,7 +5,8 @@ import User from '../../../../interface/IUser'
 import Chatblock from './chatBlock'
 import IChatroom from '../../../../interface/IChatroom'
 import IReplyMessage from '../../../../interface/IReplyMessage'
-import { randomInt } from 'crypto'
+import IReaction from "../../../../interface/IReaction";
+
 type ChatroomProps = {
   userSelected?: User
   roomSelected?: IChatroom
@@ -103,7 +104,8 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
             date: new Date().getTime(),
             timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
             reply: replyMessage.id > 0 ? replyMessage : null,
-            id: Math.random()
+            id: Math.random(),
+            reaction:[] 
           } as Message
         ])
         setInputValue('')
@@ -121,7 +123,9 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
         timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
         reply: replyMessage.id > 0 ? replyMessage : null,
         id: Math.random(),
-        heart: true
+        heart: true,
+        reaction:[] 
+
       } as Message
     ])
   }
