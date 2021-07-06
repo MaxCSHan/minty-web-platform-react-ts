@@ -3,6 +3,7 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
+  useLocation
 } from "react-router-dom";
 import './assets/App.css';
 import Login from './view/login/index'
@@ -12,9 +13,18 @@ import Container from './view/auth'
 import PrivateRoute from "./router/PrivateRoute"
 import { isLoggedIn,firbaseAuth } from "./services/authService"
 
+
+interface stateType {
+  from: { pathname: string }
+}
 const App: React.FC = ()=> {
   const [isAuthenticated,setIsAuthenticated] =useState(isLoggedIn());
   firbaseAuth.onAuthStateChanged((user)=> setIsAuthenticated(isLoggedIn()))
+  type locationState ={
+    from:string
+  }
+  const location = useLocation<stateType>();
+  const from = location?.state?.from; 
 
   return (
     <Router>
@@ -27,8 +37,8 @@ const App: React.FC = ()=> {
           of them to render at a time
         */}
         <Switch>
-        <PrivateRoute isAuthenticated={!isAuthenticated} component={Login} path="/auth" redirectTo="/"  />
-        <PrivateRoute isAuthenticated={isAuthenticated} component={Container} path="/"   />
+        <PrivateRoute isAuthenticated={!isAuthenticated} component={Login} path="/auth" redirectTo={from || "/"} />
+        <PrivateRoute isAuthenticated={isAuthenticated} component={Container} path={"/"}   />
         </Switch>
       </div>
     </Router>

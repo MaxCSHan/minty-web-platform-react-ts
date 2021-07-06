@@ -1,5 +1,5 @@
 import {createElement} from 'react';
-import { Route,Redirect } from 'react-router-dom';
+import { Route,Redirect,useLocation } from 'react-router-dom';
 
 
 /**
@@ -8,7 +8,10 @@ import { Route,Redirect } from 'react-router-dom';
  * @returns 
  */
 const PrivateRoute = ({component, isAuthenticated, redirectTo ="/auth", ...rest}: any) => {
-    const routeComponent = (props: any) => isAuthenticated? createElement(component, props): <Redirect push to={{pathname: redirectTo}}/>;
+    const location = useLocation();
+    console.log("Inside PrivateRoute",location,"redirectTo ",redirectTo)
+
+    const routeComponent = (props: any) => isAuthenticated? createElement(component, props): <Redirect push to={{pathname: redirectTo,state:{from:location.pathname}}}/>;
     return <Route {...rest} render={routeComponent}/>;
 };
 export default PrivateRoute;
