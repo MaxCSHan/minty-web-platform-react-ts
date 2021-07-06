@@ -11,6 +11,8 @@ interface IChatroom {
     loginStatus:boolean;
     group:boolean;
     createdDate:string;
+    intro?:string;
+
   }
 
   export default IChatroom;

@@ -401,7 +401,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
       <div className="h-16 w-full flex  items-center justify-center px-8 border-b">
         <div className="h-16  w-full flex flex-col items-start justify-center">
           <div className="w-full flex items-center text-xl font-semibold">{forwardingRoom ? forwardingRoom.title : 'Select a user'}</div>
-          <div className="w-full items-center text-sm">{forwardingRoom ? 'some intro' : 'text'}</div>
+          <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
         </div>
         <div
           className="cursor-pointer text-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full h-10 w-10 flex items-center justify-center"
