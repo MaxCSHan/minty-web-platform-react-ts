@@ -19,6 +19,7 @@ interface stateType {
 }
 const App: React.FC = ()=> {
   const [isAuthenticated,setIsAuthenticated] =useState(isLoggedIn());
+  useEffect(()=>setIsAuthenticated(isLoggedIn()),[])
   firbaseAuth.onAuthStateChanged((user)=> {console.log("Auth",isLoggedIn()); setIsAuthenticated(isLoggedIn() || user!==null)})
   type locationState ={
     from:string

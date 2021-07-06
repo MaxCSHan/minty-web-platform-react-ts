@@ -1,9 +1,11 @@
 import Message from "./IMessage"
+import StringMap from "./StringMap";
+import IMember from "./IMember"
 interface IChatroom {
     id:string;
     title:string;
     roomPhoto:string;
-    members:any[];
+    members:StringMap<IMember>;
     latestMessage:string;
     latestActiveDate:number;
     messages:Message[];

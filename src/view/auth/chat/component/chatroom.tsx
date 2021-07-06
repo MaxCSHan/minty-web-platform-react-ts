@@ -7,6 +7,8 @@ import IChatroom from '../../../../interface/IChatroom'
 import { chatRef } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 import { useLocation, useParams } from 'react-router-dom'
+import StringMap from "../../../../interface/StringMap"
+import IMember from "../../../../interface/IMember"
 
 type ChatroomProps = {
   userSelected?: User
@@ -16,9 +18,7 @@ type ChatroomProps = {
   selfIntro?: string
 }
 
-type ImgRefs = {
-  [key: string]: string
-}
+
 
 const tempRef = '-Mdtq1ZeBs48gjlT4ZdQ'
 
@@ -30,34 +30,39 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   // );
   const [roomId, setRoomId] = useState(id!)
   const [myUserName, setMyUserName] = useState("")
+  const [memberRef, setMemberRef] = useState<StringMap<IMember>>({})
+  const [members, setMembers] = useState<IMember[]>([])
 
   const [forwardingRoom, setForwardingRoom] = useState<IChatroom>({} as IChatroom)
   const [isDetailed, setIsDetailed] = useState(false)
   const [messages, setMes] = useState<Message[]>([])
   const [stay, setStay] = useState(false)
-  const [imageRef, setImageRef] = useState<ImgRefs>({})
+
+  
 
   useEffect(()=>{
     setRoomId(id!);
-    setMyUserName(loginUser().username)
+    setMyUserName(loginUser()?.username)
+    console.log("Log In Data =>> ",loginUser(),loginUser().username,myUserName)
+    chatRef.child(`chatrooms/${id}/members/${loginUser().uid}/`).set({username:loginUser()?.fullName,avatar:loginUser().avatar})
+
   },[id])
 
   useEffect(() => {
     chatRef.child(`chatrooms/${id}`).on('value', (snapshot) => {
-      const data = snapshot.val()
-      console.log(data)
-      setForwardingRoom(data)
-      console.log(forwardingRoom,'members', data?.members)
-      let temp: ImgRefs= {}
-      data?.members?.forEach((ele:any) => {
-        const name = ele.username.replace(/\s/g, '')
-        temp = { ...temp, [name]: ele.avatar }
-      })
-      console.log('Temp', temp)
-      setImageRef({...temp} as ImgRefs)
+      const data = snapshot.val() as IChatroom
+      setForwardingRoom(data);
+      console.log("setForwardingRoom =>>",forwardingRoom)
+      setMemberRef(data.members)
+      Object.keys(data.members).map((key) => [key, data.members[key]]).forEach(ele =>{
+        const updateMembers = [...members,{...(ele[1] as IMember), uid:ele[0] as string} as IMember];
+        console.log("updateMembers =>",updateMembers);
+         setMembers(updateMembers);
+        }) ;
+      console.log("members",members)
+
 
     })
-    console.log('Done', imageRef)
 
     // setForwardingUser(userSelected!);
     setIsDetailed(false)
@@ -294,12 +299,12 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   //   </div>
   // );
 
-  const messagesList = messages?.map((ele, index) => (
+  const messagesList = messages?.map((ele: Message, index) => (
     <Chatblock
       group={forwardingRoom?.group}
       onReply={onReply}
       jumpTo={jumpTo}
-      avatar={imageRef[ele.username.replace(/\s/g, '')] || forwardingRoom?.roomPhoto}
+      avatar={memberRef[ele.uid]?.avatar || forwardingRoom?.roomPhoto}
       isForward={ele.username === myUserName}
       uid={tempRef}
       message={ele}
@@ -374,8 +379,8 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
           {forwardingRoom?.group && <div className="font-semibold cursor-pointer">+ Add member</div>}
         </div>
         <div className="flex flex-col">
-          {forwardingRoom?.members &&
-            forwardingRoom?.members.map((member, index) => (
+          {members &&
+            members.map((member:IMember, index) => (
               <div className="mx-2 my-2 flex items-center">
                 <img className="h-14 w-14 bg-red-200 rounded-full" src={member.avatar} />
                 <div className="ml-4">{member.username}</div>
