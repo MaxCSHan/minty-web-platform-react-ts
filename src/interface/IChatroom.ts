@@ -5,7 +5,7 @@ interface IChatroom {
     roomPhoto:string;
     members:any[];
     latestMessage:string;
-    lastActiveDate:Date;
+    latestActiveDate:number;
     messages:Message[];
     read:boolean;
     loginStatus:boolean;

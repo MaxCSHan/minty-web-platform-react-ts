@@ -4,18 +4,18 @@ import Message from '../../../../interface/IMessage'
 import User from '../../../../interface/IUser'
 import Chatblock from './chatBlock'
 import IChatroom from '../../../../interface/IChatroom'
-import IReplyMessage from '../../../../interface/IReplyMessage'
-import IReaction from "../../../../interface/IReaction";
 import {chatRef} from "../../../../setup/setupFirebase"
+import {loginUser} from "../../../../services/authService"
+
 type ChatroomProps = {
   userSelected?: User
-  roomSelected?: IChatroom
+  roomSelected?: string
 
   myUserName: string
   selfIntro?: string
 }
 
-const tempRef = "-MdpPfvCUhr5toXVuX1r";
+const tempRef = "-Mdtq1ZeBs48gjlT4ZdQ";
 
 const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => {
   // const [keyPress,setKeyPress] = useState('');
@@ -23,14 +23,18 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
   // const [forwardingUser, setForwardingUser] = useState<User>(
   //   userSelected || ({} as User)
   // );
-  const [forwardingRoom, setForwardingRoom] = useState<IChatroom>(roomSelected || ({} as IChatroom))
+  const [forwardingRoom, setForwardingRoom] = useState<IChatroom>(({} as IChatroom))
   const [isDetailed, setIsDetailed] = useState(false)
   const [messages, setMes] = useState<Message[]>([])
   const [stay, setStay] = useState(false)
 
 
   useEffect(() => {
-    setForwardingRoom(forwardingRoom)
+    chatRef.child(`chatrooms/${roomSelected}`).on("value", (snapshot) => {
+      const data = snapshot.val();
+      console.log(data)
+    setForwardingRoom(data)
+    })
     // setForwardingUser(userSelected!);
     setIsDetailed(false)
     setMes([])
@@ -45,7 +49,7 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
     });
     
     // setMes(roomSelected?.messages!)
-    console.log('CHeck in chatroom====> ', roomSelected)
+    console.log('CHeck in chatroom====> ', forwardingRoom)
 
     // getMessages(roomSelected?.id!).subscribe((res) => {
     //   console.log("Success =>", res);
@@ -115,6 +119,12 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
     scrollTo(messages[messages.length - 1]?.uid)
   }
 
+  const updateLatest= (newMessage:string,lastActiveDate:number) =>{
+    chatRef.child(`chatrooms/${roomSelected}/latestMessage`).set(newMessage);
+    chatRef.child(`chatrooms/${roomSelected}/latestActiveDate`).set(lastActiveDate);
+
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       if (inputValue.match(/^(?!\s*$).+/)) {
@@ -142,6 +152,7 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
           uid:newMessageRef.key,
           reaction:[] 
         } );
+        updateLatest(inputValue,new Date().getTime());
         setInputValue('')
         resetReply()
       }
@@ -176,6 +187,7 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
       heart: true,
       reaction:[] 
     });
+    updateLatest('❤️',new Date().getTime());
     setInputValue('')
     resetReply()
   }
@@ -193,7 +205,7 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
 
   const messagesLoading = (
     <div className="animate-puls">
-      {userSelected?.latestMessage &&
+      {forwardingRoom && forwardingRoom?.latestMessage &&
         [...Array(15)].map((ele, index) => (
           <div className="w-full">
             <div className={`flex w-full `} id={`message_${index}`} key={`message_${index}`}>
@@ -259,9 +271,10 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
 
   const messagesList = messages?.map((ele, index) => (
     <Chatblock
+      group={forwardingRoom?.group}
       onReply={onReply}
       jumpTo={jumpTo}
-      avatar={roomSelected?.roomPhoto}
+      avatar={forwardingRoom?.roomPhoto}
       isForward={ele.username === myUserName}
       uid={tempRef}
       message={ele}
@@ -321,12 +334,12 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
         </div>
       </div>
       {
-        roomSelected?.group && 
+        forwardingRoom?.group && 
         <div className="w-full flex flex-col justify-center px-8 py-4 border-b">
         <div className="font-semibold text-lg mb-2">Room name</div>
         <div className="flex items-center justify-between">
-          <div className="mx-2 my-2 flex items-center">{roomSelected?.title}</div>
-          {roomSelected?.title && <div className="font-semibold cursor-pointer text-blue-500">Change Name</div>}
+          <div className="mx-2 my-2 flex items-center">{forwardingRoom?.title}</div>
+          {forwardingRoom?.title && <div className="font-semibold cursor-pointer text-blue-500">Change Name</div>}
         </div>
       </div>
       }
@@ -334,10 +347,10 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
       <div className="w-full flex flex-col justify-center px-8 py-4 border-b">
         <div className="flex items-center justify-between  mb-2">
           <div className="font-semibold text-lg">Members</div>
-          {roomSelected?.group && <div className="font-semibold cursor-pointer">+ Add member</div>}
+          {forwardingRoom?.group && <div className="font-semibold cursor-pointer">+ Add member</div>}
         </div>
         <div className="flex flex-col">
-          {roomSelected?.members.map((member, index) => (
+          {forwardingRoom?.members && forwardingRoom?.members.map((member, index) => (
             <div className="mx-2 my-2 flex items-center">
               <img className="h-14 w-14 bg-red-200 rounded-full" src={member.avatar} />
               <div className="ml-4">{member.username}</div>
@@ -348,7 +361,7 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
       <div className="w-full flex flex-col justify-center px-8 py-4 border-b">
         <div className="font-semibold text-lg mb-2">Created Date</div>
         <div className="flex flex-col">
-          <div className="mx-2 my-2 flex items-center">{new Date(roomSelected?.createdDate!).toLocaleDateString()}</div>
+          <div className="mx-2 my-2 flex items-center">{new Date(forwardingRoom?.createdDate!).toLocaleDateString()}</div>
         </div>
       </div>
       <div className="w-full flex flex-col justify-center px-8 py-3 border-b">
@@ -363,8 +376,8 @@ const Chatroom = ({ myUserName, userSelected, roomSelected }: ChatroomProps) => 
     <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col">
       <div className="h-16 w-full flex  items-center justify-center px-8 border-b">
         <div className="h-16  w-full flex flex-col items-start justify-center">
-          <div className="w-full flex items-center text-xl font-semibold">{roomSelected ? roomSelected.title : 'Select a user'}</div>
-          <div className="w-full items-center text-sm">{roomSelected ? "some intro" : 'text'}</div>
+          <div className="w-full flex items-center text-xl font-semibold">{forwardingRoom ? forwardingRoom.title : 'Select a user'}</div>
+          <div className="w-full items-center text-sm">{forwardingRoom ? "some intro" : 'text'}</div>
         </div>
         <div
           className="cursor-pointer text-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full h-10 w-10 flex items-center justify-center"

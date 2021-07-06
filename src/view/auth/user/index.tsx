@@ -1,14 +1,13 @@
 import React from "react";
+import {loginUser} from "../../../services/authService"
 
 const User = () => {
   return (
     <div className="h-screen flex flex-col items-center transition duration-100 ease-in-out pt-14">
       <div className="relative w-screen h-48 bg-gray-100 flex flex-col sm:flex-row items-center justify-center bg-moctar-bg bg-cover">
-        <div className="h-32 w-32 border flex items-center justify-center rounded-full">
-          profile
-        </div>
+        <img className="h-32 w-32 border flex items-center justify-center rounded-full bg-gray-200" alt="" src={loginUser()?.avatar} />
       </div>
-      <div className="text-3xl font-semibold mt-5">Max Chen</div>
+      <div className="text-3xl font-semibold mt-5">{loginUser()?.fullName || "Please log in first"}</div>
       <div className="w-full flex items-center px-4 justify-around">
         <div>Works | 320</div>
         <div>Likes | 320</div>

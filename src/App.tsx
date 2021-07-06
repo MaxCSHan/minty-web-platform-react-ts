@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useEffect, useState} from 'react';
 import {
   BrowserRouter as Router,
   Switch,
@@ -6,11 +6,16 @@ import {
 } from "react-router-dom";
 import './assets/App.css';
 import Login from './view/login/index'
+import Onboarding from './view/login/onboarding'
+
 import Container from './view/auth'
 import PrivateRoute from "./router/PrivateRoute"
-
+import { isLoggedIn,firbaseAuth } from "./services/authService"
 
 const App: React.FC = ()=> {
+  const [isAuthenticated,setIsAuthenticated] =useState(isLoggedIn());
+  firbaseAuth.onAuthStateChanged((user)=> setIsAuthenticated(isLoggedIn()))
+
   return (
     <Router>
       <div className="font-sans ">
@@ -22,8 +27,8 @@ const App: React.FC = ()=> {
           of them to render at a time
         */}
         <Switch>
-        <Route path="/auth"　 component={Login}  />
-        <PrivateRoute isAuthenticated={false} component={Container} path="/"  />
+        <PrivateRoute isAuthenticated={!isAuthenticated} component={Login} path="/auth" redirectTo="/"  />
+        <PrivateRoute isAuthenticated={isAuthenticated} component={Container} path="/"   />
         </Switch>
       </div>
     </Router>

@@ -45,6 +45,8 @@ module.exports = {
       },
       backgroundImage: theme => ({
         'moctar-bg': "url('/src/assets/image/moctar.jpg')",
+        'onboard': "url('/src/assets/image/onboarding.jpg')",
+
        }),
        transitionDelay: {
         '0': '0ms',

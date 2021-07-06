@@ -13,6 +13,7 @@ import "firebase/database";
  
  const databaseRef = firebase.database().ref();
  const chatRef = databaseRef.child("chat")
+ const usersRef = databaseRef.child("users")
 
-export {chatRef}
+export {chatRef,usersRef}
 export default firebase;

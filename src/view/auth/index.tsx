@@ -2,6 +2,7 @@ import Home from "./home/index";
 import User from "./user/index";
 import Chat from "./chat/index";
 import Search from "./search";
+import Onboarding from "../login/onboarding"
 
 import Navbar from "../../component/Navebar";
 
@@ -20,6 +21,7 @@ const Container = () => {
       <div className="flex flex-grow">
         <Switch>
           <Route exact path="/" component={Home}/>
+          <Route  path="/Onboarding" component={Onboarding} exact/>
           <Route  path="/Search" component={Search}/>
           <Route  path="/User" component={User}/>
           <Route  path="/Chat" component={Chat}/>

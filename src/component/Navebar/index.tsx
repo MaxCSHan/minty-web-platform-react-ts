@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useLocation, useHistory } from "react-router-dom";
+import { logout } from "../../services/authService";
 
 const usePathname = () => {
   const location = useLocation();
@@ -167,11 +168,13 @@ const Navbar = () => {
           </div>
         </Link>
 
-        {/* <Link to="/auth">
-              <div className="h-8 hidden sm:flex items-center bg-primary text-white font-semibold cursor-pointer rounded-full px-4">
-                Login
+        <Link to="/auth">
+              <div className="h-8 hidden sm:flex items-center bg-primary text-white font-semibold cursor-pointer rounded-full px-4"
+              onClick={()=> logout()}
+              >
+                Logout
               </div>
-            </Link> */}
+            </Link>
       </div>
     </div>
   );

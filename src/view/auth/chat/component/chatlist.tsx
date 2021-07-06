@@ -15,7 +15,7 @@ const message = {
 type ChatlistProps = {
   myUsername: string;
   onSelectedUser: (user: User) => void;
-  onSelectedRoom:(room:IChatroom) =>  void;
+  onSelectedRoom:(room:string) =>  void;
 };
 
 
@@ -67,8 +67,18 @@ const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) 
   // }
   const onSelect = (room: IChatroom) =>
   {
-    onSelectedRoom(room);
+    onSelectedRoom(room.id);
     setSelectedRoom(room);
+  }
+  const dateController = (dateNumber: number) => {
+    const mesDate = new Date(dateNumber)
+    return [mesDate].map(
+          (ele) =>
+            `${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            })}`
+        )
   }
 
 
@@ -103,7 +113,7 @@ const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) 
         <div className="ml-2 flex flex-col">
           <div>{ele.title}</div>
           <div className={`${!ele.read?"font-semibold":""}`}>
-            {ele?.latestMessage!.slice(0, 20)} {"11:09PM"}
+            {ele?.latestMessage!.slice(0, 20)} {dateController(ele.latestActiveDate)}
           </div>
         </div>
       </div>

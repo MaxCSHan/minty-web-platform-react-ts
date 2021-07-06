@@ -1,12 +1,11 @@
 interface User {
-    id:string;
+    uid:string;
     username: string;
+    email: string;
+    fullName:string;
     loginStatus: boolean;
-    latest?: string;
-    latestMessage?: string;
     avatar: string;
-    intro:string;
-    read:boolean;
+    intro?:string;
   }
 
   export default User;

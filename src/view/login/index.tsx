@@ -1,6 +1,7 @@
 import {useEffect} from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import Auth from "./auth/"
+import Onboarding from "./onboarding"
 
 
 const Login  = ()=> {
@@ -9,7 +10,8 @@ const Login  = ()=> {
   return (
     <BrowserRouter>
         <Switch>
-        <Route  component={Auth} path="/"  />
+        <Route  component={Auth} path="/auth" exact />
+        <Route  component={Onboarding} path="/auth/onboarding"  exact/>
 
         </Switch>
         </BrowserRouter>
