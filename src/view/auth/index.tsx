@@ -8,11 +8,7 @@ import Navbar from "../../component/Navebar";
 
 // import {withRouter} from 'react-router';
 
-import {
-    // BrowserRouter as Router,
-    Switch,
-    Route,
-  } from "react-router-dom";
+import { Switch, Route,} from "react-router-dom";
 
 const Container = () => {
   return (
