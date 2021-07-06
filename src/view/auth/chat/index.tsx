@@ -5,7 +5,8 @@ import { useState,useEffect } from "react";
 import User from "../../../interface/IUser";
 import {chatRef} from "../../../setup/setupFirebase"
 import {loginUser} from "../../../services/authService"
-
+import { Switch, Route,Redirect} from "react-router-dom";
+import Starter from "./component/Starter";
 const Chat = () => {
   const [myUsername,setMyUserName] = useState("");
   const [selectedUser, setSelectedUser] =useState<User>()
@@ -36,7 +37,13 @@ const Chat = () => {
     <div className="flex h-screen  pt-14  w-screen 	justify-center  sm:items-center sm:bg-gray-100  transition duration-100 ease-in-out">
       <div className=" max-h-180 sm:h-95/100 sm:max-h-240 md:max-h-280  2xl:max-h-320 flex-col sm:flex sm:flex-row md:flex-row">
         <Chatlist onSelectedRoom={onSelectedRoom} onSelectedUser={onSelectedUser} myUsername={myUsername}></Chatlist>
-        <Chatroom roomSelected={selectedRoom} userSelected={selectedUser}  myUserName={myUsername}></Chatroom>
+        <Switch>
+          <Route exact path="/chat/inbox" component={Starter} />
+          <Redirect exact from="/chat/room/" to="/chat/inbox" />
+          <Redirect exact from="/chat/" to="/chat/inbox" />
+          <Route exact path="/chat/room/:id" component={Chatroom} />
+        </Switch>
+        {/* <Chatroom roomSelected={selectedRoom} userSelected={selectedUser}  myUserName={myUsername}></Chatroom> */}
       </div>
     </div>
   );

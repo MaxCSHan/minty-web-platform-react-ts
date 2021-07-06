@@ -4,6 +4,7 @@ import { getUsers,getChatrooms } from "../../../../services/userService";
 import IChatroom from "../../../../interface/IChatroom";
 import User from "../../../../interface/IUser";
 import {chatRef} from "../../../../setup/setupFirebase"
+import { Link } from "react-router-dom";
 
 const message = {
   text: "Hi Enchente",
@@ -72,13 +73,13 @@ const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) 
   }
   const dateController = (dateNumber: number) => {
     const mesDate = new Date(dateNumber)
-    return [mesDate].map(
-          (ele) =>
-            `${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            })}`
-        )
+    const curr = new Date()
+    return curr.getDate() === mesDate.getDate()?
+    mesDate.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    }):
+    mesDate.toLocaleDateString()
   }
 
 
@@ -99,6 +100,7 @@ const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) 
 
   const searchResultComponent = (
     searchResult().map((ele, index) => (
+      <Link to={`/chat/room/${ele.id}`}>
       <div
         className={`w-full px-4 h-20 flex items-center ${ele.id===selectedRoom?.id?"bg-gray-100 hover:bg-gray-100 ":"bg-white hover:bg-gray-50 "}`}
         key={`chatroom_${index}`}
@@ -112,11 +114,14 @@ const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) 
         </div>
         <div className="ml-2 flex flex-col">
           <div>{ele.title}</div>
-          <div className={`${!ele.read?"font-semibold":""}`}>
-            {ele?.latestMessage!.slice(0, 20)} {dateController(ele.latestActiveDate)}
+          <div className={`w-64 flex justify-between ${!ele.read?"font-semibold":""}`}>
+           <div className="whitespace-nowrap overflow-hidden overflow-ellipsis w-48">{ele?.latestMessage!.slice(0, 20)} </div> 
+           <div className="text-sm mx-1 flex items-center">•</div>
+           <div className="text-xs whitespace-nowrap flex items-center">{dateController(ele.latestActiveDate)}</div>
           </div>
         </div>
       </div>
+      </Link>
     ))
   )
 
