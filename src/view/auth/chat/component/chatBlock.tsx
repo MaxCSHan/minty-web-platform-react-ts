@@ -49,7 +49,7 @@ type chatBlockProps = {
   group: boolean
   myUserName: string
   message: Message
-  uid: string
+  roomId: string
   isForward: boolean
   avatar?: string
   onReply: (id: string, to: string, message: string) => void
@@ -57,7 +57,7 @@ type chatBlockProps = {
   onReaction: () => void
 }
 
-const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply, onReaction, jumpTo }: chatBlockProps) => {
+const Chatblock = ({ group, myUserName, message, roomId, isForward, avatar, onReply, onReaction, jumpTo }: chatBlockProps) => {
   const [isHover, setIsHover] = useState(false)
   const [isHoverReaction, setIsHoverReaction] = useState(false)
   const [onClikReaction, setOnClikReaction] = useState(false)
@@ -114,7 +114,7 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
   const setEmoji = (emojiToSet: IEmoji) => {
     // console.log(messageData.reaction)
     // console.log(`Id ${messageData.id}: set emoji ${emojiToSet}`)
-    const ref = chatRef.child(`Messages/${uid}/${message.uid}`)
+    const ref = chatRef.child(`Messages/${roomId}/${message.uid}`)
     onReaction()
 
     if (messageData && !messageData.reaction) {
@@ -246,7 +246,7 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
               >
                 <i className="far fa-smile"></i>
               </button>
-              <div className="hover:text-gray-500" onClick={() => onReply( messageData.uid, messageData.username, messageData.message)}>
+              <div className="hover:text-gray-500" onClick={() => onReply( messageData.id, messageData.username, messageData.message)}>
                 <i className="fas fa-reply"></i>
               </div>
             </div>

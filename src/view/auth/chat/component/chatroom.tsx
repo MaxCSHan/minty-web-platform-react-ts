@@ -129,7 +129,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   const resetReply = () => onReply('', '', '')
   const jumpTo = (id: string) => {
     const elmnt = document.getElementById(`message_${id}`)
-    // console.log('Check =>', elmnt)
+    console.log('Check =>', elmnt)
     if (elmnt) {
       elmnt.scrollIntoView()
       const originStyle = elmnt?.getAttribute || ''
@@ -313,8 +313,8 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
       onReply={onReply}
       jumpTo={jumpTo}
       avatar={memberRef[ele.uid]?.avatar || forwardingRoom?.roomPhoto}
-      isForward={ele.username === myUserName}
-      uid={tempRef}
+      isForward={ele.uid === loginUser().uid}
+      roomId={tempRef}
       message={ele}
       myUserName={myUserName}
       onReaction={onReaction}
