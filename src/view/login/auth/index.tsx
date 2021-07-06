@@ -1,7 +1,4 @@
 import {useEffect} from 'react';
-import {
-  Link
-} from "react-router-dom";
 import {loginWithGoogle} from "../../../services/authService"
 //
 const SignInBtn = (props: { keyword: string, bg: string })=> {

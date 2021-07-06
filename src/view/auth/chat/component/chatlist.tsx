@@ -1,31 +1,22 @@
-import { timeStamp } from "console";
 import { useState, useEffect } from "react";
-import { getUsers,getChatrooms } from "../../../../services/userService";
+// import { getUsers,getChatrooms } from "../../../../services/userService";
 import IChatroom from "../../../../interface/IChatroom";
-import User from "../../../../interface/IUser";
 import {chatRef} from "../../../../setup/setupFirebase"
 import { Link } from "react-router-dom";
 
-const message = {
-  text: "Hi Enchente",
-  time: "11:07",
-  userId: "max",
-};
+
 
 
 type ChatlistProps = {
   myUsername: string;
-  onSelectedUser: (user: User) => void;
   onSelectedRoom:(room:string) =>  void;
 };
 
 
-const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) => {
+const Chatlist = ({ myUsername,onSelectedRoom }: ChatlistProps) => {
   const [inputValue, setInputValue] = useState("");
-  const [selectedUser, setSelectedUser] = useState<User>();
   const [selectedRoom, setSelectedRoom] = useState<IChatroom>();
 
-  const [userList, setUserList] = useState<User[]>([]);
   const [roomList, setRoomList] = useState<IChatroom[]>([]);
 
   useEffect(() => {
@@ -34,9 +25,7 @@ const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) 
     chatRef.child("chatrooms").limitToLast(3).on('value', (snapshot) => {
       const data = snapshot.val();
       // console.log(data)
-      const objectReducer = (acc:any,curr: any[]) => {
-        acc = [...acc,{...curr[1],id:curr[0]}] as IChatroom[]
-      }
+
       const arr = Object.keys(data).map((key) => [key, data[key]]).map(ele => ({...ele[1],id:ele[0]})) as IChatroom[];
       setRoomList(arr)
     });
@@ -100,14 +89,16 @@ const Chatlist = ({ myUsername, onSelectedUser,onSelectedRoom }: ChatlistProps) 
 
   const searchResultComponent = (
     searchResult().map((ele, index) => (
-      <Link to={`/chat/room/${ele.id}`}>
+      <Link         
+      key={`chatroom_link_${index}`}
+      to={`/chat/room/${ele.id}`}>
       <div
         className={`w-full px-4 h-20 flex items-center ${ele.id===selectedRoom?.id?"bg-gray-100 hover:bg-gray-100 ":"bg-white hover:bg-gray-50 "}`}
         key={`chatroom_${index}`}
         onClick={() => onSelect(ele)}
       >
         <div className="relative h-16 w-16 rounded-full bg-green-100">
-          <img className="h-16 w-16 rounded-full object-cover" src={ele.roomPhoto} />
+          <img className="h-16 w-16 rounded-full object-cover" alt="" src={ele.roomPhoto} />
           {ele?.loginStatus && (
             <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500"></div>
           )}

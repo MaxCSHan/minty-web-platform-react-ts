@@ -2,30 +2,30 @@ import React,{useEffect, useState} from 'react';
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
-  useLocation
+  // Route,
+  // useLocation
 } from "react-router-dom";
 import './assets/App.css';
 import Login from './view/login/index'
-import Onboarding from './view/login/onboarding'
+// import Onboarding from './view/login/onboarding'
 
 import Container from './view/auth'
 import PrivateRoute from "./router/PrivateRoute"
 import { isLoggedIn,firbaseAuth } from "./services/authService"
 
 
-interface stateType {
-  from: { pathname: string }
-}
+// interface stateType {
+//   from: { pathname: string }
+// }
 const App: React.FC = ()=> {
   const [isAuthenticated,setIsAuthenticated] =useState(isLoggedIn());
   useEffect(()=>setIsAuthenticated(isLoggedIn()),[])
-  firbaseAuth.onAuthStateChanged((user)=> {console.log("Auth",isLoggedIn()); setIsAuthenticated(isLoggedIn() || user!==null)})
-  type locationState ={
-    from:string
-  }
-  const location = useLocation<stateType>();
-  const from = location?.state?.from; 
+  firbaseAuth.onAuthStateChanged((user)=> { setIsAuthenticated(isLoggedIn() || user!==null)})
+  // type locationState ={
+  //   from:string
+  // }
+  // const location = useLocation<stateType>();
+  // const from = location?.state?.from; 
 
   return (
     <Router>

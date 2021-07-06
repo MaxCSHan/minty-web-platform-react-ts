@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { getMessages } from '../../../../services/userService'
+// import { getMessages } from '../../../../services/userService'
 import Message from '../../../../interface/IMessage'
 import User from '../../../../interface/IUser'
 import Chatblock from './chatBlock'
 import IChatroom from '../../../../interface/IChatroom'
 import { chatRef } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
-import { useLocation, useParams } from 'react-router-dom'
+import {  useParams } from 'react-router-dom'
 import StringMap from "../../../../interface/StringMap"
 import IMember from "../../../../interface/IMember"
-
+import IReplyMessage  from "../../../../interface/IReplyMessage"
 type ChatroomProps = {
   userSelected?: User
   roomSelected?: string
@@ -41,26 +41,39 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   
 
   useEffect(()=>{
+    // console.log("Ref checker",tempRef,id)
     setRoomId(id!);
     setMyUserName(loginUser()?.username)
-    console.log("Log In Data =>> ",loginUser(),loginUser().username,myUserName)
+    // console.log("Log In Data =>> ",loginUser(),loginUser().username,myUserName)
     chatRef.child(`chatrooms/${id}/members/${loginUser().uid}/`).set({username:loginUser()?.fullName,avatar:loginUser().avatar})
+    
+    chatRef.child(`chatrooms/${id}/members`).on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+      setMemberRef(data)
+      // Object.keys(data).map((key) => [key, data[key]]).forEach(ele =>{
+      //   const updateMembers = [...members,{...(ele[1] as IMember), uid:ele[0] as string} as IMember];
+      //   console.log("updateMembers =>",updateMembers);
+      //    setMembers(updateMembers);
+      //   }) ;
+       const arr =  Object.keys(data).map((key) => [key, data[key]]).map(ele => ({...(ele[1] as IMember), uid:ele[0] as string} as IMember));
+      //  console.log(arr)
+         setMembers(arr);
+      // console.log("members",members)
+      }
+
+    })
+    
 
   },[id])
+
+
 
   useEffect(() => {
     chatRef.child(`chatrooms/${id}`).on('value', (snapshot) => {
       const data = snapshot.val() as IChatroom
       setForwardingRoom(data);
-      console.log("setForwardingRoom =>>",forwardingRoom)
-      setMemberRef(data.members)
-      Object.keys(data.members).map((key) => [key, data.members[key]]).forEach(ele =>{
-        const updateMembers = [...members,{...(ele[1] as IMember), uid:ele[0] as string} as IMember];
-        console.log("updateMembers =>",updateMembers);
-         setMembers(updateMembers);
-        }) ;
-      console.log("members",members)
-
+      // console.log("setForwardingRoom =>>",forwardingRoom)
 
     })
 
@@ -75,13 +88,13 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
       if (data) {
         const arr = Object.keys(data)
           .map((key) => [key, data[key]])
-          .map((ele) => ({ ...ele[1], uid: ele[0] })) as Message[]
+          .map((ele) => ({ ...ele[1], id: ele[0] })) as Message[]
         setMes(arr)
       }
     })
 
     // setMes(roomSelected?.messages!)
-    console.log('CHeck in chatroom====> ', forwardingRoom)
+    // console.log('CHeck in chatroom====> ', forwardingRoom)
 
     // getMessages(roomSelected?.id!).subscribe((res) => {
     //   console.log("Success =>", res);
@@ -101,15 +114,9 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
     }
   }
 
-  const [replyMessage, setReplyMessage] = useState({
-    id: -1,
-    uid: '',
-    from: '',
-    to: '',
-    message: ''
-  })
-  const onReply = (id: number, uid: string, to: string, message: string) => {
-    setReplyMessage({ id, uid, from: myUserName, to, message })
+  const [replyMessage, setReplyMessage] = useState<IReplyMessage>()
+  const onReply = (id: string, to: string, message: string) => {
+    setReplyMessage({ id, from: myUserName, to, message } as IReplyMessage)
     inputRef!.current?.focus()
   }
 
@@ -119,9 +126,9 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   //   console.log(replyMessage)
   // },[replyMessage])
 
-  const resetReply = () => onReply(-1, '', '', '')
-  const jumpTo = (uid: string) => {
-    const elmnt = document.getElementById(`message_${uid}`)
+  const resetReply = () => onReply('', '', '')
+  const jumpTo = (id: string) => {
+    const elmnt = document.getElementById(`message_${id}`)
     // console.log('Check =>', elmnt)
     if (elmnt) {
       elmnt.scrollIntoView()
@@ -147,7 +154,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const scrollToBottom = () => {
-    scrollTo(messages[messages.length - 1]?.uid)
+    scrollTo(messages[messages.length - 1]?.id)
   }
 
   const updateLatest = (newMessage: string, lastActiveDate: number) => {
@@ -158,28 +165,28 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       if (inputValue.match(/^(?!\s*$).+/)) {
-        setMes([
-          ...messages,
-          {
-            username: myUserName,
-            message: inputValue,
-            date: new Date().getTime(),
-            timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
-            reply: replyMessage.id > 0 ? replyMessage : null,
-            id: Math.random(),
-            uid: 'temp',
-            reaction: []
-          } as Message
-        ])
+        // setMes([
+        //   ...messages,
+        //   {
+        //     username: myUserName,
+        //     message: inputValue,
+        //     date: new Date().getTime(),
+        //     timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
+        //     reply: replyMessage?.to.length?replyMessage : null,
+        //     id: Math.random(),
+        //     uid: 'temp',
+        //     reaction: []
+        //   } as Message
+        // ])
         const newMessageRef = chatRef.child(`Messages/${tempRef}`).push()
         newMessageRef.set({
           username: myUserName,
           message: inputValue,
           date: new Date().getTime(),
           timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
-          reply: replyMessage.id > 0 ? replyMessage : null,
-          id: Math.random(),
-          uid: newMessageRef.key,
+          reply:  replyMessage?.to.length?replyMessage : null,
+          id: newMessageRef.key,
+          uid: loginUser().uid,
           reaction: []
         })
         updateLatest(inputValue, new Date().getTime())
@@ -189,20 +196,20 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
     }
   }
   const handleHeartClick = () => {
-    setMes([
-      ...messages,
-      {
-        username: myUserName,
-        message: '❤️',
-        date: new Date().getTime(),
-        timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
-        reply: replyMessage.id > 0 ? replyMessage : null,
-        id: Math.random(),
-        uid: 'temp',
-        heart: true,
-        reaction: []
-      } as Message
-    ])
+    // setMes([
+    //   ...messages,
+    //   {
+    //     username: myUserName,
+    //     message: '❤️',
+    //     date: new Date().getTime(),
+    //     timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
+    //     reply:  replyMessage?.to.length?replyMessage : null,
+    //     id: Math.random(),
+    //     uid: 'temp',
+    //     heart: true,
+    //     reaction: []
+    //   } as Message
+    // ])
 
     const newMessageRef = chatRef.child(`Messages/${tempRef}`).push()
     newMessageRef.set({
@@ -210,9 +217,9 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
       message: '❤️',
       date: new Date().getTime(),
       timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
-      reply: replyMessage.id > 0 ? replyMessage : null,
-      id: Math.random(),
-      uid: newMessageRef.key,
+      reply:  replyMessage?.to.length?replyMessage : null,
+      id: newMessageRef.key,
+      uid: loginUser().uid,
       heart: true,
       reaction: []
     })
@@ -237,7 +244,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
       {forwardingRoom &&
         forwardingRoom?.latestMessage &&
         [...Array(15)].map((ele, index) => (
-          <div className="w-full">
+          <div className="w-full" key={`loading_template_${index}`}>
             <div className={`flex w-full `} id={`message_${index}`} key={`message_${index}`}>
               <div className={`flex my-2 w-full`}>
                 <div className="h-10 w-10  rounded-full bg-gray-200"></div>
@@ -301,6 +308,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
 
   const messagesList = messages?.map((ele: Message, index) => (
     <Chatblock
+    key={`Chatblock_outer_${index}`}
       group={forwardingRoom?.group}
       onReply={onReply}
       jumpTo={jumpTo}
@@ -315,20 +323,20 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
 
   const messengerComponent = (
     <div className="flex flex-col flex-grow overflow-hidden">
-      <div className="flex flex-col flex-grow px-4 overflow-y-scroll">{messages && messages.length > 0 ? messagesList : messagesLoading}</div>
-      <div className={`${replyMessage.id > 0 ? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
-        {replyMessage.id > 0 && (
+      <div className="flex flex-col flex-grow px-4 overflow-x-hidden overflow-y-scroll">{messages && messages.length > 0 ? messagesList : messagesLoading}</div>
+      <div className={`${ replyMessage?.to.length! > 0? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
+        {replyMessage?.to.length! > 0 && (
           <div className="w-full h-16 px-4  flex flex-col ">
             <div className="flex items-center justify-between">
               <div>
                 Replying to:
-                <span className="font-semibold"> {replyMessage.to} </span>
+                <span className="font-semibold"> {replyMessage!.to} </span>
               </div>
               <div className="text-gray-400 hover:text-gray-600" onClick={() => resetReply()}>
                 <i className="fas fa-times"></i>
               </div>
             </div>
-            <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">{replyMessage.message}</div>
+            <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">{replyMessage!.message}</div>
           </div>
         )}
         <div className="w-full h-10 px-4 border rounded-full flex items-center ">
@@ -381,8 +389,8 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
         <div className="flex flex-col">
           {members &&
             members.map((member:IMember, index) => (
-              <div className="mx-2 my-2 flex items-center">
-                <img className="h-14 w-14 bg-red-200 rounded-full" src={member.avatar} />
+              <div className="mx-2 my-2 flex items-center" key={`member_${index}`}>
+                <img className="h-14 w-14 bg-red-200 rounded-full" alt="" src={member.avatar} />
                 <div className="ml-4">{member.username}</div>
               </div>
             ))}

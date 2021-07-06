@@ -86,8 +86,9 @@ const MiniSearchbar = () => {
         aria-labelledby="menu-button"
       >
         <div className="h-full flex flex-col pt-8 ">
-          {recommendations.map((ele) => (
+          {recommendations.map((ele,index) => (
             <div className="h-10 pl-10  flex items-center hover:bg-gray-50 "
+            key={`recommendation_${index}`}
             onClick={()=>clickSearch(ele)}
             >
               {ele}

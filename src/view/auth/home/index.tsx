@@ -1,5 +1,4 @@
 import React from "react";
-import Searchbar from "../../../component/Searchbar/index";
 
 import Post from "../../../component/Post/index";
 

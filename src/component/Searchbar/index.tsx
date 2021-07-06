@@ -96,8 +96,8 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
                 aria-labelledby="menu-button"
               >
                 <div className="h-full flex flex-col">
-                  {[inputValue, ...recommendations].map((ele) => (
-                    <div className="h-10 pl-2 flex items-center hover:bg-gray-50 last:rounded-b-xl">
+                  {[inputValue, ...recommendations].map((ele,index) => (
+                    <div className="h-10 pl-2 flex items-center hover:bg-gray-50 last:rounded-b-xl" key={`autocomplete_${index}`}>
                       {ele}
                     </div>
                   ))}
@@ -161,8 +161,7 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
               >
                 <div className="py-1" role="none">
                   {Skills.map((skill, index) => (
-                    <a
-                      href="#"
+                    <div
                       className="text-gray-700 block px-4 py-2 text-sm "
                       role="menuitem"
                       key={`menu-item-${index}`}
@@ -173,7 +172,7 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
                       }}
                     >
                       {skill}
-                    </a>
+                    </div>
                   ))}
 
                   {/* <form method="POST" action="#" role="none">

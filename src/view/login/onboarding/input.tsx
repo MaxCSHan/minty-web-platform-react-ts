@@ -1,4 +1,4 @@
-import { useState,useEffect,useRef } from "react"
+import { useState,useEffect } from "react"
 type cusInputType  = {
     inlineText:string,
     profileOnChange:(blankName:string,inputValue:string) =>void
@@ -13,7 +13,7 @@ const CusInput = ({inlineText,profileOnChange}:cusInputType) => {
     useEffect(()=>{
         profileOnChange(name,inputValue);
     }
-    ,[inputValue])
+    ,[inputValue,name,profileOnChange])
   
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;

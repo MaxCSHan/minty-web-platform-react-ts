@@ -1,5 +1,5 @@
 interface ReplyMessage {
-    id:number;
+    id:string;
     uid:string;
     from: string;
     to:string;

@@ -52,7 +52,7 @@ type chatBlockProps = {
   uid: string
   isForward: boolean
   avatar?: string
-  onReply: (id: number, uid: string, to: string, message: string) => void
+  onReply: (id: string, to: string, message: string) => void
   jumpTo: (uid: string) => void
   onReaction: () => void
 }
@@ -61,7 +61,7 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
   const [isHover, setIsHover] = useState(false)
   const [isHoverReaction, setIsHoverReaction] = useState(false)
   const [onClikReaction, setOnClikReaction] = useState(false)
-  const [selectedReaction, setSelectedReaction] = useState<IReaction>()
+  // const [selectedReaction, setSelectedReaction] = useState<IReaction>()
 
   const [messageData, setMessageData] = useState(message)
 
@@ -69,10 +69,10 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
     setMessageData(message)
   }, [message])
 
-  useEffect(() => {
-    const filter = messageData?.reaction?.filter((ele) => ele.from !== myUserName)
-    if (filter) setSelectedReaction(filter[0])
-  }, [])
+  // useEffect(() => {
+  //   const filter = messageData?.reaction?.filter((ele) => ele.from !== myUserName)
+  //   if (filter) setSelectedReaction(filter[0])
+  // }, [])
 
   // useEffect(()=>{
   //   ref.on('value', (snapshot) => {
@@ -104,7 +104,7 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
   // },[isHover])
 
   const onCheckReply = () => {
-    jumpTo(messageData.reply!.uid)
+    jumpTo(messageData.reply!.id)
   }
 
   const reduceDuplicateEmoji = (accumulator: string[], currentValue: IReaction) => {
@@ -122,7 +122,7 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
       return
     }
 
-    const filter = messageData?.reaction?.filter((ele) => !(ele.from === myUserName && ele.emoji.emoji == emojiToSet.emoji))
+    const filter = messageData?.reaction?.filter((ele) => !(ele.from === myUserName && ele.emoji.emoji === emojiToSet.emoji))
     // console.log(`Filter : ${filter}`)
 
     if (filter && filter.length === messageData.reaction.length) {
@@ -136,14 +136,14 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
   }
 
   const block = (
-    <div className={`${messageData?.reply! && messageData?.reply?.id > 0 ? 'mt-14' : 'mt-2.5'}`}>
+    <div className={`${messageData?.reply! && messageData?.reply?.id ? 'mt-14' : 'mt-2.5'}`}>
       {/* date */}
       <div className={`text-center text-xs text-gray-600 ${messageData.timeHint ? 'my-3' : ''}`}>{dateController(messageData)}</div>
 
       <div
         className={`flex w-full ${isForward ? 'flex-row-reverse' : 'flex-row'}`}
-        id={`message_${messageData.uid}`}
-        key={`message_${messageData.uid}`}
+        id={`message_${messageData.id}`}
+        key={`message_${messageData.id}`}
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
       >
@@ -160,16 +160,16 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
                     onMouseEnter={() => setIsHoverReaction(true)}
                     onMouseLeave={() => setIsHoverReaction(false)}
                   >
-                    {messageData?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele) => (
-                      <div className="mx-0.5 flex pt-0.5 items-center justify-center">{ele}</div>
+                    {messageData?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele,index) => (
+                      <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_heart_reaction_${index}`}>{ele}</div>
                     ))}
                     <div
                       className={`absolute z-30 bottom-8 flex-col items-end px-2 py-1 bg-white shadow-xl transition ease-in-out ${
                         isHoverReaction ? 'opacity-100 visible' : 'opacity-0 invisible'
                       }`}
                     >
-                      {messageData?.reaction!.map((ele) => (
-                        <div className="mx-0.5 whitespace-nowrap text-black">
+                      {messageData?.reaction!.map((ele,index) => (
+                        <div className="mx-0.5 whitespace-nowrap text-black" key={`current_heart_reactionlist_${index}`}>
                           {ele.emoji.emoji} <span className=" text-xs">{ele.from}</span>
                         </div>
                       ))}
@@ -204,16 +204,16 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
                       onMouseEnter={() => setIsHoverReaction(true)}
                       onMouseLeave={() => setIsHoverReaction(false)}
                     >
-                      {messageData?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele) => (
-                        <div className="mx-0.5 flex pt-0.5 items-center justify-center">{ele}</div>
+                      {messageData?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele,index) => (
+                        <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_reaction_${index}`}>{ele}</div>
                       ))}
                       <div
                         className={`absolute z-30 bottom-8 flex-col items-end px-2 py-1 bg-white shadow-xl transition ease-in-out ${
                           isHoverReaction ? 'opacity-100 visible' : 'opacity-0 invisible'
                         }`}
                       >
-                        {messageData?.reaction!.map((ele) => (
-                          <div className="mx-0.5 whitespace-nowrap">
+                        {messageData?.reaction!.map((ele,index) => (
+                          <div className="mx-0.5 whitespace-nowrap" key={`current_reactionlist_${index}`}>
                             {ele.emoji.emoji} <span className=" text-xs">{ele.from}</span>
                           </div>
                         ))}
@@ -232,8 +232,8 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
                     isForward ? '-right-8' : '-left-12'
                   } absolute -top-14  z-50  w-64 h-12 shadow-lg rounded-full bg-white flex items-center justify-around px-2`}
                 >
-                  {emojiList.map((ele) => (
-                    <span className="text-3xl cursor-pointer " onMouseDownCapture={() => setEmoji(ele)}>
+                  {emojiList.map((ele,index) => (
+                    <span className="text-3xl cursor-pointer " key={`reaction_selection_${index}`}  onMouseDownCapture={() => setEmoji(ele)}>
                       {ele.emoji}
                     </span>
                   ))}
@@ -246,7 +246,7 @@ const Chatblock = ({ group, myUserName, message, uid, isForward, avatar, onReply
               >
                 <i className="far fa-smile"></i>
               </button>
-              <div className="hover:text-gray-500" onClick={() => onReply(1, messageData.uid, messageData.username, messageData.message)}>
+              <div className="hover:text-gray-500" onClick={() => onReply( messageData.uid, messageData.username, messageData.message)}>
                 <i className="fas fa-reply"></i>
               </div>
             </div>
