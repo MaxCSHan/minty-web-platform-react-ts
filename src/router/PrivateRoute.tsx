@@ -11,7 +11,7 @@ const PrivateRoute = ({component, isAuthenticated, redirectTo ="/auth", ...rest}
     const location = useLocation();
     console.log("Inside PrivateRoute",location,"redirectTo ",redirectTo)
 
-    const routeComponent = (props: any) => isAuthenticated? createElement(component, props): <Redirect push to={{pathname: redirectTo,state:{from:location.pathname}}}/>;
+    const routeComponent = (props: any) => isAuthenticated? createElement(component, props): <Redirect push to={{pathname: redirectTo}}/>;
     return <Route {...rest} render={routeComponent}/>;
 };
 export default PrivateRoute;

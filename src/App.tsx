@@ -19,7 +19,7 @@ interface stateType {
 }
 const App: React.FC = ()=> {
   const [isAuthenticated,setIsAuthenticated] =useState(isLoggedIn());
-  firbaseAuth.onAuthStateChanged((user)=> setIsAuthenticated(isLoggedIn()))
+  firbaseAuth.onAuthStateChanged((user)=> {console.log("Auth",isLoggedIn()); setIsAuthenticated(isLoggedIn() || user!==null)})
   type locationState ={
     from:string
   }
@@ -37,7 +37,7 @@ const App: React.FC = ()=> {
           of them to render at a time
         */}
         <Switch>
-        <PrivateRoute isAuthenticated={!isAuthenticated} component={Login} path="/auth" redirectTo={from || "/"} />
+        <PrivateRoute isAuthenticated={!isAuthenticated} component={Login} path="/auth" redirectTo={"/"} />
         <PrivateRoute isAuthenticated={isAuthenticated} component={Container} path={"/"}   />
         </Switch>
       </div>
