@@ -9,7 +9,7 @@ import { Route,Redirect,useLocation } from 'react-router-dom';
  */
 const PrivateRoute = ({component, isAuthenticated, redirectTo ="/auth", ...rest}: any) => {
     const location = useLocation();
-    console.log("Inside PrivateRoute",location,"auth",isAuthenticated ,"go To ",isAuthenticated?"component":redirectTo)
+    // console.log("Inside PrivateRoute",location,"auth",isAuthenticated ,"go To ",isAuthenticated?"component":redirectTo)
 
     const routeComponent = (props: any) => isAuthenticated? createElement(component, props): <Redirect push  to={{pathname: redirectTo}}/>;
     return <Route {...rest} render={routeComponent}/>;

@@ -77,7 +77,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         return Object.keys(obj).reduce((ret:StringMap<string[]>, key) => {
           if(ret[obj[key]]) ret[obj[key]] = [...ret[obj[key]],key]
           else ret[obj[key]] = [key]
-          console.log(ret)
           return ret;
         }, {});
       }
@@ -85,7 +84,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     })
     return function cleanup() {
     };
-  })
+  },[])
 
   useEffect(() => {
     chatRef.child(`chatrooms/${id}`).on('value', (snapshot) => {

@@ -1,12 +1,13 @@
 import firebase, { usersRef } from '../setup/setupFirebase'
 import User from '../interface/IUser'
+import { useHistory } from "react-router-dom";
 
 const loginWithGoogle = async () => {
   const provider = new firebase.auth.GoogleAuthProvider()
 
   const result = await firebase.auth().signInWithPopup(provider)
   const userInfo = result.user
-  console.log(result.user)
+//   console.log(result.user)
   const userData:User = {
     uid: userInfo?.uid!,
     username: userInfo?.displayName!,
@@ -20,13 +21,14 @@ const loginWithGoogle = async () => {
     .equalTo(result?.user?.email!)
     .once('value', (snapshot) => {
       if (!snapshot.exists()) {
-          console.log("create new")
+        //   console.log("create new")
         usersRef.child(userInfo?.uid!).set(userData)
       }
     })
   
 
   sessionStorage.setItem('user', JSON.stringify(userData))
+  
 
   //   if (result.credential) {
   //     /** @type {firebase.auth.OAuthCredential} */
@@ -53,7 +55,7 @@ const loginWithGoogle = async () => {
 
 const isLoggedIn = () => {
   const user = JSON.parse(sessionStorage.getItem('user')!)
-  console.log(user)
+//   console.log(user)
   return user !== null
 }
 
