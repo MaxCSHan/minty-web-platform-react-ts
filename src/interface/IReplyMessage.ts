@@ -3,6 +3,7 @@ interface ReplyMessage {
     uid:string;
     from: string;
     to:string;
+    toId:string;
     message: string;
   }
 

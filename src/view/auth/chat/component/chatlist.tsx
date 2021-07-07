@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import IChatroom from "../../../../interface/IChatroom";
 import {chatRef} from "../../../../setup/setupFirebase"
 import { Link } from "react-router-dom";
+import { loginUser } from '../../../../services/authService'
 
 
 
@@ -105,7 +106,7 @@ const Chatlist = ({ myUsername,onSelectedRoom }: ChatlistProps) => {
         </div>
         <div className="ml-2 flex flex-col">
           <div>{ele.title}</div>
-          <div className={`w-64 flex justify-between ${!ele.read?"font-semibold":""}`}>
+          <div className={`w-64 flex justify-between ${ele.read[loginUser().uid]!==ele.latestMessageId || false?"font-semibold":""}`}>
            <div className="whitespace-nowrap overflow-hidden overflow-ellipsis w-48">{ele?.latestMessage!.slice(0, 20)} </div> 
            <div className="text-sm mx-1 flex items-center">•</div>
            <div className="text-xs whitespace-nowrap flex items-center">{dateController(ele.latestActiveDate)}</div>

@@ -19,7 +19,7 @@ const MiniSearchbar = () => {
     search.get("cate") || "Photography"
   );
   const [inputValue, setInputValue] = useState(search.get("keyword") || "");
-  const [isDropdown, setIsDropdown] = useState(false);
+  // const [isDropdown, setIsDropdown] = useState(false);
   const [isFocus, setIsFocus] = useState(false);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {

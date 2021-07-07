@@ -115,8 +115,8 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const [replyMessage, setReplyMessage] = useState<IReplyMessage>()
-  const onReply = (id: string, to: string, message: string) => {
-    setReplyMessage({ id, from: myUserName, to, message } as IReplyMessage)
+  const onReply = (id: string, to: string,toId:string, message: string) => {
+    setReplyMessage({ id,uid:loginUser().uid, from: myUserName, to, toId, message } as IReplyMessage)
     inputRef!.current?.focus()
   }
 
@@ -126,7 +126,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   //   console.log(replyMessage)
   // },[replyMessage])
 
-  const resetReply = () => onReply('', '', '')
+  const resetReply = () => onReply('', '', '', '')
   const jumpTo = (id: string) => {
     const elmnt = document.getElementById(`message_${id}`)
     console.log('Check =>', elmnt)
@@ -157,9 +157,12 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
     scrollTo(messages[messages.length - 1]?.id)
   }
 
-  const updateLatest = (newMessage: string, lastActiveDate: number) => {
+  const updateLatest = (newMessage: string, lastActiveDate: number,latestMessageId:string) => {
     chatRef.child(`chatrooms/${roomId}/latestMessage`).set(newMessage)
     chatRef.child(`chatrooms/${roomId}/latestActiveDate`).set(lastActiveDate)
+    chatRef.child(`chatrooms/${roomId}/latestMessageId`).set(latestMessageId)
+
+    
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -189,7 +192,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
           uid: loginUser().uid,
           reaction: []
         })
-        updateLatest(inputValue, new Date().getTime())
+        updateLatest(inputValue, new Date().getTime(),newMessageRef?.key!)
         setInputValue('')
         resetReply()
       }
@@ -223,7 +226,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
       heart: true,
       reaction: []
     })
-    updateLatest('❤️', new Date().getTime())
+    updateLatest('❤️', new Date().getTime(),newMessageRef?.key!)
     setInputValue('')
     resetReply()
   }
@@ -231,6 +234,8 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   useEffect(() => {
     if (messages?.length > 0 && !stay) scrollToBottom()
     setStay(false)
+    if (messages?.length >0) chatRef.child(`chatrooms/${id}/read/${loginUser().uid}/`).set(messages[messages.length-1].id)
+
   }, [messages])
 
   const starterTemplate = (
@@ -310,6 +315,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
     <Chatblock
     key={`Chatblock_outer_${index}`}
       group={forwardingRoom?.group}
+      memberRef={memberRef}
       onReply={onReply}
       jumpTo={jumpTo}
       avatar={memberRef[ele.uid]?.avatar || forwardingRoom?.roomPhoto}

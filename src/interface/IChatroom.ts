@@ -7,9 +7,10 @@ interface IChatroom {
     roomPhoto:string;
     members:StringMap<IMember>;
     latestMessage:string;
+    latestMessageId:string;
     latestActiveDate:number;
     messages:Message[];
-    read:boolean;
+    read:StringMap<string>;
     loginStatus:boolean;
     group:boolean;
     createdDate:string;

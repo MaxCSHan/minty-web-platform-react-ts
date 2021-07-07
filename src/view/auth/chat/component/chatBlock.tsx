@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react'
 import IReaction from '../../../../interface/IReaction'
 import IEmoji from '../../../../interface/IEmoji'
 import { chatRef } from '../../../../setup/setupFirebase'
+import { loginUser } from '../../../../services/authService'
+import StringMap from '../../../../interface/StringMap'
+import IMember from '../../../../interface/IMember'
 
 const emojiList = [
   { emoji: '❤️', name: 'red heart', shortname: ':heart:', unicode: '2764', html: '&#10084;', category: 'Smileys & Emotion (emotion)', order: '1286' },
@@ -47,17 +50,18 @@ const emojiList = [
 
 type chatBlockProps = {
   group: boolean
+  memberRef: StringMap<IMember>
   myUserName: string
   message: Message
   roomId: string
   isForward: boolean
   avatar?: string
-  onReply: (id: string, to: string, message: string) => void
+  onReply: (id: string, to: string,toId:string, message: string) => void
   jumpTo: (uid: string) => void
   onReaction: () => void
 }
 
-const Chatblock = ({ group, myUserName, message, roomId, isForward, avatar, onReply, onReaction, jumpTo }: chatBlockProps) => {
+const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, avatar, onReply, onReaction, jumpTo }: chatBlockProps) => {
   const [isHover, setIsHover] = useState(false)
   const [isHoverReaction, setIsHoverReaction] = useState(false)
   const [onClikReaction, setOnClikReaction] = useState(false)
@@ -114,7 +118,7 @@ const Chatblock = ({ group, myUserName, message, roomId, isForward, avatar, onRe
   const setEmoji = (emojiToSet: IEmoji) => {
     // console.log(messageData.reaction)
     // console.log(`Id ${messageData.id}: set emoji ${emojiToSet}`)
-    const ref = chatRef.child(`Messages/${roomId}/${message.uid}`)
+    const ref = chatRef.child(`Messages/${roomId}/${message.id}`)
     onReaction()
 
     if (messageData && !messageData.reaction) {
@@ -136,7 +140,7 @@ const Chatblock = ({ group, myUserName, message, roomId, isForward, avatar, onRe
   }
 
   const block = (
-    <div className={`${messageData?.reply! && messageData?.reply?.id ? 'mt-14' : 'mt-2.5'}`}>
+    <div className={`transition-all ease-in-out duration-100 ${messageData?.reply?.id ? 'mt-3' : ""} ${messageData?.reaction?.length > 0?"mb-5":'mb-0'}`}>
       {/* date */}
       <div className={`text-center text-xs text-gray-600 ${messageData.timeHint ? 'my-3' : ''}`}>{dateController(messageData)}</div>
 
@@ -151,7 +155,7 @@ const Chatblock = ({ group, myUserName, message, roomId, isForward, avatar, onRe
           {!isForward && <img className="h-10 w-10 border rounded-full" alt="" src={avatar!} />}
           {messageData.heart ? (
             <div className={`flex flex-col mx-4 text-8xl text-red-500  ${isForward ? 'items-end' : ''}`}>
-              {group && !isForward && <div className="text-xs text-gray-600">{message.username}</div>}
+              {group && !isForward && <div className="text-xs text-gray-600">{memberRef[message.uid].username}</div>}
               <div className="relative">
                 <i className=" fas fa-heart"></i>
                 {messageData?.reaction?.length > 0 && (
@@ -180,27 +184,27 @@ const Chatblock = ({ group, myUserName, message, roomId, isForward, avatar, onRe
             </div>
           ) : (
             <div className={`flex flex-col  ${isForward ? 'items-end' : ''} `}>
-              {group && !isForward && !messageData.reply && <div className="text-xs text-gray-600 ml-4">{message.username}</div>}
+              {group && !isForward && !messageData.reply && <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid].username}</div>}
               {messageData.reply && (
                 <div
-                  className={`absolute max-w-xs  flex flex-col  ${isForward ? 'items-end -top-14 right-2 ' : 'items-start -top-14 left-10 '}`}
+                  className={`absolute max-w-xs  flex flex-col  ${isForward ? 'items-end -top-12 right-2 ' : 'items-start -top-12 left-10 '}`}
                   onClick={() => onCheckReply()}
                 >
                   <div className="text-sm  whitespace-nowrap">
-                    {messageData.reply.from === myUserName ? 'You' : messageData.reply.from} replied to{' '}
-                    <span className="font-semibold">{messageData.reply.to === myUserName ? 'You' : messageData.reply.to}</span>
+                    {messageData.reply.uid === loginUser().uid ? 'You' : messageData.reply.from} replied to
+                    <span className="font-semibold"> {messageData.reply.toId === loginUser().uid  ? 'You' : messageData.reply.to}</span>
                   </div>
-                  <div className="bg-gray-200 rounded-3xl px-4 py-3 text-xs max-w-xs whitespace-nowrap overflow-hidden overflow-ellipsis">
+                  <div className="bg-gray-200 rounded-full px-3 py-2 text-sm text-gray-700 max-w-xs whitespace-nowrap overflow-hidden overflow-ellipsis">
                     {messageData.reply.message}
                   </div>
                 </div>
               )}
               <div className={`z-10 border rounded-3xl bg-white mx-2 flex ${isForward ? 'flex-row-reverse' : ''}  `}>
-                <div className="relative px-4 py-3 max-w-xs flex flex-wrap break-all  items-center justify-around ">
-                  {messageData.message}
+                <div className="relative px-3  py-2 max-w-xs flex flex-wrap break-all  items-center justify-center">
+                  <div className="flex items-center">{messageData.message}</div>
                   {messageData?.reaction?.length > 0 && (
                     <div
-                      className="absolute z-20 -bottom-4 right-4 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
+                      className="absolute z-20 -bottom-6 right-2 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
                       onMouseEnter={() => setIsHoverReaction(true)}
                       onMouseLeave={() => setIsHoverReaction(false)}
                     >
@@ -246,7 +250,7 @@ const Chatblock = ({ group, myUserName, message, roomId, isForward, avatar, onRe
               >
                 <i className="far fa-smile"></i>
               </button>
-              <div className="hover:text-gray-500" onClick={() => onReply( messageData.id, messageData.username, messageData.message)}>
+              <div className="hover:text-gray-500" onClick={() => onReply( messageData.id, memberRef[messageData.uid].username , messageData.uid, messageData.message)}>
                 <i className="fas fa-reply"></i>
               </div>
             </div>
