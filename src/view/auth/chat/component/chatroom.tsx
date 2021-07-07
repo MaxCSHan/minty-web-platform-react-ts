@@ -39,6 +39,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const [stay, setStay] = useState(false)
   // const [isTyping,setIsTyping] = useState(false)
 
+  window.addEventListener("beforeunload", (ev) => 
+  {  
+      isTyping(false);
+  });
+
   useEffect(() => {
     // console.log("Ref checker",tempRef,id)
     setRoomId(id!)
@@ -78,7 +83,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       }
       setReadRef(objectFlip(data));
     })
-  }, [])
+    return function cleanup() {
+    };
+  })
 
   useEffect(() => {
     chatRef.child(`chatrooms/${id}`).on('value', (snapshot) => {
@@ -363,7 +370,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       </div>
       {typingRef && (
         <div className={`flex items-center px-4 transtion-all duration-200 ease-in-out ${showTyping() ? 'opacity-100 h-14 pt-4 ' : 'opacity-0 h-0'}`}>
-          {members.map((ele, index) => {
+          {members.filter(mem => mem.uid!==loginUser().uid).map((ele, index) => {
             return typingRef[ele.uid] ? (
               <div className="relative h-8 w-8 mr-2">
                 <img className="w-full h-full rounded-full " alt="" src={ele.avatar} />
@@ -375,7 +382,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           })}
           {showTyping() && (
             <div>
-              is typing <span className="animate-ping "> ... </span>
+              is typing <span className="animate-ping text-lg"> . . . </span>
             </div>
           )}
         </div>

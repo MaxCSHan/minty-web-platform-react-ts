@@ -1,13 +1,21 @@
 import {useEffect} from 'react';
-import {loginWithGoogle} from "../../../services/authService"
+import { useHistory } from 'react-router-dom';
+import {loginWithGoogle, isLoggedIn} from "../../../services/authService"
+
 //
 const SignInBtn = (props: { keyword: string, bg: string })=> {
   useEffect(()=> console.log("Sign in desu"),[])
+  const history = useHistory();
+
+  const login = async () =>{
+    await loginWithGoogle();
+    if(isLoggedIn())     history.push("/");
+  }
 
     const {keyword,bg} = props
     const btn = () => {switch(bg){
         case 'white':
-          return  <div onClick={()=> loginWithGoogle()} className="cursor-pointer flex justify-center w-56 bg-white border-2 border-black text-black rounded-full mb-5 p-2">{keyword}</div>
+          return  <div onClick={()=> login()} className="cursor-pointer flex justify-center w-56 bg-white border-2 border-black text-black rounded-full mb-5 p-2">{keyword}</div>
         default:
             return <div className={`cursor-pointer flex justify-center w-56 bg-black text-white rounded-full mb-5 p-2`}>{keyword}</div>
 
