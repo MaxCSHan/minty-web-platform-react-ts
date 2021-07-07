@@ -160,7 +160,7 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
   const block = (
     <div
       className={`transition-all ease-in-out duration-100 ${messageData?.reply?.id ? 'mt-3' : ''} ${
-        messageData?.reaction?.length > 0 ? 'mb-9' : 'mb-3'
+        messageData?.reaction?.length > 0 ? 'mb-7' : 'mb-1'
       }`}
     >
       {/* date */}
