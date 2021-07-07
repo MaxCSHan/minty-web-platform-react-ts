@@ -314,6 +314,10 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   const messagesList = messages?.map((ele: Message, index) => (
     <Chatblock
     key={`Chatblock_outer_${index}`}
+      previousUid={messages[index-1]?.uid}
+      previousHasReply={messages[index-1]?.reply?.to?.length!>0}
+      nextUid={messages[index+1]?.uid}
+      nextHasReply={messages[index+1]?.reply?.to?.length!>0}
       group={forwardingRoom?.group}
       memberRef={memberRef}
       onReply={onReply}
@@ -329,7 +333,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
 
   const messengerComponent = (
     <div className="flex flex-col flex-grow overflow-hidden">
-      <div className="flex flex-col flex-grow px-4 overflow-x-hidden overflow-y-scroll">{messages && messages.length > 0 ? messagesList : messagesLoading}</div>
+      <div className="flex flex-col flex-grow px-4 pt-4 overflow-x-hidden overflow-y-scroll">{messages && messages.length > 0 ? messagesList : messagesLoading}</div>
       <div className={`${ replyMessage?.to.length! > 0? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
         {replyMessage?.to.length! > 0 && (
           <div className="w-full h-16 px-4  flex flex-col ">

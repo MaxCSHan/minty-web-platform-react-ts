@@ -49,6 +49,10 @@ const emojiList = [
 ]
 
 type chatBlockProps = {
+  previousUid?: string
+  previousHasReply?:boolean
+  nextUid?: string
+  nextHasReply?:boolean
   group: boolean
   memberRef: StringMap<IMember>
   myUserName: string
@@ -56,21 +60,21 @@ type chatBlockProps = {
   roomId: string
   isForward: boolean
   avatar?: string
-  onReply: (id: string, to: string,toId:string, message: string) => void
+  onReply: (id: string, to: string, toId: string, message: string) => void
   jumpTo: (uid: string) => void
   onReaction: () => void
 }
 
-const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, avatar, onReply, onReaction, jumpTo }: chatBlockProps) => {
+const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, memberRef, myUserName, message, roomId, isForward, avatar, onReply, onReaction, jumpTo }: chatBlockProps) => {
   const [isHover, setIsHover] = useState(false)
   const [isHoverReaction, setIsHoverReaction] = useState(false)
   const [onClikReaction, setOnClikReaction] = useState(false)
   // const [selectedReaction, setSelectedReaction] = useState<IReaction>()
-
   const [messageData, setMessageData] = useState(message)
 
   useEffect(() => {
     setMessageData(message)
+    console.log(message.uid, nextUid)
   }, [message])
 
   // useEffect(() => {
@@ -92,15 +96,17 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
     //   return [mesDate].map(ele => `${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([],{ hour: '2-digit', minute: '2-digit' })}`)
     // }
     // return "";
-    return ele.timeHint
-      && [mesDate].map(
-          (ele) =>
-          <div className={`text-center text-xs text-gray-600 ${messageData.timeHint ? 'my-3' : ''}`}>{`${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            })}`}</div>
-        )
-      
+    return (
+      ele.timeHint &&
+      [mesDate].map((ele) => (
+        <div
+          className={`text-center text-xs text-gray-600 ${messageData.timeHint ? 'my-3' : ''}`}
+        >{`${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        })}`}</div>
+      ))
+    )
   }
 
   // useEffect(()=>{
@@ -139,15 +145,11 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
     }
   }
 
-  const replyBlock = 
-  (
-    messageData.reply &&<div
-      className={`max-w-xs  flex flex-col -mb-2  ${isForward ? 'items-end ' : 'items-start ml-4'}`}
-      onClick={() => onCheckReply()}
-    >
+  const replyBlock = messageData.reply && (
+    <div className={`max-w-xs  flex flex-col -mb-2  ${isForward ? 'items-end ' : 'items-start ml-4'}`} onClick={() => onCheckReply()}>
       <div className="text-sm  whitespace-nowrap">
         {messageData.reply.uid === loginUser().uid ? 'You' : messageData.reply.from} replied to
-        <span className="font-semibold"> {messageData.reply.toId === loginUser().uid  ? 'You' : messageData.reply.to}</span>
+        <span className="font-semibold"> {messageData.reply.toId === loginUser().uid ? 'You' : messageData.reply.to}</span>
       </div>
       <div className="bg-gray-200 rounded-full px-3 py-2 text-sm text-gray-700 max-w-xs whitespace-nowrap overflow-hidden overflow-ellipsis">
         {messageData.reply.message}
@@ -155,11 +157,14 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
     </div>
   )
 
-
   const block = (
-    <div className={`transition-all ease-in-out duration-100 ${messageData?.reply?.id ? 'mt-3' : ""} ${messageData?.reaction?.length > 0?"mb-9":'mb-3'}`}>
+    <div
+      className={`transition-all ease-in-out duration-100 ${messageData?.reply?.id ? 'mt-3' : ''} ${
+        messageData?.reaction?.length > 0 ? 'mb-9' : 'mb-3'
+      }`}
+    >
       {/* date */}
-     {dateController(messageData)}
+      {dateController(messageData)}
 
       <div
         className={`flex w-full ${isForward ? 'flex-row-reverse' : 'flex-row'}`}
@@ -168,11 +173,11 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
       >
-        <div className={`relative  flex items-center ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
-          {!isForward && <img className="h-10 w-10 border rounded-full" alt="" src={avatar!} />}
+        <div className={`relative  flex items-end ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
+          {!isForward &&<div className="h-10 w-10"> { (messageData.uid !== nextUid || nextHasReply) && <img className="h-10 w-10 border rounded-full" alt="" src={avatar!} />}</div>}
           {messageData.heart ? (
             <div className={`flex flex-col mx-4 text-8xl text-red-500  ${isForward ? 'items-end' : 'items-start'}`}>
-              {group && !isForward && <div className="text-xs text-gray-600">{memberRef[message.uid].username}</div>}
+              {group && !isForward &&  (messageData.uid !== previousUid || previousHasReply) && <div className="text-xs text-gray-600">{memberRef[message.uid].username}</div>}
               <div className="relative">
                 <i className=" fas fa-heart"></i>
                 {messageData?.reaction?.length > 0 && (
@@ -181,15 +186,17 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
                     onMouseEnter={() => setIsHoverReaction(true)}
                     onMouseLeave={() => setIsHoverReaction(false)}
                   >
-                    {messageData?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele,index) => (
-                      <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_heart_reaction_${index}`}>{ele}</div>
+                    {messageData?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele, index) => (
+                      <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_heart_reaction_${index}`}>
+                        {ele}
+                      </div>
                     ))}
                     <div
                       className={`absolute z-30 bottom-8 flex-col items-end px-2 py-1 bg-white shadow-xl transition ease-in-out ${
                         isHoverReaction ? 'opacity-100 visible' : 'opacity-0 invisible'
                       }`}
                     >
-                      {messageData?.reaction!.map((ele,index) => (
+                      {messageData?.reaction!.map((ele, index) => (
                         <div className="mx-0.5 whitespace-nowrap text-black" key={`current_heart_reactionlist_${index}`}>
                           {ele.emoji.emoji} <span className=" text-xs">{ele.from}</span>
                         </div>
@@ -201,9 +208,9 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
             </div>
           ) : (
             <div className={`flex flex-col  ${isForward ? 'items-end' : 'items-start'} `}>
-              {group && !isForward && !messageData.reply && <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid].username}</div>}
+              {group && !isForward && !messageData.reply && (messageData.uid !== previousUid || previousHasReply)  && <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid].username}</div>}
               {replyBlock}
-              <div className={`z-10 border rounded-3xl bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}>
+              <div className={`z-10 border   ${(messageData.uid !== previousUid || previousHasReply || messageData.reply) ? isForward? "rounded-tr-3xl ":"rounded-tl-3xl":""} ${(messageData.uid !== nextUid || nextHasReply || messageData.reply)? isForward?"rounded-br-3xl":"rounded-bl-3xl":""}  ${isForward ? `rounded-l-3xl rounded-r-lg ` : ` rounded-r-3xl rounded-l-lg`}   bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}>
                 <div className="relative px-3  py-2 max-w-xs flex flex-wrap break-all  items-center justify-center">
                   <div className="flex items-center ">{messageData.message}</div>
                   {messageData?.reaction?.length > 0 && (
@@ -212,15 +219,17 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
                       onMouseEnter={() => setIsHoverReaction(true)}
                       onMouseLeave={() => setIsHoverReaction(false)}
                     >
-                      {messageData?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele,index) => (
-                        <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_reaction_${index}`}>{ele}</div>
+                      {messageData?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele, index) => (
+                        <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_reaction_${index}`}>
+                          {ele}
+                        </div>
                       ))}
                       <div
                         className={`absolute z-30 bottom-8 flex-col items-end px-2 py-1 bg-white shadow-xl transition ease-in-out ${
                           isHoverReaction ? 'opacity-100 visible' : 'opacity-0 invisible'
                         }`}
                       >
-                        {messageData?.reaction!.map((ele,index) => (
+                        {messageData?.reaction!.map((ele, index) => (
                           <div className="mx-0.5 whitespace-nowrap" key={`current_reactionlist_${index}`}>
                             {ele.emoji.emoji} <span className=" text-xs">{ele.from}</span>
                           </div>
@@ -240,8 +249,8 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
                     isForward ? '-right-8' : '-left-12'
                   } absolute -top-14  z-50  w-64 h-12 shadow-lg rounded-full bg-white flex items-center justify-around px-2`}
                 >
-                  {emojiList.map((ele,index) => (
-                    <span className="text-3xl cursor-pointer " key={`reaction_selection_${index}`}  onMouseDownCapture={() => setEmoji(ele)}>
+                  {emojiList.map((ele, index) => (
+                    <span className="text-3xl cursor-pointer " key={`reaction_selection_${index}`} onMouseDownCapture={() => setEmoji(ele)}>
                       {ele.emoji}
                     </span>
                   ))}
@@ -254,7 +263,10 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
               >
                 <i className="far fa-smile"></i>
               </button>
-              <div className="hover:text-gray-500" onClick={() => onReply( messageData.id, memberRef[messageData.uid].username , messageData.uid, messageData.message)}>
+              <div
+                className="hover:text-gray-500"
+                onClick={() => onReply(messageData.id, memberRef[messageData.uid].username, messageData.uid, messageData.message)}
+              >
                 <i className="fas fa-reply"></i>
               </div>
             </div>
