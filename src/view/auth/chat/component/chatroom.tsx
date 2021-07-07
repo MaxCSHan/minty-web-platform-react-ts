@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react'
+import { Link} from "react-router-dom";
+
 // import { getMessages } from '../../../../services/userService'
 import Message from '../../../../interface/IMessage'
 import User from '../../../../interface/IUser'
@@ -338,9 +340,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       <Chatblock
         key={`Chatblock_outer_${index}`}
         previousUid={messages[index - 1]?.uid}
-        previousHasReply={messages[index - 1]?.reply?.to?.length! > 0}
+        previousHasReply={messages[index - 1]?.reply?.to?.length! > 0 || messages[index - 1]?.heart}
         nextUid={messages[index + 1]?.uid}
-        nextHasReply={messages[index + 1]?.reply?.to?.length! > 0}
+        nextHasReply={messages[index + 1]?.reply?.to?.length! > 0  || messages[index +1]?.heart}
         group={forwardingRoom?.group}
         memberRef={memberRef}
         onReply={onReply}
@@ -363,8 +365,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   ))
 
   const messengerComponent = (
-    <div className="flex flex-col flex-grow overflow-hidden transition-all duration-150 ease-in-out">
-      <div className="flex flex-col flex-grow px-4 pt-4 overflow-x-hidden overflow-y-scroll">
+    <Fragment>
+    <div className="flex flex-col flex-grow flex-shrink overflow-hidden  transition-all duration-150 ease-in-out">
+      <div className="flex flex-col flex-grow flex-shrink px-4 pt-4 overflow-x-hidden overflow-y-scroll">
         {messages && messages.length > 0 ? messagesList : messagesLoading}
       </div>
       {typingRef && (
@@ -386,47 +389,16 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           )}
         </div>
       )}
-      <div className={`${replyMessage?.to.length! > 0 ? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
-        {replyMessage?.to.length! > 0 && (
-          <div className="w-full h-16 px-4  flex flex-col ">
-            <div className="flex items-center justify-between">
-              <div>
-                Replying to:
-                <span className="font-semibold"> {replyMessage!.to} </span>
-              </div>
-              <div className="text-gray-400 hover:text-gray-600" onClick={() => resetReply()}>
-                <i className="fas fa-times"></i>
-              </div>
-            </div>
-            <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">{replyMessage!.message}</div>
-          </div>
-        )}
-        <div className="w-full h-10 px-4 border rounded-full flex items-center ">
-          {/* <div className="w-10">front</div> */}
-          <div className="ml-2 flex-grow">
-            <input
-              className="w-full outline-none"
-              value={inputValue}
-              placeholder="Message..."
-              ref={inputRef}
-              onChange={(e) => handleInput(e)}
-              onKeyPress={(e) => handleKeyPress(e)}
-              onFocus={() => isTyping(true)}
-              onBlur={() => isTyping(false)}
-            ></input>
-          </div>
-          <div className="w-8 ml-2 " onClick={() => handleHeartClick()}>
-            <i className="sm:text-2xl far fa-heart cursor-pointer "></i>
-          </div>
-        </div>
-      </div>
+      
     </div>
+    
+    </Fragment>
   )
   const detailedComponent = (
-    <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col">
-      <div className="h-16 w-full flex  items-center justify-center px-8 border-b">
+    <div className="flex-grow w-screen overflow-y-scroll sm:w-160 bg-white  border flex flex-col">
+      <div className="h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
         <div className="h-16  w-full flex flex-col items-start justify-center">
-          <div className="w-full flex items-center text-xl font-semibold">Chatroom settings</div>
+          <div className="w-full flex items-center text-xl font-semibold ml-4 sm:ml-0">Chatroom settings</div>
         </div>
         <div
           className="cursor-pointer text-lg text-gray-400 hover:text-gray-600 bg-gray-600 hover:bg-gray-600 rounded-full h-10 w-10 flex items-center justify-center"
@@ -474,8 +446,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   )
 
   const chatroomTemplate = (
-    <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col">
-      <div className="h-16 w-full flex  items-center justify-center px-8 border-b">
+    <div className=" overflow-hidden  w-screen sm:w-160 bg-white  border flex flex-col">
+      <div className="h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
+      <Link to="/chat/inbox" ><div className="mx-4 sm:hidden"><i className="fas fa-chevron-left "></i></div></Link> 
         <div className="h-16  w-full flex flex-col items-start justify-center">
           <div className="w-full flex items-center text-xl font-semibold">{forwardingRoom ? forwardingRoom.title : 'Select a user'}</div>
           <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
@@ -488,6 +461,40 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         </div>
       </div>
       {messengerComponent}
+      <div className={`${replyMessage?.to.length! > 0 ? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
+        {replyMessage?.to.length! > 0 && (
+          <div className="w-full h-16 px-4  flex flex-col ">
+            <div className="flex items-center justify-between">
+              <div>
+                Replying to:
+                <span className="font-semibold"> {replyMessage!.to} </span>
+              </div>
+              <div className="text-gray-400 hover:text-gray-600" onClick={() => resetReply()}>
+                <i className="fas fa-times"></i>
+              </div>
+            </div>
+            <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">{replyMessage!.message}</div>
+          </div>
+        )}
+        <div className=" flex   w-full h-10 px-4 border rounded-full  items-center ">
+          {/* <div className="w-10">front</div> */}
+          <div className="ml-2 flex-grow">
+            <input
+              className="w-full outline-none"
+              value={inputValue}
+              placeholder="Message..."
+              ref={inputRef}
+              onChange={(e) => handleInput(e)}
+              onKeyPress={(e) => handleKeyPress(e)}
+              onFocus={() => isTyping(true)}
+              onBlur={() => isTyping(false)}
+            ></input>
+          </div>
+          <div className="w-8 ml-2 " onClick={() => handleHeartClick()}>
+            <i className="sm:text-2xl far fa-heart cursor-pointer "></i>
+          </div>
+        </div>
+      </div>
     </div>
   )
 

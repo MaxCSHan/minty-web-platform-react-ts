@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 // import { getUsers,getChatrooms } from "../../../../services/userService";
 import IChatroom from "../../../../interface/IChatroom";
 import {chatRef} from "../../../../setup/setupFirebase"
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { loginUser } from '../../../../services/authService'
 
 
@@ -15,6 +15,13 @@ type ChatlistProps = {
 
 
 const Chatlist = ({ myUsername,onSelectedRoom }: ChatlistProps) => {
+
+  /**
+   * RWD Check: If entered a room then hide.
+   */
+   const location = useLocation();
+   const locationChecker = () => location.pathname === "/chat/inbox"
+  //
   const [inputValue, setInputValue] = useState("");
   const [selectedRoom, setSelectedRoom] = useState<IChatroom>();
 
@@ -121,8 +128,8 @@ const Chatlist = ({ myUsername,onSelectedRoom }: ChatlistProps) => {
   
 
   return (
-    <div className="w-screen sm:w-96 flex h-16 sm:h-auto">
-      <div className="w-full bg-white border hidden sm:flex flex-col items-center">
+    <div className={`w-screen sm:w-96 sm:flex ${locationChecker()?"":"hidden"}`}>
+      <div className="w-full bg-white border  flex flex-col items-center">
         <div className="flex flex-col w-full">
           <div className="relative h-16 flex items-center justify-center font-semibold text-lg border-b">
             {myUsername} <div className="absolute right-10 h-10 w-10 flex items-center justify-center cursor-pointer rounded-full  hover:bg-gray-50"><i className="fas fa-paper-plane"></i></div>
@@ -140,7 +147,6 @@ const Chatlist = ({ myUsername,onSelectedRoom }: ChatlistProps) => {
           {roomList.length>0?searchArea():loadingListComponent}
         </div>
       </div>
-      <div className="sm:hidden">Hi</div>
     </div>
   );
 };

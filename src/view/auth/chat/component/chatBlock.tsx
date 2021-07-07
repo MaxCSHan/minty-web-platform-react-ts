@@ -150,7 +150,7 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
         {messageData.reply.uid === loginUser().uid ? 'You' : messageData.reply.from} replied to
         <span className="font-semibold"> {messageData.reply.toId === loginUser().uid ? 'You' : messageData.reply.to}</span>
       </div>
-      <div className="bg-gray-200 rounded-full px-3 py-2 text-sm text-gray-700 max-w-xs whitespace-nowrap overflow-hidden overflow-ellipsis">
+      <div className="max-w-3/4  sm:max-w-xs bg-gray-200 rounded-full px-3 py-2 text-sm text-gray-700  whitespace-nowrap overflow-hidden overflow-ellipsis">
         {messageData.reply.message}
       </div>
     </div>
@@ -166,7 +166,7 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
       {dateController(messageData)}
 
       <div
-        className={`flex w-full ${isForward ? 'flex-row-reverse' : 'flex-row'}`}
+        className={`flex w-full  ${isForward ? 'flex-row-reverse' : 'flex-row'}`}
         id={`message_${messageData.id}`}
         key={`message_${messageData.id}`}
         onMouseEnter={() => setIsHover(true)}
@@ -206,11 +206,11 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
               </div>
             </div>
           ) : (
-            <div className={`flex flex-col  ${isForward ? 'items-end' : 'items-start'} `}>
+            <div className={`flex flex-col  sm:max-w-none 	 ${isForward ? 'items-end' : 'items-start'} `}>
               {group && !isForward && !messageData.reply && (messageData.uid !== previousUid || previousHasReply)  && <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid].username}</div>}
               {replyBlock}
               <div className={`z-10 border   ${(messageData.uid !== previousUid || previousHasReply || messageData.reply) ? isForward? "rounded-tr-3xl ":"rounded-tl-3xl":""} ${(messageData.uid !== nextUid || nextHasReply || messageData.reply)? isForward?"rounded-br-3xl":"rounded-bl-3xl":""}  ${isForward ? `rounded-l-3xl rounded-r-lg ` : ` rounded-r-3xl rounded-l-lg`}   bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}>
-                <div className="relative px-3  py-2 max-w-xs flex flex-wrap break-all  items-center justify-center">
+                <div className="relative px-3  py-2 max-w-mini sm:max-w-xs flex   break-all  items-center justify-center">
                   <div className="flex items-center ">{messageData.message}</div>
                   {messageData?.reaction?.length > 0 && (
                     <div
@@ -241,7 +241,7 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
             </div>
           )}
           {(isHover || onClikReaction) && (
-            <div className={`relative mx-2 w-16 flex justify-between text-2xl text-gray-400 ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
+            <div className={`relative mx-2 w-12 sm:w-16 flex justify-between  text-xl sm:text-2xl text-gray-400 ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
               {onClikReaction && (
                 <div
                   className={`${

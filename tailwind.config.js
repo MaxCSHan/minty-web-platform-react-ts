@@ -25,9 +25,6 @@ module.exports = {
       '240': '60rem',
       '280': '70rem',
       '320': '80rem',
-
-      
-
     },
     extend: {
       spacing: {
@@ -63,7 +60,14 @@ module.exports = {
        ,
        animation:{
         "wiggle":"wiggle 0.2s ease-in-out infinite"
-       }
+       },
+       maxWidth: {
+         'mini':"12.5rem",
+         '3/4': '75%',
+        },
+        minWidth: {
+          'mini': '4rem',
+         }
     },
   },
   variants: {
