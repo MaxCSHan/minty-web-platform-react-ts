@@ -74,7 +74,6 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
 
   useEffect(() => {
     setMessageData(message)
-    console.log(message.uid, nextUid)
   }, [message])
 
   // useEffect(() => {

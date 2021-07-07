@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, Fragment } from 'react'
 // import { getMessages } from '../../../../services/userService'
 import Message from '../../../../interface/IMessage'
 import User from '../../../../interface/IUser'
@@ -6,10 +6,10 @@ import Chatblock from './chatBlock'
 import IChatroom from '../../../../interface/IChatroom'
 import { chatRef } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
-import {  useParams } from 'react-router-dom'
-import StringMap from "../../../../interface/StringMap"
-import IMember from "../../../../interface/IMember"
-import IReplyMessage  from "../../../../interface/IReplyMessage"
+import { useParams } from 'react-router-dom'
+import StringMap from '../../../../interface/StringMap'
+import IMember from '../../../../interface/IMember'
+import IReplyMessage from '../../../../interface/IReplyMessage'
 type ChatroomProps = {
   userSelected?: User
   roomSelected?: string
@@ -18,68 +18,78 @@ type ChatroomProps = {
   selfIntro?: string
 }
 
-
-
 const tempRef = '-Mdtq1ZeBs48gjlT4ZdQ'
 
-const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
-  const  {id}=  useParams<Record<string, string | undefined>>();
+const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
+  const { id } = useParams<Record<string, string | undefined>>()
 
   // const [forwardingUser, setForwardingUser] = useState<User>(
   //   userSelected || ({} as User)
   // );
   const [roomId, setRoomId] = useState(id!)
-  const [myUserName, setMyUserName] = useState("")
+  const [myUserName, setMyUserName] = useState('')
   const [memberRef, setMemberRef] = useState<StringMap<IMember>>({})
   const [members, setMembers] = useState<IMember[]>([])
+  const [typingRef, setTypingRef] = useState<StringMap<boolean>>()
+  const [readRef, setReadRef] = useState<StringMap<string[]>>()
 
   const [forwardingRoom, setForwardingRoom] = useState<IChatroom>({} as IChatroom)
   const [isDetailed, setIsDetailed] = useState(false)
   const [messages, setMes] = useState<Message[]>([])
   const [stay, setStay] = useState(false)
+  // const [isTyping,setIsTyping] = useState(false)
 
-  
-
-  useEffect(()=>{
+  useEffect(() => {
     // console.log("Ref checker",tempRef,id)
-    setRoomId(id!);
+    setRoomId(id!)
     setMyUserName(loginUser()?.username)
     // console.log("Log In Data =>> ",loginUser(),loginUser().username,myUserName)
-    chatRef.child(`chatrooms/${id}/members/${loginUser().uid}/`).set({username:loginUser()?.fullName,avatar:loginUser().avatar})
-    
+    chatRef.child(`chatrooms/${id}/members/${loginUser().uid}/`).set({ username: loginUser()?.fullName, avatar: loginUser().avatar })
+
     chatRef.child(`chatrooms/${id}/members`).on('value', (snapshot) => {
-      const data = snapshot.val();
+      const data = snapshot.val()
       if (data) {
-      setMemberRef(data)
-      // Object.keys(data).map((key) => [key, data[key]]).forEach(ele =>{
-      //   const updateMembers = [...members,{...(ele[1] as IMember), uid:ele[0] as string} as IMember];
-      //   console.log("updateMembers =>",updateMembers);
-      //    setMembers(updateMembers);
-      //   }) ;
-       const arr =  Object.keys(data).map((key) => [key, data[key]]).map(ele => ({...(ele[1] as IMember), uid:ele[0] as string} as IMember));
-      //  console.log(arr)
-         setMembers(arr);
-      // console.log("members",members)
+        setMemberRef(data)
+        // Object.keys(data).map((key) => [key, data[key]]).forEach(ele =>{
+        //   const updateMembers = [...members,{...(ele[1] as IMember), uid:ele[0] as string} as IMember];
+        //   console.log("updateMembers =>",updateMembers);
+        //    setMembers(updateMembers);
+        //   }) ;
+        const arr = Object.keys(data)
+          .map((key) => [key, data[key]])
+          .map((ele) => ({ ...(ele[1] as IMember), uid: ele[0] as string } as IMember))
+        //  console.log(arr)
+        setMembers(arr)
+        // console.log("members",members)
       }
-
     })
-    
+  }, [id])
 
-  },[id])
-
-
+  useEffect(() => {
+    chatRef.child(`chatrooms/${id}/read`).on('value', (snapshot) => {
+      const data: StringMap<string>= snapshot.val()
+      const objectFlip =(obj:StringMap<string>) => {
+        return Object.keys(obj).reduce((ret:StringMap<string[]>, key) => {
+          if(ret[obj[key]]) ret[obj[key]] = [...ret[obj[key]],key]
+          else ret[obj[key]] = [key]
+          console.log(ret)
+          return ret;
+        }, {});
+      }
+      setReadRef(objectFlip(data));
+    })
+  }, [])
 
   useEffect(() => {
     chatRef.child(`chatrooms/${id}`).on('value', (snapshot) => {
       const data = snapshot.val() as IChatroom
-      setForwardingRoom(data);
+      setForwardingRoom(data)
+      setTypingRef(data.isTyping)
       // console.log("setForwardingRoom =>>",forwardingRoom)
-
     })
 
     // setForwardingUser(userSelected!);
     setIsDetailed(false)
-
 
     setMes([])
     chatRef.child(`Messages/${tempRef}`).on('value', (snapshot) => {
@@ -115,8 +125,8 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const [replyMessage, setReplyMessage] = useState<IReplyMessage>()
-  const onReply = (id: string, to: string,toId:string, message: string) => {
-    setReplyMessage({ id,uid:loginUser().uid, from: myUserName, to, toId, message } as IReplyMessage)
+  const onReply = (id: string, to: string, toId: string, message: string) => {
+    setReplyMessage({ id, uid: loginUser().uid, from: myUserName, to, toId, message } as IReplyMessage)
     inputRef!.current?.focus()
   }
 
@@ -157,12 +167,10 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
     scrollTo(messages[messages.length - 1]?.id)
   }
 
-  const updateLatest = (newMessage: string, lastActiveDate: number,latestMessageId:string) => {
+  const updateLatest = (newMessage: string, lastActiveDate: number, latestMessageId: string) => {
     chatRef.child(`chatrooms/${roomId}/latestMessage`).set(newMessage)
     chatRef.child(`chatrooms/${roomId}/latestActiveDate`).set(lastActiveDate)
     chatRef.child(`chatrooms/${roomId}/latestMessageId`).set(latestMessageId)
-
-    
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -187,12 +195,12 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
           message: inputValue,
           date: new Date().getTime(),
           timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
-          reply:  replyMessage?.to.length?replyMessage : null,
+          reply: replyMessage?.to.length ? replyMessage : null,
           id: newMessageRef.key,
           uid: loginUser().uid,
           reaction: []
         })
-        updateLatest(inputValue, new Date().getTime(),newMessageRef?.key!)
+        updateLatest(inputValue, new Date().getTime(), newMessageRef?.key!)
         setInputValue('')
         resetReply()
       }
@@ -220,22 +228,27 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
       message: '❤️',
       date: new Date().getTime(),
       timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
-      reply:  replyMessage?.to.length?replyMessage : null,
+      reply: replyMessage?.to.length ? replyMessage : null,
       id: newMessageRef.key,
       uid: loginUser().uid,
       heart: true,
       reaction: []
     })
-    updateLatest('❤️', new Date().getTime(),newMessageRef?.key!)
+    updateLatest('❤️', new Date().getTime(), newMessageRef?.key!)
     setInputValue('')
     resetReply()
   }
 
+  const isTyping = (action: boolean) => {
+    chatRef.child(`chatrooms/${id}/isTyping/${loginUser().uid}/`).set(action)
+  }
+
+  const showTyping = () => Object.values(typingRef!).reduce((accu, curr) => accu || curr, false)
+
   useEffect(() => {
     if (messages?.length > 0 && !stay) scrollToBottom()
     setStay(false)
-    if (messages?.length >0) chatRef.child(`chatrooms/${id}/read/${loginUser().uid}/`).set(messages[messages.length-1].id)
-
+    if (messages?.length > 0) chatRef.child(`chatrooms/${id}/read/${loginUser().uid}/`).set(messages[messages.length - 1].id)
   }, [messages])
 
   const starterTemplate = (
@@ -312,29 +325,59 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
   // );
 
   const messagesList = messages?.map((ele: Message, index) => (
-    <Chatblock
-    key={`Chatblock_outer_${index}`}
-      previousUid={messages[index-1]?.uid}
-      previousHasReply={messages[index-1]?.reply?.to?.length!>0}
-      nextUid={messages[index+1]?.uid}
-      nextHasReply={messages[index+1]?.reply?.to?.length!>0}
-      group={forwardingRoom?.group}
-      memberRef={memberRef}
-      onReply={onReply}
-      jumpTo={jumpTo}
-      avatar={memberRef[ele.uid]?.avatar || forwardingRoom?.roomPhoto}
-      isForward={ele.uid === loginUser().uid}
-      roomId={tempRef}
-      message={ele}
-      myUserName={myUserName}
-      onReaction={onReaction}
-    ></Chatblock>
+    <Fragment>
+      <Chatblock
+        key={`Chatblock_outer_${index}`}
+        previousUid={messages[index - 1]?.uid}
+        previousHasReply={messages[index - 1]?.reply?.to?.length! > 0}
+        nextUid={messages[index + 1]?.uid}
+        nextHasReply={messages[index + 1]?.reply?.to?.length! > 0}
+        group={forwardingRoom?.group}
+        memberRef={memberRef}
+        onReply={onReply}
+        jumpTo={jumpTo}
+        avatar={memberRef[ele.uid]?.avatar || forwardingRoom?.roomPhoto}
+        isForward={ele.uid === loginUser().uid}
+        roomId={tempRef}
+        message={ele}
+        myUserName={myUserName}
+        onReaction={onReaction}
+      ></Chatblock>
+        {  readRef && readRef![ele.id] && 
+          <div className=" flex justify-end  items-center">
+              { readRef[ele.id].map( uid => 
+                <img className="w-6 h-6 mx-1 rounded-full" alt="" src={memberRef[uid].avatar}></img>)}
+          </div>
+          
+        }
+    </Fragment>
   ))
 
   const messengerComponent = (
-    <div className="flex flex-col flex-grow overflow-hidden">
-      <div className="flex flex-col flex-grow px-4 pt-4 overflow-x-hidden overflow-y-scroll">{messages && messages.length > 0 ? messagesList : messagesLoading}</div>
-      <div className={`${ replyMessage?.to.length! > 0? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
+    <div className="flex flex-col flex-grow overflow-hidden transition-all duration-150 ease-in-out">
+      <div className="flex flex-col flex-grow px-4 pt-4 overflow-x-hidden overflow-y-scroll">
+        {messages && messages.length > 0 ? messagesList : messagesLoading}
+      </div>
+      {typingRef && (
+        <div className={`flex items-center px-4 transtion-all duration-200 ease-in-out ${showTyping() ? 'opacity-100 h-14 pt-4 ' : 'opacity-0 h-0'}`}>
+          {members.map((ele, index) => {
+            return typingRef[ele.uid] ? (
+              <div className="relative h-8 w-8 mr-2">
+                <img className="w-full h-full rounded-full " alt="" src={ele.avatar} />
+                <div className="w-full h-full absolute top-0 left-0 animate-ping  border rounded-full"> </div>
+              </div>
+            ) : (
+              ''
+            )
+          })}
+          {showTyping() && (
+            <div>
+              is typing <span className="animate-ping "> ... </span>
+            </div>
+          )}
+        </div>
+      )}
+      <div className={`${replyMessage?.to.length! > 0 ? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
         {replyMessage?.to.length! > 0 && (
           <div className="w-full h-16 px-4  flex flex-col ">
             <div className="flex items-center justify-between">
@@ -359,6 +402,8 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
               ref={inputRef}
               onChange={(e) => handleInput(e)}
               onKeyPress={(e) => handleKeyPress(e)}
+              onFocus={() => isTyping(true)}
+              onBlur={() => isTyping(false)}
             ></input>
           </div>
           <div className="w-8 ml-2 " onClick={() => handleHeartClick()}>
@@ -398,7 +443,7 @@ const Chatroom = ({  userSelected, roomSelected }: ChatroomProps) => {
         </div>
         <div className="flex flex-col">
           {members &&
-            members.map((member:IMember, index) => (
+            members.map((member: IMember, index) => (
               <div className="mx-2 my-2 flex items-center" key={`member_${index}`}>
                 <img className="h-14 w-14 bg-red-200 rounded-full" alt="" src={member.avatar} />
                 <div className="ml-4">{member.username}</div>

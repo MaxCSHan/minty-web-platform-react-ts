@@ -11,6 +11,7 @@ interface IChatroom {
     latestActiveDate:number;
     messages:Message[];
     read:StringMap<string>;
+    isTyping?:StringMap<boolean>;
     loginStatus:boolean;
     group:boolean;
     createdDate:string;
