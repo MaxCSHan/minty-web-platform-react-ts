@@ -93,14 +93,14 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
     // }
     // return "";
     return ele.timeHint
-      ? [mesDate].map(
+      && [mesDate].map(
           (ele) =>
-            `${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([], {
+          <div className={`text-center text-xs text-gray-600 ${messageData.timeHint ? 'my-3' : ''}`}>{`${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit'
-            })}`
+            })}`}</div>
         )
-      : ''
+      
   }
 
   // useEffect(()=>{
@@ -139,10 +139,27 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
     }
   }
 
+  const replyBlock = 
+  (
+    messageData.reply &&<div
+      className={`max-w-xs  flex flex-col -mb-2  ${isForward ? 'items-end ' : 'items-start ml-4'}`}
+      onClick={() => onCheckReply()}
+    >
+      <div className="text-sm  whitespace-nowrap">
+        {messageData.reply.uid === loginUser().uid ? 'You' : messageData.reply.from} replied to
+        <span className="font-semibold"> {messageData.reply.toId === loginUser().uid  ? 'You' : messageData.reply.to}</span>
+      </div>
+      <div className="bg-gray-200 rounded-full px-3 py-2 text-sm text-gray-700 max-w-xs whitespace-nowrap overflow-hidden overflow-ellipsis">
+        {messageData.reply.message}
+      </div>
+    </div>
+  )
+
+
   const block = (
-    <div className={`transition-all ease-in-out duration-100 ${messageData?.reply?.id ? 'mt-3' : ""} ${messageData?.reaction?.length > 0?"mb-5":'mb-0'}`}>
+    <div className={`transition-all ease-in-out duration-100 ${messageData?.reply?.id ? 'mt-3' : ""} ${messageData?.reaction?.length > 0?"mb-9":'mb-3'}`}>
       {/* date */}
-      <div className={`text-center text-xs text-gray-600 ${messageData.timeHint ? 'my-3' : ''}`}>{dateController(messageData)}</div>
+     {dateController(messageData)}
 
       <div
         className={`flex w-full ${isForward ? 'flex-row-reverse' : 'flex-row'}`}
@@ -151,10 +168,10 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
       >
-        <div className={`relative  flex items-center  ${messageData.reply ? 'mt-12' : 'my-1'}  ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div className={`relative  flex items-center ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
           {!isForward && <img className="h-10 w-10 border rounded-full" alt="" src={avatar!} />}
           {messageData.heart ? (
-            <div className={`flex flex-col mx-4 text-8xl text-red-500  ${isForward ? 'items-end' : ''}`}>
+            <div className={`flex flex-col mx-4 text-8xl text-red-500  ${isForward ? 'items-end' : 'items-start'}`}>
               {group && !isForward && <div className="text-xs text-gray-600">{memberRef[message.uid].username}</div>}
               <div className="relative">
                 <i className=" fas fa-heart"></i>
@@ -183,25 +200,12 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
               </div>
             </div>
           ) : (
-            <div className={`flex flex-col  ${isForward ? 'items-end' : ''} `}>
+            <div className={`flex flex-col  ${isForward ? 'items-end' : 'items-start'} `}>
               {group && !isForward && !messageData.reply && <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid].username}</div>}
-              {messageData.reply && (
-                <div
-                  className={`absolute max-w-xs  flex flex-col  ${isForward ? 'items-end -top-12 right-2 ' : 'items-start -top-12 left-10 '}`}
-                  onClick={() => onCheckReply()}
-                >
-                  <div className="text-sm  whitespace-nowrap">
-                    {messageData.reply.uid === loginUser().uid ? 'You' : messageData.reply.from} replied to
-                    <span className="font-semibold"> {messageData.reply.toId === loginUser().uid  ? 'You' : messageData.reply.to}</span>
-                  </div>
-                  <div className="bg-gray-200 rounded-full px-3 py-2 text-sm text-gray-700 max-w-xs whitespace-nowrap overflow-hidden overflow-ellipsis">
-                    {messageData.reply.message}
-                  </div>
-                </div>
-              )}
-              <div className={`z-10 border rounded-3xl bg-white mx-2 flex ${isForward ? 'flex-row-reverse' : ''}  `}>
+              {replyBlock}
+              <div className={`z-10 border rounded-3xl bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}>
                 <div className="relative px-3  py-2 max-w-xs flex flex-wrap break-all  items-center justify-center">
-                  <div className="flex items-center">{messageData.message}</div>
+                  <div className="flex items-center ">{messageData.message}</div>
                   {messageData?.reaction?.length > 0 && (
                     <div
                       className="absolute z-20 -bottom-6 right-2 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
@@ -229,7 +233,7 @@ const Chatblock = ({ group,memberRef, myUserName, message, roomId, isForward, av
             </div>
           )}
           {(isHover || onClikReaction) && (
-            <div className={`relative mx-2 w-16 flex justify-between text-2xl text-gray-400 ${isForward ? 'flex-row-reverse' : ''}`}>
+            <div className={`relative mx-2 w-16 flex justify-between text-2xl text-gray-400 ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
               {onClikReaction && (
                 <div
                   className={`${

@@ -19,7 +19,7 @@ const Container = () => {
           <Route exact path="/" component={Home}/>
           <Route  path="/Onboarding" component={Onboarding} exact/>
           <Route  path="/Search" component={Search}/>
-          <Route  path="/User" component={User}/>
+          <Route  path="/User/:userId" component={User}/>
           <Route  path="/Chat" component={Chat}/>
         </Switch>
       </div>

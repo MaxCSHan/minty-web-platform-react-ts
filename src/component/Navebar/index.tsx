@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useLocation, useHistory } from "react-router-dom";
-import { logout } from "../../services/authService";
+import { loginUser, logout } from "../../services/authService";
 
 const usePathname = () => {
   const location = useLocation();
@@ -163,7 +163,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        <Link to="/User">
+        <Link to={`/User/${loginUser()?.username}`}>
           <div>
             <i className=" sm:text-2xl fas fa-user-circle"></i>
           </div>
