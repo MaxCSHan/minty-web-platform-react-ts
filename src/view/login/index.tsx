@@ -7,11 +7,9 @@ const Login  = ()=> {
   useEffect(()=> console.log("Login desu"),[])
 
   return (
-    <BrowserRouter>
         <Switch>
         <Route  component={Auth} path="/auth" exact />
         </Switch>
-        </BrowserRouter>
   );
 }
 

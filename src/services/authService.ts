@@ -53,6 +53,7 @@ const loginWithGoogle = async () => {
 
 const isLoggedIn = () => {
   const user = JSON.parse(sessionStorage.getItem('user')!)
+  console.log(user)
   return user !== null
 }
 

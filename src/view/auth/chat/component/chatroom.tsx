@@ -243,7 +243,10 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     chatRef.child(`chatrooms/${id}/isTyping/${loginUser().uid}/`).set(action)
   }
 
-  const showTyping = () => Object.values(typingRef!).reduce((accu, curr) => accu || curr, false)
+  const showTyping = () => Object.keys(typingRef!)
+  .filter(uid => uid !== loginUser().uid)
+  .map( ele => typingRef![ele])
+  .reduce((accu, curr) => accu || curr, false) 
 
   useEffect(() => {
     if (messages?.length > 0 && !stay) scrollToBottom()

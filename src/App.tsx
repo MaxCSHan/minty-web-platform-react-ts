@@ -11,7 +11,7 @@ import Login from './view/login/index'
 
 import Container from './view/auth'
 import PrivateRoute from "./router/PrivateRoute"
-import { isLoggedIn,firbaseAuth } from "./services/authService"
+import { isLoggedIn ,firbaseAuth } from "./services/authService"
 
 
 // interface stateType {
@@ -19,7 +19,8 @@ import { isLoggedIn,firbaseAuth } from "./services/authService"
 // }
 const App: React.FC = ()=> {
   const [isAuthenticated,setIsAuthenticated] =useState(isLoggedIn());
-  useEffect(()=>setIsAuthenticated(isLoggedIn()),[])
+  useEffect(()=> {setIsAuthenticated(isLoggedIn())},[])
+
   firbaseAuth.onAuthStateChanged((user)=> { setIsAuthenticated(isLoggedIn() || user!==null)})
   // type locationState ={
   //   from:string
