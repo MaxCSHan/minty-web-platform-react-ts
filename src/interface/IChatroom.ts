@@ -9,12 +9,12 @@ interface IChatroom {
     latestMessage:string;
     latestMessageId:string;
     latestActiveDate:number;
-    messages:Message[];
-    read:StringMap<string>;
+    messages:string;
+    read?:StringMap<string>;
     isTyping?:StringMap<boolean>;
     loginStatus:boolean;
     group:boolean;
-    createdDate:string;
+    createdDate:number;
     intro?:string;
 
   }

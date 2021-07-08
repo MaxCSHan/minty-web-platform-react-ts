@@ -20,14 +20,10 @@ type ChatroomProps = {
   selfIntro?: string
 }
 
-const tempRef = '-Mdtq1ZeBs48gjlT4ZdQ'
 
 const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const { id } = useParams<Record<string, string | undefined>>()
-
-  // const [forwardingUser, setForwardingUser] = useState<User>(
-  //   userSelected || ({} as User)
-  // );
+  const [tempRef,setTempRef] =  useState("")
   const [roomId, setRoomId] = useState(id!)
   const [myUserName, setMyUserName] = useState('')
   const [memberRef, setMemberRef] = useState<StringMap<IMember>>({})
@@ -45,6 +41,39 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   {  
       isTyping(false);
   });
+
+  ///Checker
+  useEffect(() => {
+console.log("memberRef =>",memberRef)
+  },[memberRef])
+  useEffect(() => {
+    console.log("messages =>",messages)
+      },[messages])
+
+  /// Hooks
+  useEffect(() => {
+   
+
+  },[])
+
+  useEffect(()=>{
+    if(tempRef){
+      chatRef.child(`Messages/${tempRef}`).on('value', (snapshot) => {
+        const data = snapshot.val()
+        console.log("Messages raw data =>",data)
+        if (data) {
+          const arr = Object.keys(data)
+            .map((key) => [key, data[key]])
+            .map((ele) => ({ ...ele[1], id: ele[0] })) as Message[]
+            console.log("Messages process =>",arr)
+          setMes(arr)
+          console.log("Messages set called =>")
+  
+        }
+      })
+    }
+    
+  },[tempRef])
 
   useEffect(() => {
     // console.log("Ref checker",tempRef,id)
@@ -70,9 +99,13 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         // console.log("members",members)
       }
     })
-  }, [id])
+    chatRef.child(`chatrooms/${id}/messages`).once('value', (snapshot) => {
+      const data:string= snapshot.val()
+      console.log("messages id=>",data)
+      setTempRef(data);
+    })
 
-  useEffect(() => {
+
     chatRef.child(`chatrooms/${id}/read`).on('value', (snapshot) => {
       const data: StringMap<string>= snapshot.val()
       const objectFlip =(obj:StringMap<string>) => {
@@ -84,42 +117,32 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       }
       setReadRef(objectFlip(data));
     })
-    return function cleanup() {
-    };
-  },[])
+  }, [id])
+
+
 
   useEffect(() => {
     chatRef.child(`chatrooms/${id}`).on('value', (snapshot) => {
       const data = snapshot.val() as IChatroom
       setForwardingRoom(data)
       setTypingRef(data.isTyping)
-      // console.log("setForwardingRoom =>>",forwardingRoom)
     })
 
     // setForwardingUser(userSelected!);
     setIsDetailed(false)
 
-    setMes([])
-    chatRef.child(`Messages/${tempRef}`).on('value', (snapshot) => {
-      const data = snapshot.val()
-      // console.log(data)
-      if (data) {
-        const arr = Object.keys(data)
-          .map((key) => [key, data[key]])
-          .map((ele) => ({ ...ele[1], id: ele[0] })) as Message[]
-        setMes(arr)
-      }
-    })
-
-    // setMes(roomSelected?.messages!)
-    // console.log('CHeck in chatroom====> ', forwardingRoom)
-
-    // getMessages(roomSelected?.id!).subscribe((res) => {
-    //   console.log("Success =>", res);
-    //   setMes(res);
-    //   scrollToBottom();
-    // });
   }, [roomId])
+
+  useEffect(() => {
+    if (messages?.length > 0 && !stay) scrollToBottom()
+    setStay(false)
+    if (messages?.length > 0) chatRef.child(`chatrooms/${id}/read/${loginUser().uid}/`).set(messages[messages.length - 1].id)
+  }, [messages])
+
+
+    /// Hooks end
+
+
 
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -256,11 +279,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   .map( ele => typingRef![ele])
   .reduce((accu, curr) => accu || curr, false) 
 
-  useEffect(() => {
-    if (messages?.length > 0 && !stay) scrollToBottom()
-    setStay(false)
-    if (messages?.length > 0) chatRef.child(`chatrooms/${id}/read/${loginUser().uid}/`).set(messages[messages.length - 1].id)
-  }, [messages])
 
   const starterTemplate = (
     <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col items-center justify-center text-2xl">
@@ -335,7 +353,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   //   </div>
   // );
 
-  const messagesList = messages?.map((ele: Message, index) => (
+  const messagesList = messages && messages.length>0 && messages?.map((ele: Message, index) => (
     <Fragment>
       <Chatblock
         key={`Chatblock_outer_${index}`}
@@ -357,7 +375,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         {  readRef && readRef![ele.id] && 
           <div className=" flex justify-end  items-center">
               { readRef[ele.id].map( uid => 
-                <img className="w-6 h-6 mx-1 rounded-full" alt="" src={memberRef[uid].avatar}></img>)}
+                 <img className="w-6 h-6 mx-1 rounded-full" alt="" src={memberRef[uid].avatar}></img>)}
           </div>
           
         }

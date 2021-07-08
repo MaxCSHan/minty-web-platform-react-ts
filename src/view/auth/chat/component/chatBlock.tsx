@@ -207,7 +207,7 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
             </div>
           ) : (
             <div className={`flex flex-col  sm:max-w-none 	 ${isForward ? 'items-end' : 'items-start'} `}>
-              {group && !isForward && !messageData.reply && (messageData.uid !== previousUid || previousHasReply)  && <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid].username}</div>}
+              {group && !isForward && !messageData.reply && (messageData.uid !== previousUid || previousHasReply)  && <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid]?.username}</div>}
               {replyBlock}
               <div className={`z-10 border   ${(messageData.uid !== previousUid || previousHasReply || messageData.reply) ? isForward? "rounded-tr-3xl ":"rounded-tl-3xl":""} ${(messageData.uid !== nextUid || nextHasReply || messageData.reply)? isForward?"rounded-br-3xl":"rounded-bl-3xl":""}  ${isForward ? `rounded-l-3xl rounded-r-lg ` : ` rounded-r-3xl rounded-l-lg`}   bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}>
                 <div className="relative px-3  py-2 max-w-mini sm:max-w-xs flex   break-all  items-center justify-center">
