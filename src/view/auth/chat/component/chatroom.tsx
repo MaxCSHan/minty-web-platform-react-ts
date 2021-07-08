@@ -6,7 +6,7 @@ import Message from '../../../../interface/IMessage'
 import User from '../../../../interface/IUser'
 import Chatblock from './chatBlock'
 import IChatroom from '../../../../interface/IChatroom'
-import { chatRef } from '../../../../setup/setupFirebase'
+import { chatRef, usersRef } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 import { useParams } from 'react-router-dom'
 import StringMap from '../../../../interface/StringMap'
@@ -23,8 +23,12 @@ type ChatroomProps = {
 
 const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const { id } = useParams<Record<string, string | undefined>>()
+  const [isChatroomExist,setIsChatroomExist] = useState(false)
   const [tempRef,setTempRef] =  useState("")
-  const [roomId, setRoomId] = useState(id!)
+  const [roomTitle, setRoomTitle] = useState('')
+  const [newUser, setNewUser] = useState<User>()
+
+  // const [roomId, setRoomId] = useState(id!)
   const [myUserName, setMyUserName] = useState('')
   const [memberRef, setMemberRef] = useState<StringMap<IMember>>({})
   const [members, setMembers] = useState<IMember[]>([])
@@ -43,18 +47,85 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   });
 
   ///Checker
-  useEffect(() => {
-console.log("memberRef =>",memberRef)
-  },[memberRef])
-  useEffect(() => {
-    console.log("messages =>",messages)
-      },[messages])
+//   useEffect(() => {
+// console.log("memberRef =>",memberRef)
+//   },[memberRef])
+//   useEffect(() => {
+//     console.log("messages =>",messages)
+//       },[messages])
 
   /// Hooks
   useEffect(() => {
-   
+    console.log("started",id)
+    setTempRef("");
+    setMemberRef({});
+    setMembers([]);
+    setReadRef({});
+    setMes([]);
+    setForwardingRoom({} as IChatroom );
+    setMyUserName(loginUser()?.username);
+    setIsChatroomExist(false);
+    setIsDetailed(false);
+    let isExist:boolean;
+    
 
-  },[])
+    chatRef.child(`chatrooms/${id}`).once('value', (snapshot) => {
+        const isExist = snapshot.exists();
+        console.log("isExist ",isExist);
+        setIsChatroomExist(isExist);
+        if(isExist){
+          chatRef.child(`chatrooms/${id}/members/${loginUser().uid}/`).update({ username: loginUser()?.fullName, avatar: loginUser().avatar });
+          chatRef.child(`chatrooms/${id}/messages`).once('value', (snapshot) => {
+            const data:string= snapshot.val()
+            console.log("messages id=>",data)
+            setTempRef(data);
+          })
+          chatRef.child(`chatrooms/${id}/members`).on('value', (snapshot) => {
+            const data = snapshot.val()
+            if (data) {
+              setMemberRef(data)
+      
+              const arr = Object.keys(data)
+                .map((key) => [key, data[key]])
+                .map((ele) => ({ ...(ele[1] as IMember), uid: ele[0] as string } as IMember))
+              //  console.log(arr)
+              setMembers(arr)
+              // console.log("members",members)
+            }
+          })
+          chatRef.child(`chatrooms/${id}/read`).on('value', (snapshot) => {
+            const data: StringMap<string>= snapshot.val()
+            const objectFlip =(obj:StringMap<string>) => {
+              return Object.keys(obj).reduce((ret:StringMap<string[]>, key) => {
+                if(ret[obj[key]]) ret[obj[key]] = [...ret[obj[key]],key]
+                else ret[obj[key]] = [key]
+                return ret;
+              }, {});
+            }
+            setReadRef(objectFlip(data));
+          })
+          chatRef.child(`chatrooms/${id}`).on('value', (snapshot) => {
+            const data = snapshot.val() as IChatroom
+            setForwardingRoom(data);
+            setTypingRef(data.isTyping);
+          })
+
+        }else{
+          const theOtherUid = id?.replace(loginUser().uid,'');
+          usersRef.child(theOtherUid!).once('value',(snapshot)=>{
+            const data: User = snapshot.val();
+            setNewUser(data);
+            console.log("Antother user is",data)
+            setRoomTitle(data.username)
+          })
+        }
+    })
+
+  },[id])
+
+
+
+
 
   useEffect(()=>{
     if(tempRef){
@@ -75,63 +146,9 @@ console.log("memberRef =>",memberRef)
     
   },[tempRef])
 
-  useEffect(() => {
-    // console.log("Ref checker",tempRef,id)
-    setRoomId(id!)
-    setMyUserName(loginUser()?.username)
-    // console.log("Log In Data =>> ",loginUser(),loginUser().username,myUserName)
-    chatRef.child(`chatrooms/${id}/members/${loginUser().uid}/`).set({ username: loginUser()?.fullName, avatar: loginUser().avatar })
-
-    chatRef.child(`chatrooms/${id}/members`).on('value', (snapshot) => {
-      const data = snapshot.val()
-      if (data) {
-        setMemberRef(data)
-        // Object.keys(data).map((key) => [key, data[key]]).forEach(ele =>{
-        //   const updateMembers = [...members,{...(ele[1] as IMember), uid:ele[0] as string} as IMember];
-        //   console.log("updateMembers =>",updateMembers);
-        //    setMembers(updateMembers);
-        //   }) ;
-        const arr = Object.keys(data)
-          .map((key) => [key, data[key]])
-          .map((ele) => ({ ...(ele[1] as IMember), uid: ele[0] as string } as IMember))
-        //  console.log(arr)
-        setMembers(arr)
-        // console.log("members",members)
-      }
-    })
-    chatRef.child(`chatrooms/${id}/messages`).once('value', (snapshot) => {
-      const data:string= snapshot.val()
-      console.log("messages id=>",data)
-      setTempRef(data);
-    })
-
-
-    chatRef.child(`chatrooms/${id}/read`).on('value', (snapshot) => {
-      const data: StringMap<string>= snapshot.val()
-      const objectFlip =(obj:StringMap<string>) => {
-        return Object.keys(obj).reduce((ret:StringMap<string[]>, key) => {
-          if(ret[obj[key]]) ret[obj[key]] = [...ret[obj[key]],key]
-          else ret[obj[key]] = [key]
-          return ret;
-        }, {});
-      }
-      setReadRef(objectFlip(data));
-    })
-  }, [id])
 
 
 
-  useEffect(() => {
-    chatRef.child(`chatrooms/${id}`).on('value', (snapshot) => {
-      const data = snapshot.val() as IChatroom
-      setForwardingRoom(data)
-      setTypingRef(data.isTyping)
-    })
-
-    // setForwardingUser(userSelected!);
-    setIsDetailed(false)
-
-  }, [roomId])
 
   useEffect(() => {
     if (messages?.length > 0 && !stay) scrollToBottom()
@@ -142,7 +159,74 @@ console.log("memberRef =>",memberRef)
 
     /// Hooks end
 
+    /** Creat a new DM room */
+    const creatDM = async (uid: string) => {
+      await usersRef
+        .child(`${loginUser().uid}/roomList`)
+        .once('value')
+        .then(function (snapshot) {
+          const group = false;
+          const privateCoId = [loginUser().uid,uid].sort().join('');
 
+          const setupNew = !snapshot.hasChild(`/${privateCoId}`);
+          console.log('haschild ',setupNew)
+
+          if (setupNew) {
+            console.log('setupNew ')
+            const creatDate = new Date().getTime();
+  
+            const newRoom = chatRef.child(`/chatrooms/${privateCoId}`);
+            const newMessgaesList = chatRef.child(`/Messages/${newRoom.key}`).push()
+            newMessgaesList.set({
+              username: myUserName,
+              message: inputValue,
+              date: creatDate,
+              timeHint: true,
+              reply: replyMessage?.to.length ? replyMessage : null,
+              id: newMessgaesList.key,
+              uid: loginUser().uid,
+              reaction: []
+            })
+
+            const memberUids = [loginUser().uid,uid]
+            //
+            const defaultRead = {} as StringMap<string>;
+            const defaultTyping = {} as StringMap<boolean>;
+            const defaultMembers = {} as StringMap<IMember>
+            //
+            memberUids.forEach( muid => {
+              defaultRead[muid] = "";
+              defaultTyping[muid] = false;
+            })
+  
+            newRoom.set({
+              id: newRoom.key,
+              title: `${loginUser().username}`,
+              roomPhoto: `${loginUser().avatar}`,
+              members: defaultMembers,
+              latestMessage: inputValue,
+              latestMessageId: newMessgaesList.key,
+              latestActiveDate: creatDate,
+              messages: newRoom.key,
+              read: defaultRead,
+              isTyping: defaultTyping,
+              loginStatus: true,
+              group: group,
+              createdDate: creatDate,
+              intro: ''
+            } as IChatroom)
+  
+            memberUids.forEach(ele => {
+              usersRef.child(`${ele}/roomList/${group?newRoom.key:privateCoId}`).set(true)
+            })
+          }
+        })
+      setIsChatroomExist(true);
+      console.log('click')
+      // setInputValue("")
+    }
+
+///
 
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -199,27 +283,15 @@ console.log("memberRef =>",memberRef)
   }
 
   const updateLatest = (newMessage: string, lastActiveDate: number, latestMessageId: string) => {
-    chatRef.child(`chatrooms/${roomId}/latestMessage`).set(newMessage)
-    chatRef.child(`chatrooms/${roomId}/latestActiveDate`).set(lastActiveDate)
-    chatRef.child(`chatrooms/${roomId}/latestMessageId`).set(latestMessageId)
+    chatRef.child(`chatrooms/${id}/latestMessage`).set(newMessage)
+    chatRef.child(`chatrooms/${id}/latestActiveDate`).set(lastActiveDate)
+    chatRef.child(`chatrooms/${id}/latestMessageId`).set(latestMessageId)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      if (inputValue.match(/^(?!\s*$).+/)) {
-        // setMes([
-        //   ...messages,
-        //   {
-        //     username: myUserName,
-        //     message: inputValue,
-        //     date: new Date().getTime(),
-        //     timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
-        //     reply: replyMessage?.to.length?replyMessage : null,
-        //     id: Math.random(),
-        //     uid: 'temp',
-        //     reaction: []
-        //   } as Message
-        // ])
+    if (e.key === 'Enter' && inputValue.match(/^(?!\s*$).+/)) {
+
+      if(isChatroomExist){
         const newMessageRef = chatRef.child(`Messages/${tempRef}`).push()
         newMessageRef.set({
           username: myUserName,
@@ -234,6 +306,11 @@ console.log("memberRef =>",memberRef)
         updateLatest(inputValue, new Date().getTime(), newMessageRef?.key!)
         setInputValue('')
         resetReply()
+      }else{
+        console.log("not exist")
+        creatDM(newUser?.uid!);
+        setInputValue('');
+        resetReply();
       }
     }
   }
@@ -271,7 +348,7 @@ console.log("memberRef =>",memberRef)
   }
 
   const isTyping = (action: boolean) => {
-    chatRef.child(`chatrooms/${id}/isTyping/${loginUser().uid}/`).set(action)
+    if(isChatroomExist) chatRef.child(`chatrooms/${id}/isTyping/${loginUser().uid}/`).set(action)
   }
 
   const showTyping = () => Object.keys(typingRef!)
@@ -282,12 +359,14 @@ console.log("memberRef =>",memberRef)
 
   const starterTemplate = (
     <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col items-center justify-center text-2xl">
-      Please select a user to start the chat.
+      <img className="rounded-full w-32 h-32" alt="" src={newUser?.avatar}/>
+      <div className="mt-4">{newUser?.username}</div>
+      <div className="mt-6 rounded-xl py-2 px-2  border text-sm font-semibold cursor-pointer">View Profile</div>
     </div>
   )
 
   const messagesLoading = (
-    <div className="animate-puls">
+    <div className="animate-pulse">
       {forwardingRoom &&
         forwardingRoom?.latestMessage &&
         [...Array(15)].map((ele, index) => (
@@ -413,7 +492,7 @@ console.log("memberRef =>",memberRef)
     </Fragment>
   )
   const detailedComponent = (
-    <div className="flex-grow w-screen overflow-y-scroll sm:w-160 bg-white  border flex flex-col">
+    <div className="flex-grow w-screen overflow-y-scroll sm:overflow-hidden sm:w-160 bg-white  border flex flex-col">
       <div className="h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
         <div className="h-16  w-full flex flex-col items-start justify-center">
           <div className="w-full flex items-center text-xl font-semibold ml-4 sm:ml-0">Chatroom settings</div>
@@ -466,19 +545,20 @@ console.log("memberRef =>",memberRef)
   const chatroomTemplate = (
     <div className=" overflow-hidden  w-screen sm:w-160 bg-white  border flex flex-col">
       <div className="h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
-      <Link to="/chat/inbox" ><div className="mx-4 sm:hidden"><i className="fas fa-chevron-left "></i></div></Link> 
+       <Link to="/chat/inbox" ><div className="mx-4 sm:hidden"><i className="fas fa-chevron-left "></i></div></Link> 
         <div className="h-16  w-full flex flex-col items-start justify-center">
-          <div className="w-full flex items-center text-xl font-semibold">{forwardingRoom ? forwardingRoom.title : 'Select a user'}</div>
+          <div className="w-full flex items-center text-xl font-semibold">{forwardingRoom.title ? forwardingRoom.title : roomTitle}</div>
           <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
         </div>
+        {isChatroomExist &&
         <div
           className="cursor-pointer text-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full h-10 w-10 flex items-center justify-center"
           onClick={() => setIsDetailed(true)}
         >
           <i className="fas fa-ellipsis-v"></i>
-        </div>
+        </div>}
       </div>
-      {messengerComponent}
+      {isChatroomExist?messengerComponent:starterTemplate}
       <div className={`${replyMessage?.to.length! > 0 ? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
         {replyMessage?.to.length! > 0 && (
           <div className="w-full h-16 px-4  flex flex-col ">
@@ -516,7 +596,7 @@ console.log("memberRef =>",memberRef)
     </div>
   )
 
-  return roomId ? (isDetailed ? detailedComponent : chatroomTemplate) : starterTemplate
+  return  (isDetailed ? detailedComponent : chatroomTemplate) 
 }
 
 export default Chatroom

@@ -7,9 +7,7 @@ import Starter from "./component/Starter";
 const Chat = () => {
 
   const [myUsername,setMyUserName] = useState("");
-  const [selectedRoom, setSelectedRoom] =useState("")
 
-  const onSelectedRoom = (room:string) => { setSelectedRoom(room);}
 
   useEffect(()=>{
     setMyUserName(loginUser()?.username);
@@ -29,7 +27,7 @@ const Chat = () => {
   return (
     <div className=" overflow-hidden flex h-screen  pt-14  w-screen 	justify-center  sm:items-center sm:bg-gray-100  transition duration-100 ease-in-out">
       <div className=" max-h-180 sm:h-95/100 sm:max-h-240 md:max-h-280  2xl:max-h-320 flex flex-col sm:flex sm:flex-row md:flex-row">
-        <Chatlist onSelectedRoom={onSelectedRoom}  myUsername={myUsername}></Chatlist>
+        <Chatlist   myUsername={myUsername}></Chatlist>
         <Switch>
           <Route exact path="/chat/inbox" component={Starter} />
           <Redirect exact from="/chat/room/" to="/chat/inbox" />

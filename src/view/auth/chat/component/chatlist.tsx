@@ -8,13 +8,12 @@ import IMember from '../../../../interface/IMember'
 import IMessage from '../../../../interface/IMessage'
 import StringMap from '../../../../interface/StringMap'
 import User from '../../../../interface/IUser'
-
+import ListBlock from "./ListBlock"
 type ChatlistProps = {
   myUsername: string
-  onSelectedRoom: (room: string) => void
 }
 
-const Chatlist = ({ myUsername, onSelectedRoom }: ChatlistProps) => {
+const Chatlist = ({ myUsername }: ChatlistProps) => {
   /**
    * RWD Check: If entered a room then hide.
    */
@@ -37,7 +36,7 @@ const Chatlist = ({ myUsername, onSelectedRoom }: ChatlistProps) => {
       .limitToLast(3)
       .on('value', (snapshot) => {
         const data = snapshot.val()
-        // console.log(data)
+        console.log(data)
 
         const arr = Object.keys(data)
           .map((key) => [key, data[key]])
@@ -79,7 +78,6 @@ const Chatlist = ({ myUsername, onSelectedRoom }: ChatlistProps) => {
   //   setSelectedUser(user);
   // }
   const onSelect = (room: IChatroom) => {
-    onSelectedRoom(room.id)
     setSelectedRoom(room)
   }
   const dateController = (dateNumber: number) => {
@@ -172,10 +170,14 @@ const Chatlist = ({ myUsername, onSelectedRoom }: ChatlistProps) => {
   ))
 
   const searchResultComponent = searchResult().map((ele, index) => (
-    <div className="flex items-center  px-3 py-1 cursor-pointer" onClick={() => goToRoom(ele.uid)}>
+   
+    <Link key={`search_result_${index}`} to={`/chat/room/${[loginUser().uid,ele.uid].sort().join('')}`}>
+    <div className="flex items-center  px-3 py-1 cursor-pointer" >
       <img className="h-10 w-10 rounded-full object-cover" alt="" src={ele.avatar} />
       <div className="ml-4">{ele.username}</div>
     </div>
+    </Link >
+
     // <Link key={`chatroom_link_${index}`} to={`/chat/room/${ele.id}`}>
     //   <div
     //     className={`w-full px-4 h-20 flex items-center ${
@@ -201,28 +203,29 @@ const Chatlist = ({ myUsername, onSelectedRoom }: ChatlistProps) => {
   ))
 
   const roomListComponent = roomList.map((ele, index) => (
-    <Link key={`chatroom_link_${index}`} to={`/chat/room/${ele.id}`}>
-      <div
-        className={`w-full px-4 h-20 flex items-center ${
-          ele.id === selectedRoom?.id ? 'bg-gray-100 hover:bg-gray-100 ' : 'bg-white hover:bg-gray-50 '
-        }`}
-        key={`chatroom_${index}`}
-        onClick={() => onSelect(ele)}
-      >
-        <div className="relative h-16 w-16 rounded-full ">
-          {ele.group ? groupProfile(ele.members) : <img className="h-16 w-16 rounded-full object-cover" alt="" src={ele.roomPhoto} />}
-          {ele?.loginStatus && <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500"></div>}
-        </div>
-        <div className="ml-2 flex flex-col">
-          <div>{ele.title}</div>
-          <div className={`w-64 flex justify-between ${(ele?.read?ele?.read[loginUser().uid]:"" )!== ele?.latestMessageId || false ? 'font-semibold' : ''}`}>
-            <div className="whitespace-nowrap overflow-hidden overflow-ellipsis w-48">{ele?.latestMessage!.slice(0, 20)} </div>
-            <div className="text-sm mx-1 flex items-center">•</div>
-            <div className="text-xs whitespace-nowrap flex items-center">{dateController(ele.latestActiveDate)}</div>
-          </div>
-        </div>
-      </div>
-    </Link>
+    <ListBlock roomId={ele.id} selectedRoomId={selectedRoom?.id!}></ListBlock>
+    // <Link key={`chatroom_link_${index}`} to={`/chat/room/${ele.id}`}>
+    //   <div
+    //     className={`w-full px-4 h-20 flex items-center ${
+    //       ele.id === selectedRoom?.id ? 'bg-gray-100 hover:bg-gray-100 ' : 'bg-white hover:bg-gray-50 '
+    //     }`}
+    //     key={`chatroom_${index}`}
+    //     onClick={() => onSelect(ele)}
+    //   >
+    //     <div className="relative h-16 w-16 rounded-full ">
+    //       {ele.group ? groupProfile(ele.members) : <img className="h-16 w-16 rounded-full object-cover" alt="" src={ele.roomPhoto} />}
+    //       {ele?.loginStatus && <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500"></div>}
+    //     </div>
+    //     <div className="ml-2 flex flex-col">
+    //       <div>{ele.title}</div>
+    //       <div className={`w-64 flex justify-between ${(ele?.read?ele?.read[loginUser().uid]:"" )!== ele?.latestMessageId || false ? 'font-semibold' : ''}`}>
+    //         <div className="whitespace-nowrap overflow-hidden overflow-ellipsis w-48">{ele?.latestMessage!.slice(0, 20)} </div>
+    //         <div className="text-sm mx-1 flex items-center">•</div>
+    //         <div className="text-xs whitespace-nowrap flex items-center">{dateController(ele.latestActiveDate)}</div>
+    //       </div>
+    //     </div>
+    //   </div>
+    // </Link>
   ))
 
   const searchArea = (
@@ -233,8 +236,8 @@ const Chatlist = ({ myUsername, onSelectedRoom }: ChatlistProps) => {
     >
       {searchResultComponent.length > 0 ? (
         <div className="flex flex-col flex-grow justify-center">
-          <div className="h-14 flex items-center  pl-8 font-semibold">Suggested</div>
-          {searchResultComponent}
+          {inputValue.length === 0 && <div className="h-14 flex items-center  pl-8 font-semibold">Suggested</div>}
+          <div className={`${inputValue.length > 0?"mt-5":""}`}>{searchResultComponent}</div>
         </div>
       ) : (
         <div className="h-14 flex items-center  pl-8 font-semibold">No result matched</div>
@@ -258,14 +261,20 @@ const Chatlist = ({ myUsername, onSelectedRoom }: ChatlistProps) => {
               placeholder="Search"
               value={inputValue}
               onFocus={() => setSearching(true)}
-              onBlur={() => setSearching(false)}
               onChange={(e) => handleInput(e)}
-            ></input>
-          </div>
+            ></input>{
+              searching && 
+              <div className="ml-2 text-gray-400 hover:text-gray-600" 
+            onClick={() => setSearching(false)}
+            >
+                <i className="fas fa-times"></i>
+              </div>
+            }
+            </div>
         </div>
         <div className="w-full flex-grow border-t overflow-y-scroll">
           {/* {loadingListComponent} */}
-          {roomList.length > 0 ? (searching || inputValue.length > 0 ? searchArea : roomListComponent) : loadingListComponent}
+          {roomList.length > 0 ? ((searching || inputValue.length > 0 )? searchArea : roomListComponent) : loadingListComponent}
         </div>
       </div>
     </div>
