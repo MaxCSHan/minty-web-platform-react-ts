@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 // import { getUsers,getChatrooms } from "../../../../services/userService";
 import IChatroom from '../../../../interface/IChatroom'
-import { chatRef, usersRef } from '../../../../setup/setupFirebase'
+import { chatRef, usersRef ,usersPublicRef,usersPrivateRef} from '../../../../setup/setupFirebase'
 import { Link, useLocation } from 'react-router-dom'
 import { loginUser } from '../../../../services/authService'
 import IMember from '../../../../interface/IMember'
@@ -24,7 +24,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   const [inputValue, setInputValue] = useState('')
   const [searching, setSearching] = useState(false)
 
-  const [selectedRoom, setSelectedRoom] = useState<IChatroom>()
+  const [selectedRoom, setSelectedRoom] = useState<string>()
   const [searchUserResult, setSearchUserResult] = useState<User[]>()
 
   const [roomList, setRoomList] = useState<string[]>([])
@@ -34,7 +34,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   useEffect(() => {
     // getUsers().subscribe((response) => setUserList(response));
     // getChatrooms().subscribe((response) => setRoomList(response));
-    usersRef
+    usersPrivateRef
       .child(`/${loginUid}/roomList`)
       .on('value', (snapshot) => {
         const data = snapshot.val()
@@ -58,7 +58,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   }
 
   const searchUser = () => {
-    usersRef.limitToLast(10).once('value', (snapshot) => {
+    usersPublicRef.limitToLast(10).once('value', (snapshot) => {
       const data = snapshot.val()
       const arr: User[] = Object.values(data)
       console.log(arr)
@@ -74,76 +74,9 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     return res
   }
 
-  // const onSelect = (user:User) =>
-  // {
-  //   onSelectedUser(user);
-  //   setSelectedUser(user);
-  // }
-  const onSelect = (room: IChatroom) => {
-    setSelectedRoom(room)
-  }
-  const dateController = (dateNumber: number) => {
-    const mesDate = new Date(dateNumber)
-    const curr = new Date()
-    return curr.getDate() === mesDate.getDate()
-      ? mesDate.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        })
-      : mesDate.toLocaleDateString()
-  }
-
-  const goToRoom = async (uid: string) => {
-    await usersRef
-      .child(`${loginUser().uid}/roomList`)
-      .once('value')
-      .then(function (snapshot) {
-        const group = false;
-        const privateCoId = [loginUser().uid,uid].sort().join('');
-
-        const setupNew = group? !snapshot.hasChild(`/${uid}`):!snapshot.hasChild(`/${privateCoId}`)
-        if (setupNew) {
-          console.log('setupNew ')
-
-          const newRoom = group? chatRef.child(`/chatrooms`).push():chatRef.child(`/chatrooms/${privateCoId}`);
-          const newMessgaesList = chatRef.child(`/Messages/${newRoom.key}`).push()
-          const memberUids = [loginUser().uid,uid]
-          //
-          const defaultRead = {} as StringMap<string>;
-          const defaultTyping = {} as StringMap<boolean>;
-          const defaultMembers = {} as StringMap<IMember>
-          //
-          memberUids.forEach( muid => {
-            defaultRead[muid] = "";
-            defaultTyping[muid] = false;
-          })
-
-
-
-          newRoom.set({
-            id: newRoom.key,
-            title: `${loginUser().username}`,
-            roomPhoto: `${loginUser().avatar}`,
-            members: defaultMembers,
-            latestMessage: '',
-            latestMessageId: '',
-            latestActiveDate: new Date().getTime(),
-            messages: newMessgaesList.key,
-            read: defaultRead,
-            isTyping: defaultTyping,
-            loginStatus: true,
-            group: false,
-            createdDate: new Date().getTime(),
-            intro: ''
-          } as IChatroom)
-
-          memberUids.forEach(ele => {
-            usersRef.child(`${ele}/roomList/${group?newRoom.key:privateCoId}`).set(true)
-          })
-        }
-      })
-    console.log('click')
-    // setInputValue("")
+  const onRoomSelected = (roomid:string) =>{
+    setSearching(false);
+    setSelectedRoom(roomid);
   }
 
   //Components
@@ -173,7 +106,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
 
   const searchResultComponent = searchResult().map((ele, index) => (
    
-    <Link key={`search_result_${index}`} to={`/chat/room/${[loginUser().uid,ele.uid].sort().join('')}`}>
+    <Link key={`search_result_${index}`} to={`/chat/room/${[loginUser().uid,ele.uid].sort().join('')}`} onClick={()=>setSearching(false)}>
     <div className="flex items-center  px-3 py-1 cursor-pointer" >
       <img className="h-10 w-10 rounded-full object-cover" alt="" src={ele.avatar} />
       <div className="ml-4">{ele.username}</div>
@@ -182,7 +115,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   ))
 
   const roomListComponent = ["-Mdtq1YgZ08zGZtk6Ejy",...roomList].map((ele, index) => (
-    <ListBlock roomId={ele} selectedRoomId={selectedRoom?.id!}></ListBlock>
+    <ListBlock roomId={ele} selectedRoomId={selectedRoom!} onRoomSelected={onRoomSelected} ></ListBlock>
   ))
 
   const searchArea = (

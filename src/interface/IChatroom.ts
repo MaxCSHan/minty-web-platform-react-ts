@@ -3,8 +3,8 @@ import StringMap from "./StringMap";
 import IMember from "./IMember"
 interface IChatroom {
     id:string;
-    title:string;
-    roomPhoto:string;
+    title?:string;
+    roomPhoto?:string;
     members:StringMap<IMember>;
     latestMessage:string;
     latestMessageId:string;

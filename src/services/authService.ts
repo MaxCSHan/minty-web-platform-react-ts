@@ -1,34 +1,40 @@
-import firebase, { usersRef } from '../setup/setupFirebase'
+import firebase, { usersRef, usersPublicRef } from '../setup/setupFirebase'
 import User from '../interface/IUser'
-import { useHistory } from "react-router-dom";
+import { useHistory } from 'react-router-dom'
 
 const loginWithGoogle = async () => {
   const provider = new firebase.auth.GoogleAuthProvider()
 
   const result = await firebase.auth().signInWithPopup(provider)
   const userInfo = result.user
-//   console.log(result.user)
-  const userData:User = {
+  //   console.log(result.user)
+  const userData: User = {
     uid: userInfo?.uid!,
     username: userInfo?.displayName!,
     email: userInfo?.email!,
     fullName: userInfo?.displayName!,
     loginStatus: true,
     avatar: userInfo?.photoURL!
-  };
-  usersRef
-    .orderByChild('email')
+  }
+  // usersRef
+  // .once('value', (snapshot) => {
+  // const data = snapshot.val();
+  //   Object.keys(data).forEach(ele => {
+  //     usersPublicRef.child(ele).set(data[ele])
+  //   })
+  // })
+
+  usersPublicRef
+    .orderByChild('/email')
     .equalTo(userData?.email!)
     .once('value', (snapshot) => {
       console.log(snapshot.exists())
       if (!snapshot.exists()) {
-        usersRef.child(userInfo?.uid!).set(userData)
+        usersPublicRef.child(`/${userInfo?.uid!}`).set(userData)
       }
     })
-  
 
   sessionStorage.setItem('user', JSON.stringify(userData))
-  
 
   //   if (result.credential) {
   //     /** @type {firebase.auth.OAuthCredential} */
@@ -55,7 +61,7 @@ const loginWithGoogle = async () => {
 
 const isLoggedIn = () => {
   const user = JSON.parse(sessionStorage.getItem('user')!)
-//   console.log(user)
+  //   console.log(user)
   return user !== null
 }
 
