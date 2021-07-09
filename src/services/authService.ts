@@ -17,11 +17,11 @@ const loginWithGoogle = async () => {
     avatar: userInfo?.photoURL!
   };
   usersRef
-    .orderByChild('username')
-    .equalTo(result?.user?.email!)
+    .orderByChild('email')
+    .equalTo(userData?.email!)
     .once('value', (snapshot) => {
+      console.log(snapshot.exists())
       if (!snapshot.exists()) {
-        //   console.log("create new")
         usersRef.child(userInfo?.uid!).set(userData)
       }
     })
