@@ -19,6 +19,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
    */
   const location = useLocation()
   const locationChecker = () => location.pathname === '/chat/inbox'
+  const loginUid = loginUser().uid;
   //
   const [inputValue, setInputValue] = useState('')
   const [searching, setSearching] = useState(false)
@@ -26,22 +27,23 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   const [selectedRoom, setSelectedRoom] = useState<IChatroom>()
   const [searchUserResult, setSearchUserResult] = useState<User[]>()
 
-  const [roomList, setRoomList] = useState<IChatroom[]>([])
+  const [roomList, setRoomList] = useState<string[]>([])
+
+  // const [roomList, setRoomList] = useState<IChatroom[]>([])
 
   useEffect(() => {
     // getUsers().subscribe((response) => setUserList(response));
     // getChatrooms().subscribe((response) => setRoomList(response));
-    chatRef
-      .child('chatrooms')
-      .limitToLast(3)
+    usersRef
+      .child(`/${loginUid}/roomList`)
       .on('value', (snapshot) => {
         const data = snapshot.val()
-        console.log(data)
-
-        const arr = Object.keys(data)
-          .map((key) => [key, data[key]])
-          .map((ele) => ({ ...ele[1], id: ele[0] })) as IChatroom[]
+        console.log("user",data)
+        if(data){
+           const arr = Object.keys(data);
         setRoomList(arr)
+        }
+       
       })
     searchUser()
     // console.log("API CHatroom =>",roomList)
@@ -177,55 +179,10 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
       <div className="ml-4">{ele.username}</div>
     </div>
     </Link >
-
-    // <Link key={`chatroom_link_${index}`} to={`/chat/room/${ele.id}`}>
-    //   <div
-    //     className={`w-full px-4 h-20 flex items-center ${
-    //       ele.id === selectedRoom?.id ? 'bg-gray-100 hover:bg-gray-100 ' : 'bg-white hover:bg-gray-50 '
-    //     }`}
-    //     key={`chatroom_${index}`}
-    //     onClick={() => onSelect(ele)}
-    //   >
-    //     <div className="relative h-16 w-16 rounded-full ">
-    //       {ele.group ? groupProfile(ele.members) : <img className="h-16 w-16 rounded-full object-cover" alt="" src={ele.roomPhoto} />}
-    //       {ele?.loginStatus && <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500"></div>}
-    //     </div>
-    //     <div className="ml-2 flex flex-col">
-    //       <div>{ele.title}</div>
-    //       <div className={`w-64 flex justify-between ${ele.read[loginUser().uid] !== ele.latestMessageId || false ? 'font-semibold' : ''}`}>
-    //         <div className="whitespace-nowrap overflow-hidden overflow-ellipsis w-48">{ele?.latestMessage!.slice(0, 20)} </div>
-    //         <div className="text-sm mx-1 flex items-center">•</div>
-    //         <div className="text-xs whitespace-nowrap flex items-center">{dateController(ele.latestActiveDate)}</div>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </Link>
   ))
 
-  const roomListComponent = roomList.map((ele, index) => (
-    <ListBlock roomId={ele.id} selectedRoomId={selectedRoom?.id!}></ListBlock>
-    // <Link key={`chatroom_link_${index}`} to={`/chat/room/${ele.id}`}>
-    //   <div
-    //     className={`w-full px-4 h-20 flex items-center ${
-    //       ele.id === selectedRoom?.id ? 'bg-gray-100 hover:bg-gray-100 ' : 'bg-white hover:bg-gray-50 '
-    //     }`}
-    //     key={`chatroom_${index}`}
-    //     onClick={() => onSelect(ele)}
-    //   >
-    //     <div className="relative h-16 w-16 rounded-full ">
-    //       {ele.group ? groupProfile(ele.members) : <img className="h-16 w-16 rounded-full object-cover" alt="" src={ele.roomPhoto} />}
-    //       {ele?.loginStatus && <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500"></div>}
-    //     </div>
-    //     <div className="ml-2 flex flex-col">
-    //       <div>{ele.title}</div>
-    //       <div className={`w-64 flex justify-between ${(ele?.read?ele?.read[loginUser().uid]:"" )!== ele?.latestMessageId || false ? 'font-semibold' : ''}`}>
-    //         <div className="whitespace-nowrap overflow-hidden overflow-ellipsis w-48">{ele?.latestMessage!.slice(0, 20)} </div>
-    //         <div className="text-sm mx-1 flex items-center">•</div>
-    //         <div className="text-xs whitespace-nowrap flex items-center">{dateController(ele.latestActiveDate)}</div>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </Link>
+  const roomListComponent = ["-Mdtq1YgZ08zGZtk6Ejy",...roomList].map((ele, index) => (
+    <ListBlock roomId={ele} selectedRoomId={selectedRoom?.id!}></ListBlock>
   ))
 
   const searchArea = (
@@ -274,7 +231,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
         </div>
         <div className="w-full flex-grow border-t overflow-y-scroll">
           {/* {loadingListComponent} */}
-          {roomList.length > 0 ? ((searching || inputValue.length > 0 )? searchArea : roomListComponent) : loadingListComponent}
+          {((searching || inputValue.length > 0 )? searchArea : roomListComponent) }
         </div>
       </div>
     </div>

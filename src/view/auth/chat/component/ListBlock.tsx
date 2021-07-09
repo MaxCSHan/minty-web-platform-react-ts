@@ -25,7 +25,9 @@ const ListBlock = ({roomId,selectedRoomId}:groupProfileProps) => {
             setRoom(data);
         });
 
-        return ;
+        return () =>{
+            litsener.off();
+        }
     },[roomId])
 
     const groupProfile = (members: StringMap<IMember>) => {
@@ -50,9 +52,15 @@ const ListBlock = ({roomId,selectedRoomId}:groupProfileProps) => {
             })
           : mesDate.toLocaleDateString()
       }
-
+const loading = (<div className="w-full animate-pulse px-4 h-20 flex items-center">
+<div className=" h-16 w-16 rounded-full bg-gray-200"></div>
+<div className="ml-2 h-14 w-5/6 flex flex-col justify-around">
+  <div className=" h-4 w-full bg-gray-200 rounded-md"></div>
+  <div className=" h-4 w-full bg-gray-200 rounded-md"></div>
+</div>
+</div>)
     return(
-        <Link key={`chatroom_link_${roomId}`} to={`/chat/room/${roomId}`}>
+        room? <Link key={`chatroom_link_${roomId}`} to={`/chat/room/${roomId}`}>
         <div
           className={`w-full px-4 h-20 flex items-center ${
             roomId === selectedRoomId ? 'bg-gray-100 hover:bg-gray-100 ' : 'bg-white hover:bg-gray-50 '
@@ -60,19 +68,19 @@ const ListBlock = ({roomId,selectedRoomId}:groupProfileProps) => {
           key={`chatroom_${roomId}`}
         >
           <div className="relative h-16 w-16 rounded-full ">
-            {room? room!.group ? groupProfile(room!.members) : <img className="h-16 w-16 rounded-full object-cover" alt="" src={room!.roomPhoto} />:""}
-            {room? room!.loginStatus && <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500"></div>:""}
+            { room!.group ? groupProfile(room!.members) : <img className="h-16 w-16 rounded-full object-cover" alt="" src={room!.roomPhoto} />}
+            { room!.loginStatus && <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500"></div>}
           </div>
           <div className="ml-2 flex flex-col">
-            <div>{room?room!.title:""}</div>
-            <div className={`w-64 flex justify-between ${room?(room!.read?room!.read[loginUser().uid]:"" )!== room!.latestMessageId || false ? 'font-semibold' : '':""}`}>
-              <div className="whitespace-nowrap overflow-hidden overflow-ellipsis w-48">{room?room!.latestMessage!.slice(0, 20):""} </div>
+            <div>{room!.title}</div>
+            <div className={`w-64 flex justify-between ${(room!.read?room!.read[loginUser().uid]:"" )!== room!.latestMessageId || false ? 'font-semibold' : ''}`}>
+              <div className="whitespace-nowrap overflow-hidden overflow-ellipsis w-48">{room!.latestMessage!.slice(0, 20)} </div>
               <div className="text-sm mx-1 flex items-center">•</div>
-              <div className="text-xs whitespace-nowrap flex items-center">{room?dateController(room!.latestActiveDate):""}</div>
+              <div className="text-xs whitespace-nowrap flex items-center">{dateController(room!.latestActiveDate)}</div>
             </div>
           </div>
         </div>
-      </Link>
+      </Link>:loading
     )
 }
 

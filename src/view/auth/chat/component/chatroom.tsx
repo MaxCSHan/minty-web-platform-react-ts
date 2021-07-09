@@ -24,6 +24,8 @@ type ChatroomProps = {
 const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const { id } = useParams<Record<string, string | undefined>>()
   const [isChatroomExist,setIsChatroomExist] = useState(false)
+  const [loaded,setIsloaded] = useState(false)
+
   const [tempRef,setTempRef] =  useState("")
   const [roomTitle, setRoomTitle] = useState('')
   const [newUser, setNewUser] = useState<User>()
@@ -356,6 +358,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   .map( ele => typingRef![ele])
   .reduce((accu, curr) => accu || curr, false) 
 
+  const beforeLoad = (
+    <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col items-center justify-center text-2xl">
+      <div>Select a chatroom</div>
+    </div>
+  )
 
   const starterTemplate = (
     <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col items-center justify-center text-2xl">
@@ -383,54 +390,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         ))}
     </div>
   )
-
-  // const messagesList = (
-  //   <div>
-  //     {messages.map((ele, index) => (
-  //       <div className="group">
-  //         <div className="text-center text-xs text-gray-600 my-4">
-  //           {dateController(ele)}
-  //         </div>
-
-  //         <div
-  //           className={`flex w-full ${
-  //             ele.username === myUserName ? "flex-row-reverse" : ""
-  //           }`}
-  //           id={`message_${index}`}
-  //           key={`message_${index}`}
-
-  //           // ref={(el) => {
-  //           //   messagesEnd = el!;
-  //           // }}
-  //         >
-  //           <div
-  //             className={`flex my-2 max-w-lg ${
-  //               ele.username === myUserName ? "flex-row-reverse" : ""
-  //             }`}
-  //           >
-  //             <img
-  //               className="h-10 w-10 border rounded-full"
-  //               alt=""
-  //               src="https://www.creative-tim.com/learning-lab/tailwind-starter-kit/img/team-2-800x800.jpg"
-  //             />
-  //             <div
-  //               className={`mx-2 flex last:hidden ${
-  //                 ele.username === myUserName ? " text-right" : ""
-  //               }`}
-  //             >
-  //               <div className="px-4 py-3 max-w-sm flex flex-wrap break-all  items-center justify-around border rounded-3xl">
-  //                 {ele.message}
-  //               </div>
-  //               <div className=" group-hover:flex">
-  //                 <i className="fas fa-reply"></i>
-  //               </div>
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     ))}
-  //   </div>
-  // );
 
   const messagesList = messages && messages.length>0 && messages?.map((ele: Message, index) => (
     <Fragment>
@@ -465,7 +424,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     <Fragment>
     <div className="flex flex-col flex-grow flex-shrink overflow-hidden  transition-all duration-150 ease-in-out">
       <div className="flex flex-col flex-grow flex-shrink px-4 pt-4 overflow-x-hidden overflow-y-scroll">
-        {messages && messages.length > 0 ? messagesList : messagesLoading}
+        {messages && messages.length > 0 ? messagesList : newUser? starterTemplate:messagesLoading}
       </div>
       {typingRef && (
         <div className={`flex items-center px-4 transtion-all duration-200 ease-in-out ${showTyping() ? 'opacity-100 h-14 pt-4 ' : 'opacity-0 h-0'}`}>
@@ -558,7 +517,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           <i className="fas fa-ellipsis-v"></i>
         </div>}
       </div>
-      {isChatroomExist?messengerComponent:starterTemplate}
+      {messengerComponent}
       <div className={`${replyMessage?.to.length! > 0 ? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
         {replyMessage?.to.length! > 0 && (
           <div className="w-full h-16 px-4  flex flex-col ">
@@ -596,7 +555,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     </div>
   )
 
-  return  (isDetailed ? detailedComponent : chatroomTemplate) 
+  return   ( isDetailed ? detailedComponent : chatroomTemplate) 
 }
 
 export default Chatroom
