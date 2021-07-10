@@ -34,6 +34,15 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   useEffect(() => {
     // getUsers().subscribe((response) => setUserList(response));
     // getChatrooms().subscribe((response) => setRoomList(response));
+    // chatRef
+    //   .child("/chatrooms")
+    //   .orderByChild(`/members/${loginUid}/uid`)
+    //   .equalTo(loginUid)
+    //   .on('value', (snapshot) => {
+    //     const data = snapshot.val()
+    //     console.log("user",data)
+       
+    //   })
     usersPrivateRef
       .child(`/${loginUid}/roomList`)
       .on('value', (snapshot) => {

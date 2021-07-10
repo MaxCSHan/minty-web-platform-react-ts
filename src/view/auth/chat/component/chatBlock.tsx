@@ -241,12 +241,12 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
             </div>
           )}
           {(isHover || onClikReaction) && (
-            <div className={`relative mx-2 w-12 sm:w-16 flex justify-between  text-xl sm:text-2xl text-gray-400 ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
+            <div className={`sm:relative mx-2 w-12 sm:w-16 flex justify-between  text-xl sm:text-2xl text-gray-400 ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
               {onClikReaction && (
                 <div
                   className={`${
-                    isForward ? '-right-8' : '-left-12'
-                  } absolute -top-14  z-50  w-64 h-12 shadow-lg rounded-full bg-white flex items-center justify-around px-2`}
+                    isForward ? '-right-2 sm:-right-8' : '-left-5 sm:-left-12'
+                  } absolute -top-10 sm:-top-14  z-50  w-64 h-12 shadow-lg rounded-full bg-white flex items-center justify-around px-2`}
                 >
                   {emojiList.map((ele, index) => (
                     <span className="text-3xl cursor-pointer " key={`reaction_selection_${index}`} onMouseDownCapture={() => setEmoji(ele)}>

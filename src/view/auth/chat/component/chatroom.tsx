@@ -65,9 +65,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     const theOtherUid = id?.replace(loginUser().uid, '')
     const otherUserListener = usersPublicRef.child(theOtherUid!)
 
-    
-   
-
     const chatRoomListener = chatRef.child(`chatrooms/${id}`)
     chatRoomListener.on('value', (snapshot) => {
       const chatroomData: IChatroom = snapshot.val()
@@ -115,19 +112,18 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           setRoomTitle(data.username)
         })
       }
-
     })
 
-    if(theOtherUid){
+    if (theOtherUid) {
       otherUserListener.once('value', (snapshot) => {
-     const data: User = snapshot.val()
-     if(data) setNewUser(data)
-   })
-   }
+        const data: User = snapshot.val()
+        if (data) setNewUser(data)
+      })
+    }
 
     return () => {
-      chatRoomListener.off();
-      otherUserListener.off();
+      chatRoomListener.off()
+      otherUserListener.off()
       setTempRef('')
       setMemberRef({})
       setNewUser({} as User)
@@ -157,13 +153,12 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           setMes(arr)
           console.log('Messages set called =>')
         }
-        setIsloaded(true);
+        setIsloaded(true)
       })
     }
     return () => {
       messageListener.off()
-      setIsloaded(false);
-
+      setIsloaded(false)
     }
   }, [tempRef])
 
@@ -308,28 +303,37 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     chatRef.child(`chatrooms/${id}/latestMessageId`).set(latestMessageId)
   }
 
+  const sendInput = () => {
+    if (isChatroomExist && inputValue.match(/^(?!\s*$).+/)) {
+      const newMessageRef = chatRef.child(`Messages/${tempRef}`).push()
+      newMessageRef.set({
+        username: myUserName,
+        message: inputValue,
+        date: new Date().getTime(),
+        timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
+        reply: replyMessage?.to.length ? replyMessage : null,
+        id: newMessageRef.key,
+        uid: loginUser().uid,
+        reaction: []
+      })
+      updateLatest(inputValue, new Date().getTime(), newMessageRef?.key!)
+    } else {
+      creatDM(newUser?.uid!, inputValue)
+    }
+    setInputValue('')
+    resetReply()
+  }
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && inputValue.match(/^(?!\s*$).+/)) {
-      if (isChatroomExist) {
-        const newMessageRef = chatRef.child(`Messages/${tempRef}`).push()
-        newMessageRef.set({
-          username: myUserName,
-          message: inputValue,
-          date: new Date().getTime(),
-          timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
-          reply: replyMessage?.to.length ? replyMessage : null,
-          id: newMessageRef.key,
-          uid: loginUser().uid,
-          reaction: []
-        })
-        updateLatest(inputValue, new Date().getTime(), newMessageRef?.key!)
-      } else {
-        creatDM(newUser?.uid!, inputValue)
-      }
-      setInputValue('')
-      resetReply()
+    if (e.key === 'Enter' ) {
+      sendInput();
     }
   }
+
+  const handleTouchSend = () => {
+    sendInput();
+    inputRef!.current?.focus();
+  }
+
   const handleHeartClick = () => {
     // setMes([
     //   ...messages,
@@ -370,7 +374,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     console.log('id', id, 'isChatroomExist', isChatroomExist)
     if (isChatroomExist) chatRef.child(`chatrooms/${id}/isTyping/${loginUser().uid}/`).set(action)
   }
-
 
   const showTyping = () =>
     Object.keys(typingRef!)
@@ -447,7 +450,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     <Fragment>
       <div className="flex flex-col flex-grow flex-shrink overflow-hidden  transition-all duration-150 ease-in-out">
         <div className="flex flex-col flex-grow flex-shrink px-4 pt-4 overflow-x-hidden overflow-y-scroll">
-          {messages && messages.length > 0 ? messagesList : messagesLoading }
+          {messages && messages.length > 0 ? messagesList : messagesLoading}
         </div>
         {typingRef && (
           <div
@@ -535,7 +538,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           </div>
         </Link>
         <div className="h-16  w-full flex flex-col items-start justify-center">
-          <div className="w-full flex items-center text-xl font-semibold">{ forwardingRoom?.group ? forwardingRoom.title ? forwardingRoom.title : roomTitle: newUser?.username}</div>
+          <div className="w-full flex items-center text-xl font-semibold">
+            {forwardingRoom?.group ? (forwardingRoom.title ? forwardingRoom.title : roomTitle) : newUser?.username}
+          </div>
           <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
         </div>
         {isChatroomExist && (
@@ -577,9 +582,15 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
               onBlur={() => isTyping(false)}
             ></input>
           </div>
-          <div className="w-8 ml-2 " onClick={() => handleHeartClick()}>
-            <i className="sm:text-2xl far fa-heart cursor-pointer "></i>
-          </div>
+          {inputValue.length > 0 ? (
+            <div className="w-8 ml-2  origin-center cursor-pointer" onClick={()=>handleTouchSend()}>
+              <i className="fas fa-location-arrow fa-rotate-45"></i>
+            </div>
+          ) : (
+            <div className="w-8 ml-2 " onClick={() => handleHeartClick()}>
+              <i className="sm:text-2xl far fa-heart cursor-pointer "></i>
+            </div>
+          )}
         </div>
       </div>
     </div>
