@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 // import { getUsers,getChatrooms } from "../../../../services/userService";
 import IChatroom from '../../../../interface/IChatroom'
-import {  usersPublicRef,chatroomDB, userDB} from '../../../../setup/setupFirebase'
+import {  chatroomDB, userDB} from '../../../../setup/setupFirebase'
 import { Link, useLocation } from 'react-router-dom'
 import { loginUser } from '../../../../services/authService'
 import IMember from '../../../../interface/IMember'

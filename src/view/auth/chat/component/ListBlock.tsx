@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import StringMap from '../../../../interface/StringMap'
 import IMember from '../../../../interface/IMember'
-import { chatRef } from '../../../../setup/setupFirebase'
 import { useEffect, useState } from 'react'
 import IChatroom from '../../../../interface/IChatroom'
 import { loginUser } from '../../../../services/authService'
