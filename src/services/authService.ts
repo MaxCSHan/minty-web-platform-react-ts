@@ -1,4 +1,4 @@
-import firebase, { usersRef, chatRef,usersPublicRef, userDB ,chatroomDB,messageDB} from '../setup/setupFirebase'
+import firebase, { usersRef, chatRef, usersPublicRef, userDB, chatroomDB, messageDB } from '../setup/setupFirebase'
 import User from '../interface/IUser'
 import { useHistory } from 'react-router-dom'
 
@@ -28,8 +28,8 @@ const loginWithGoogle = async () => {
   //       chatroomDB
   //       .doc(ele)
   //       .set({...data[ele],memberInfos:data[ele].members,members:Object.keys(data[ele].members)})
-  //   }) 
-  // }); 
+  //   })
+  // });
 
   // chatroomDB
   //     .doc("-Mdtq1ZeBs48gjlT4ZdQ")
@@ -43,8 +43,8 @@ const loginWithGoogle = async () => {
   //         .doc(mes.data().id)
   //         .set(mes.data())
   //       })
-  //     }); 
-  
+  //     });
+
   // chatRef.child("/chatrooms")
   // .once('value', (snapshot) => {
   //   const data = snapshot.val();
@@ -54,7 +54,6 @@ const loginWithGoogle = async () => {
   //     .set(data[ele])
   //   })
   // })
-
 
   // chatRef.child("/Messages")
   // .once('value', (snapshot) => {
@@ -88,16 +87,21 @@ const loginWithGoogle = async () => {
   //       usersPublicRef.child(`/${userInfo?.uid!}`).set(userData)
   //     }
   //   })
-
-  userDB
-    .doc(userInfo?.uid!)
-    .set(userData)
-    .then(() => {
-      console.log('Document written with ID: ', userInfo?.uid!)
-    })
-    .catch((error) => {
-      console.error('Error adding document: ', error)
-    })
+  const userRef = userDB.doc(userInfo?.uid!);
+  userRef.get().then((doc) => {
+    if (!doc.exists) {
+      userRef
+        .set(userData)
+        .then(() => {
+          console.log('Document written with ID: ', userInfo?.uid!)
+        })
+        .catch((error) => {
+          console.error('Error adding document: ', error)
+        })
+    }else{
+      userRef.update({"loginStatus":true});
+    }
+  })
 
   sessionStorage.setItem('user', JSON.stringify(userData))
 
@@ -134,7 +138,12 @@ const logout = async () => {
   await firebase
     .auth()
     .signOut()
-    .then(() => sessionStorage.removeItem('user'))
+    .then(() => {
+      const userRef = userDB.doc(loginUser()?.uid!);
+      userRef.update({"loginStatus":false});
+
+      sessionStorage.removeItem('user');
+    })
 }
 
 const firbaseAuth = firebase.auth()

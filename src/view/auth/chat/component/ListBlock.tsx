@@ -4,6 +4,8 @@ import IMember from '../../../../interface/IMember'
 import { useEffect, useState } from 'react'
 import IChatroom from '../../../../interface/IChatroom'
 import { loginUser } from '../../../../services/authService'
+import { userDB } from '../../../../setup/setupFirebase'
+import User from '../../../../interface/IUser'
 
 type groupProfileProps = {
   roomObject : IChatroom
@@ -14,18 +16,29 @@ type groupProfileProps = {
 
 const ListBlock = ({ roomObject,roomId, selectedRoomId ,onRoomSelected}: groupProfileProps) => {
   const [room, setRoom] = useState<IChatroom>()
+  const [theOtherUser,setTheOtherUser] =useState("");
+  const [loginStatus,setLoginStatus] =useState(false);
+
 
   useEffect(() => {
     setRoom(roomObject)
+    setTheOtherUser(roomObject?.members!.filter((ele) => ele !== loginUser().uid)[0]!);
   }, [roomObject])
 
+  useEffect(() => {
+    if(theOtherUser){
+      userDB.doc(theOtherUser).onSnapshot((doc)=>{
+      const data = doc.data() as User
+      setLoginStatus(data.loginStatus)})
+    }
+    
+  }, [theOtherUser])
+
   const DMTitle = () => {
-    const theOtherUser = room?.members!.filter((ele) => ele !== loginUser().uid)[0]
     return room!.memberInfos[theOtherUser!].username;
   }
 
   const DMProfile = () => {
-    const theOtherUser = room?.members!.filter((ele) => ele !== loginUser().uid)[0]
     return <img className="h-16 w-16 rounded-full object-cover" alt="" src={room!.memberInfos[theOtherUser!].avatar} />
   }
 
@@ -77,7 +90,7 @@ const ListBlock = ({ roomObject,roomId, selectedRoomId ,onRoomSelected}: groupPr
           ) : (
             DMProfile()
           )}
-          {room!.loginStatus && <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500"></div>}
+          {loginStatus && <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500 border-2 border-white"></div>}
         </div>
         <div className="ml-2 flex flex-col">
           <div>{room!.group? room!.title: DMTitle()}</div>
