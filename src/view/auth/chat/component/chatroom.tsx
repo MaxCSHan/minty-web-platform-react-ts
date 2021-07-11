@@ -27,6 +27,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const { id } = useParams<Record<string, string | undefined>>()
   const [isChatroomExist, setIsChatroomExist] = useState(true)
   const [loaded, setIsloaded] = useState(false)
+  // const [loadMessgae, setLoadMessgae] = useState(20)
+  const [loadingTop, setLoadingTop] = useState(false)
 
   const [tempRef, setTempRef] = useState('')
   const [roomTitle, setRoomTitle] = useState('')
@@ -47,15 +49,15 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   useBeforeunload((event) => {
     if (isChatroomExist) {
-      var typingUpdate:any = {};
-      typingUpdate[`isTyping.${loginUser().uid}`] = false;
-      chatroomDB.doc(id).update(typingUpdate);
+      var typingUpdate: any = {}
+      typingUpdate[`isTyping.${loginUser().uid}`] = false
+      chatroomDB.doc(id).update(typingUpdate)
     }
   })
 
   /// Hooks
   useEffect(() => {
-    console.log('started', id)
+    // console.log('started', id)
     setTempRef('')
     setMemberRef({})
     setMembers([])
@@ -75,17 +77,14 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       const chatroomData: IChatroom = data
 
       const isExist = data !== undefined
-      console.log('isExist ', isExist, chatroomData, 'tempRef', tempRef, 'memberRef', memberRef, 'typingRef', typingRef, 'forwardingRoom')
       setIsChatroomExist(isExist)
       if (isExist) {
-
-        
         // chatRef.child(`chatrooms/${id}/members/${loginUser().uid}/`).update({ username: loginUser()?.fullName, avatar: loginUser().avatar })
 
         // console.log("messages id=>",chatroomData.messages)
         setTempRef(chatroomData.messages)
 
-        console.log('membersRef =>', chatroomData.memberInfos)
+        // console.log('membersRef =>', chatroomData.memberInfos)
         if (chatroomData.memberInfos) {
           setMemberRef(chatroomData.memberInfos)
 
@@ -125,7 +124,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     if (theOtherUid) {
       otherUserListener = userDB.doc(theOtherUid!).onSnapshot((doc) => {
         const data: User = doc.data() as User
-        console.log(!forwardingRoom.group,'Antother user is', data)
+        // console.log(!forwardingRoom.group, 'Antother user is', data)
 
         if (!forwardingRoom.group && data) {
           setNewUser(data)
@@ -155,71 +154,53 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       setMyUserName(loginUser()?.username)
       setIsChatroomExist(false)
       setIsDetailed(false)
-      console.log('isExist ', isExist, 'tempRef', tempRef, 'memberRef', memberRef, 'typingRef', typingRef, 'forwardingRoom')
+      // console.log('isExist ', isExist, 'tempRef', tempRef, 'memberRef', memberRef, 'typingRef', typingRef, 'forwardingRoom')
     }
   }, [id])
 
   useEffect(() => {
     let messageListener: () => void
     if (isChatroomExist) {
-      console.log("isChatroomExist",isChatroomExist)
+      // console.log('isChatroomExist', isChatroomExist)
       messageListener = chatroomDB
-      .doc(id)
-      .collection("messages")
-      .orderBy("date","desc")
-      .limit(20)
-      .onSnapshot((doc) => {
-        if (doc) {
-          const mesarr =[] as Message[];
-          doc.forEach( (mes) => {
-            mesarr.unshift(mes.data() as Message);
-          })
-          setMes(mesarr)
-        }
-        setIsloaded(true)
-      })
+        .doc(id)
+        .collection('messages')
+        .orderBy('date', 'desc')
+        .limit(100)
+        .onSnapshot((doc) => {
+          if (doc) {
+            const mesarr = [] as Message[]
+            doc.forEach((mes) => {
+              mesarr.unshift(mes.data() as Message)
+            })
+            setMes(mesarr)
+          }
+          setIsloaded(true)
+        })
     }
     return () => {
       if (isChatroomExist) messageListener()
       setIsloaded(false)
     }
-  }, [id,isChatroomExist])
+  }, [id, isChatroomExist])
 
-  // useEffect(() => {
-  //   let messageListener: () => void
-  //   if (tempRef) {
-  //     messageListener = messageDB.doc(tempRef).onSnapshot((doc) => {
-  //       const data = doc.data()
-  //       // console.log("Messages raw data =>",data)
-  //       if (data) {
-  //         const arr = Object.keys(data)
-  //           .map((key) => [key, data[key]])
-  //           .map((ele) => ({ ...ele[1], id: ele[0] })) as Message[]
-  //         // console.log("Messages process =>",arr)
-  //         setMes(arr)
-  //         console.log('Messages set called =>')
-  //       }
-  //       setIsloaded(true)
-  //     })
-  //   }
-  //   return () => {
-  //     if (tempRef) messageListener()
-  //     setIsloaded(false)
-  //   }
-  // }, [tempRef])
 
   useEffect(() => {
-    if(messages.length>0)
-    {
-    const readSetter = chatroomDB.doc(id);
-    var usersUpdate:any = {};
-    usersUpdate[`read.${loginUser().uid}`] = messages[messages.length - 1].id;
-    if (messages?.length > 0 && !stay) scrollToBottom()
-    setStay(false)
-    if (messages?.length > 0) readSetter.update(usersUpdate)
+    if (messages.length > 0) {
+      const readSetter = chatroomDB.doc(id)
+      var usersUpdate: any = {}
+      usersUpdate[`read.${loginUser().uid}`] = messages[messages.length - 1].id
+      if (messages?.length > 0 && !stay) scrollToBottom()
+      setStay(false)
+      if (messages?.length > 0) readSetter.update(usersUpdate)
     }
-
   }, [messages])
+
+  useEffect(()=>{
+    if(loadingTop){
+      console.log("trigger")
+    }
+  },[loadingTop])
 
   /// Hooks end
 
@@ -234,17 +215,16 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       .doc(privateCoId)
       .get()
       .then((doc) => {
-        console.log(doc)
 
         const setupNew = !doc.exists
-        console.log('Need to set up', setupNew)
+        // console.log('Need to set up', setupNew)
 
         if (setupNew) {
-          console.log('setupNew ')
+          // console.log('setupNew ')
           const creatDate = new Date().getTime()
 
-          const newRoom = chatroomDB.doc(privateCoId);
-          const newMessgaesList = newRoom.collection("messages").doc();
+          const newRoom = chatroomDB.doc(privateCoId)
+          const newMessgaesList = newRoom.collection('messages').doc()
           newMessgaesList.set({
             username: myUserName,
             message: input,
@@ -271,9 +251,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
             defaultTyping[muid] = false
           })
 
-          chatroomDB
-          .doc(privateCoId)
-          .set({
+          chatroomDB.doc(privateCoId).set({
             id: newRoom.id,
             title: `${loginUser().username}`,
             members: memberUids,
@@ -290,13 +268,12 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           } as IChatroom)
 
           memberUids.forEach((ele) => {
-            userDB.doc(ele).collection("roomList").doc(privateCoId).set({privateCoId:true})
+            userDB.doc(ele).collection('roomList').doc(privateCoId).set({ privateCoId: true })
           })
         }
       })
     setIsChatroomExist(true)
-    console.log('click')
-    // setInputValue("")
+
   }
 
   ///
@@ -357,15 +334,13 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   const updateLatest = (newMessage: string, lastActiveDate: number, latestMessageId: string) => {
     var messageUpdate = {
-      "latestMessage": newMessage,
-      "latestActiveDate":lastActiveDate,
-      "latestMessageId":latestMessageId
-    };
-    console.log("update!!",messageUpdate)
-    chatroomDB
-    .doc(id)
-    .update(messageUpdate)
-    
+      latestMessage: newMessage,
+      latestActiveDate: lastActiveDate,
+      latestMessageId: latestMessageId
+    }
+    // console.log('update!!', messageUpdate)
+    chatroomDB.doc(id).update(messageUpdate)
+
     // chatRef.child(`chatrooms/${id}/latestMessage`).set(newMessage)
     // chatRef.child(`chatrooms/${id}/latestActiveDate`).set(lastActiveDate)
     // chatRef.child(`chatrooms/${id}/latestMessageId`).set(latestMessageId)
@@ -373,10 +348,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   const sendInput = () => {
     if (isChatroomExist && inputValue.match(/^(?!\s*$).+/)) {
-      const newMessageRef = chatroomDB
-      .doc(id)
-      .collection('messages')
-      .doc();
+      const newMessageRef = chatroomDB.doc(id).collection('messages').doc()
       newMessageRef.set({
         username: myUserName,
         message: inputValue,
@@ -399,6 +371,18 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       sendInput()
     }
   }
+  const isTop = () => {
+    const elmnt = document.getElementById(`message_${messages[0]?.id}`)
+    const mesTop = document.getElementById("messagesList")
+    
+    if (elmnt && mesTop &&elmnt.getBoundingClientRect().y > mesTop.getBoundingClientRect().top) return true;
+  }
+
+  const handleScroll = (e: any) => {
+    if(isTop() && !loadingTop) {
+      setLoadingTop(isTop()!)
+    };
+  }
 
   const handleTouchSend = () => {
     sendInput()
@@ -406,12 +390,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const handleHeartClick = () => {
-
     if (isChatroomExist) {
-      const newMessageRef = chatroomDB
-      .doc(id)
-      .collection('messages')
-      .doc();
+      const newMessageRef = chatroomDB.doc(id).collection('messages').doc()
       newMessageRef.set({
         username: myUserName,
         message: '❤️',
@@ -432,11 +412,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const isTyping = (action: boolean) => {
-    console.log('id', id, 'isChatroomExist', isChatroomExist)
+    // console.log('id', id, 'isChatroomExist', isChatroomExist)
     if (isChatroomExist) {
-      var typingUpdate:any = {};
-      typingUpdate[`isTyping.${loginUser().uid}`] = action;
-      chatroomDB.doc(id).update(typingUpdate);
+      var typingUpdate: any = {}
+      typingUpdate[`isTyping.${loginUser().uid}`] = action
+      chatroomDB.doc(id).update(typingUpdate)
     }
   }
 
@@ -512,9 +492,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     ))
 
   const messengerComponent = (
-    <Fragment>
-      <div className="flex flex-col flex-grow flex-shrink overflow-hidden  transition-all duration-150 ease-in-out">
-        <div className="flex flex-col flex-grow flex-shrink px-4 pt-4 overflow-x-hidden overflow-y-scroll">
+      <div className={`flex flex-col flex-grow overflow-hidden  transition-all duration-150 ease-in-out sm:pb-0 ${replyMessage?.to.length! > 0 ? 'pb-34' : 'pb-14'}`}>
+        <div className="flex flex-col flex-grow flex-shrink px-4 pt-4 overflow-x-hidden overflow-y-scroll" id="messagesList" onScroll={(e) => handleScroll(e)}>
           {messages && messages.length > 0 ? messagesList : messagesLoading}
         </div>
         {typingRef && (
@@ -541,7 +520,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           </div>
         )}
       </div>
-    </Fragment>
   )
   const detailedComponent = (
     <div className="flex-grow w-screen overflow-y-scroll sm:overflow-hidden sm:w-160 bg-white  border flex flex-col">
@@ -595,7 +573,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   )
 
   const chatroomTemplate = (
-    <div className=" overflow-hidden  w-screen sm:w-160 bg-white  border flex flex-col">
+    <div className=" overflow-hidden  w-screen sm:w-160 bg-white  sm:border flex flex-col">
       <div className="h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
         <Link to="/chat/inbox">
           <div className="mx-4 sm:hidden">
@@ -618,7 +596,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         )}
       </div>
       {messengerComponent}
-      <div className={`${replyMessage?.to.length! > 0 ? 'h-34' : 'h-14'} py-2 flex flex-col items-center px-4`}>
+      <div className={`${replyMessage?.to.length! > 0 ? 'h-34' : 'h-14'} fixed bottom-0 w-full border-t sm:border-0 sm:static  py-2 flex flex-col items-center px-4`}>
         {replyMessage?.to.length! > 0 && (
           <div className="w-full h-16 px-4  flex flex-col ">
             <div className="flex items-center justify-between">

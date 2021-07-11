@@ -173,7 +173,7 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
         onMouseLeave={() => setIsHover(false)}
       >
         <div className={`relative  flex items-end ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
-          {!isForward &&<div className="h-10 w-10"> { (messageData.uid !== nextUid || nextHasReply) && <img className="h-10 w-10 border rounded-full" alt="" src={avatar!} />}</div>}
+          {!isForward && group &&<div className="h-10 w-10"> { (messageData.uid !== nextUid || nextHasReply) && <img className="h-10 w-10 border rounded-full" alt="" src={avatar!} />}</div>}
           {messageData.heart ? (
             <div className={`flex flex-col mx-4 text-8xl text-red-500  ${isForward ? 'items-end' : 'items-start'}`}>
               {group && !isForward &&  (messageData.uid !== previousUid || previousHasReply) && <div className="text-xs text-gray-600">{memberRef[message.uid].username}</div>}

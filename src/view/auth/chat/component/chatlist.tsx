@@ -84,7 +84,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     userDB.limit(10).get().then((doc) => {
       const arr: User[] =[]
       doc.forEach(ele => arr.push(ele.data() as User))
-      console.log(arr)
+      // console.log(arr)
       setSearchUserResult(arr)
     })
   }

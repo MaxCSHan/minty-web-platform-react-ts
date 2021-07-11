@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import {  Route, Switch } from 'react-router-dom';
-import Auth from "./auth/"
+import Auth from "./auth"
 
 
 const Login  = ()=> {
