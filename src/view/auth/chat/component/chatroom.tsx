@@ -492,7 +492,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     ))
 
   const messengerComponent = (
-      <div className={`flex flex-col flex-grow overflow-hidden  transition-all duration-150 ease-in-out sm:pb-0 ${replyMessage?.to.length! > 0 ? 'pb-34' : 'pb-14'}`}>
+      <div className={`flex flex-col flex-grow overflow-hidden  transition-all duration-150 ease-in-out pt-10 sm:pt-0 sm:pb-0 ${replyMessage?.to.length! > 0 ? 'pb-34' : 'pb-14'}`}>
         <div className="flex flex-col flex-grow flex-shrink px-4 pt-4 overflow-x-hidden overflow-y-scroll" id="messagesList" onScroll={(e) => handleScroll(e)}>
           {messages && messages.length > 0 ? messagesList : messagesLoading}
         </div>
@@ -523,12 +523,12 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   )
   const detailedComponent = (
     <div className="flex-grow w-screen overflow-y-scroll sm:overflow-hidden sm:w-160 bg-white  border flex flex-col">
-      <div className="h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
-        <div className="h-16  w-full flex flex-col items-start justify-center">
-          <div className="w-full flex items-center text-xl font-semibold ml-4 sm:ml-0">Chatroom settings</div>
+      <div className="h-10 sm:h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
+        <div className="h-10 sm:h-16  w-full flex flex-col items-start justify-center">
+          <div className="w-full flex items-center text-base sm:text-xl font-semibold ml-4 sm:ml-0">Chatroom settings</div>
         </div>
         <div
-          className="cursor-pointer text-lg text-gray-400 hover:text-gray-600 bg-gray-600 hover:bg-gray-600 rounded-full h-10 w-10 flex items-center justify-center"
+          className="cursor-pointer text-base sm:text-lg  mr-6 sm:mr-0  text-gray-400 hover:text-gray-600 bg-gray-600 hover:bg-gray-600 rounded-full h-6 w-6 sm:h-10 sm:w-10 flex items-center justify-center"
           onClick={() => setIsDetailed(false)}
         >
           <i className="text-white fas fa-ellipsis-v"></i>
@@ -574,21 +574,21 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   const chatroomTemplate = (
     <div className=" overflow-hidden  w-screen sm:w-160 bg-white  sm:border flex flex-col">
-      <div className="h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
+      <div className="fixed z-20 sm:static h-10 sm:h-16 bg-white w-full flex  items-center justify-center px-2 sm:px-8 border-b">
         <Link to="/chat/inbox">
           <div className="mx-4 sm:hidden">
             <i className="fas fa-chevron-left "></i>
           </div>
         </Link>
         <div className="h-16  w-full flex flex-col items-start justify-center">
-          <div className="w-full flex items-center text-xl font-semibold">
+          <div className="w-full flex items-center text-base sm:text-xl font-semibold">
             {forwardingRoom?.group ? (forwardingRoom.title ? forwardingRoom.title : roomTitle) : newUser?.username}
           </div>
           <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
         </div>
         {isChatroomExist && (
           <div
-            className="cursor-pointer text-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full h-10 w-10 flex items-center justify-center"
+            className="cursor-pointer text-base sm:text-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full h-6 w-6 sm:h-10 sm:w-10 mr-6 sm:mr-0 flex items-center justify-center"
             onClick={() => setIsDetailed(true)}
           >
             <i className="fas fa-ellipsis-v"></i>
