@@ -20,6 +20,7 @@ const loginWithGoogle = async () => {
   // chatRef.child("/chatrooms")
   // .once('value', (snapshot) => {
   //   const data = snapshot.val();
+  //   console.log("roomdata",data)
   //     Object.keys(data).forEach(ele => {
   //       const arr =Object.keys(data[ele].members);
   //       console.log(arr);

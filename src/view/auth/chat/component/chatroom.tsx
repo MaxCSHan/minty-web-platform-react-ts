@@ -6,7 +6,7 @@ import Message from '../../../../interface/IMessage'
 import User from '../../../../interface/IUser'
 import Chatblock from './chatBlock'
 import IChatroom from '../../../../interface/IChatroom'
-import { chatroomDB, messageDB, chatRef, usersRef, usersPublicRef, usersPrivateRef, userDB } from '../../../../setup/setupFirebase'
+import { chatroomDB, userDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 import { useParams } from 'react-router-dom'
 import StringMap from '../../../../interface/StringMap'
@@ -46,7 +46,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   // const [isTyping,setIsTyping] = useState(false)
 
   useBeforeunload((event) => {
-    if (isChatroomExist) chatRef.child(`chatrooms/${id}/isTyping/${loginUser().uid}/`).set(false)
+    if (isChatroomExist) {
+      var typingUpdate:any = {};
+      typingUpdate[`isTyping.${loginUser().uid}`] = false;
+      chatroomDB.doc(id).update(typingUpdate);
+    }
   })
 
   /// Hooks
@@ -162,11 +166,13 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       messageListener = chatroomDB
       .doc(id)
       .collection("messages")
+      .orderBy("date","desc")
+      .limit(20)
       .onSnapshot((doc) => {
         if (doc) {
           const mesarr =[] as Message[];
           doc.forEach( (mes) => {
-            mesarr.push(mes.data() as Message);
+            mesarr.unshift(mes.data() as Message);
           })
           setMes(mesarr)
         }
@@ -206,11 +212,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     if(messages.length>0)
     {
     const readSetter = chatroomDB.doc(id);
-    var usersUpdate:any = forwardingRoom;
+    var usersUpdate:any = {};
     usersUpdate[`read.${loginUser().uid}`] = messages[messages.length - 1].id;
     if (messages?.length > 0 && !stay) scrollToBottom()
     setStay(false)
-    if (messages?.length > 0) readSetter.set(usersUpdate)
+    if (messages?.length > 0) readSetter.update(usersUpdate)
     }
 
   }, [messages])
@@ -231,21 +237,21 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         console.log(doc)
 
         const setupNew = !doc.exists
-        console.log('haschild ', setupNew)
+        console.log('Need to set up', setupNew)
 
         if (setupNew) {
           console.log('setupNew ')
           const creatDate = new Date().getTime()
 
-          const newRoom = chatRef.child(`/chatrooms/${privateCoId}`)
-          const newMessgaesList = chatRef.child(`/Messages/${newRoom.key}`).push()
+          const newRoom = chatroomDB.doc(privateCoId);
+          const newMessgaesList = newRoom.collection("messages").doc();
           newMessgaesList.set({
             username: myUserName,
             message: input,
             date: creatDate,
             timeHint: true,
             reply: replyMessage?.to.length ? replyMessage : null,
-            id: newMessgaesList.key,
+            id: newMessgaesList.id,
             uid: loginUser().uid,
             heart: input === '❤️',
             reaction: []
@@ -265,15 +271,16 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
             defaultTyping[muid] = false
           })
 
-          newRoom.set({
-            id: newRoom.key,
+          chatroomDB
+          .doc(privateCoId)
+          .set({
+            id: newRoom.id,
             title: `${loginUser().username}`,
             members: memberUids,
             memberInfos: defaultMembers,
             latestMessage: input,
-            latestMessageId: newMessgaesList.key,
+            latestMessageId: newMessgaesList.id,
             latestActiveDate: creatDate,
-            messages: newRoom.key,
             read: defaultRead,
             isTyping: defaultTyping,
             loginStatus: true,
@@ -283,7 +290,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           } as IChatroom)
 
           memberUids.forEach((ele) => {
-            usersPrivateRef.child(`${ele}/roomList/${group ? newRoom.key : privateCoId}`).set(true)
+            userDB.doc(ele).collection("roomList").doc(privateCoId).set({privateCoId:true})
           })
         }
       })
@@ -320,7 +327,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const resetReply = () => onReply('', '', '', '')
   const jumpTo = (id: string) => {
     const elmnt = document.getElementById(`message_${id}`)
-    console.log('Check =>', elmnt)
+    // console.log('Check =>', elmnt)
     if (elmnt) {
       elmnt.scrollIntoView()
       const originStyle = elmnt?.getAttribute || ''
@@ -349,13 +356,15 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const updateLatest = (newMessage: string, lastActiveDate: number, latestMessageId: string) => {
+    var messageUpdate = {
+      "latestMessage": newMessage,
+      "latestActiveDate":lastActiveDate,
+      "latestMessageId":latestMessageId
+    };
+    console.log("update!!",messageUpdate)
     chatroomDB
     .doc(id)
-    .update({
-      latestMessage: newMessage,
-      latestActiveDate:lastActiveDate,
-      latestMessageId:latestMessageId
-    })
+    .update(messageUpdate)
     
     // chatRef.child(`chatrooms/${id}/latestMessage`).set(newMessage)
     // chatRef.child(`chatrooms/${id}/latestActiveDate`).set(lastActiveDate)
@@ -397,34 +406,24 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const handleHeartClick = () => {
-    // setMes([
-    //   ...messages,
-    //   {
-    //     username: myUserName,
-    //     message: '❤️',
-    //     date: new Date().getTime(),
-    //     timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
-    //     reply:  replyMessage?.to.length?replyMessage : null,
-    //     id: Math.random(),
-    //     uid: 'temp',
-    //     heart: true,
-    //     reaction: []
-    //   } as Message
-    // ])
+
     if (isChatroomExist) {
-      const newMessageRef = chatRef.child(`Messages/${tempRef}`).push()
+      const newMessageRef = chatroomDB
+      .doc(id)
+      .collection('messages')
+      .doc();
       newMessageRef.set({
         username: myUserName,
         message: '❤️',
         date: new Date().getTime(),
         timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
         reply: replyMessage?.to.length ? replyMessage : null,
-        id: newMessageRef.key,
+        id: newMessageRef.id,
         uid: loginUser().uid,
         heart: true,
         reaction: []
       })
-      updateLatest('❤️', new Date().getTime(), newMessageRef?.key!)
+      updateLatest('❤️', new Date().getTime(), newMessageRef?.id!)
     } else {
       creatDM(newUser?.uid!, '❤️')
     }
@@ -434,7 +433,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   const isTyping = (action: boolean) => {
     console.log('id', id, 'isChatroomExist', isChatroomExist)
-    if (isChatroomExist) chatRef.child(`chatrooms/${id}/isTyping/${loginUser().uid}/`).set(action)
+    if (isChatroomExist) {
+      var typingUpdate:any = {};
+      typingUpdate[`isTyping.${loginUser().uid}`] = action;
+      chatroomDB.doc(id).update(typingUpdate);
+    }
   }
 
   const showTyping = () =>
@@ -493,7 +496,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           jumpTo={jumpTo}
           avatar={memberRef[ele.uid]?.avatar || forwardingRoom?.roomPhoto}
           isForward={ele.uid === loginUser().uid}
-          roomId={tempRef}
+          roomId={id!}
           message={ele}
           myUserName={myUserName}
           onReaction={onReaction}

@@ -2,7 +2,7 @@ import Message from '../../../../interface/IMessage'
 import { useEffect, useState } from 'react'
 import IReaction from '../../../../interface/IReaction'
 import IEmoji from '../../../../interface/IEmoji'
-import { chatRef } from '../../../../setup/setupFirebase'
+import { chatroomDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 import StringMap from '../../../../interface/StringMap'
 import IMember from '../../../../interface/IMember'
@@ -121,13 +121,13 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
   }
 
   const setEmoji = (emojiToSet: IEmoji) => {
-    // console.log(messageData.reaction)
-    // console.log(`Id ${messageData.id}: set emoji ${emojiToSet}`)
-    const ref = chatRef.child(`Messages/${roomId}/${message.id}`)
+
+    const ref = chatroomDB.doc(roomId).collection("messages").doc(message.id);
+
     onReaction()
 
-    if (messageData && !messageData.reaction) {
-      ref.set({ ...messageData, reaction: [{ from: myUserName, emoji: emojiToSet }] })
+    if (messageData && messageData.reaction.length===0) {
+      ref.update({"reaction": [{ from: myUserName, emoji: emojiToSet }] })
       return
     }
 

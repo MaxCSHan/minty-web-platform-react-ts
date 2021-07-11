@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 // import { getUsers,getChatrooms } from "../../../../services/userService";
 import IChatroom from '../../../../interface/IChatroom'
-import { chatRef, usersRef ,usersPublicRef,usersPrivateRef,chatroomDB} from '../../../../setup/setupFirebase'
+import {  usersPublicRef,chatroomDB, userDB} from '../../../../setup/setupFirebase'
 import { Link, useLocation } from 'react-router-dom'
 import { loginUser } from '../../../../services/authService'
 import IMember from '../../../../interface/IMember'
@@ -50,7 +50,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     .onSnapshot((querySnapshot) => {
       var dataRoomList: IChatroom[] = [];
       querySnapshot.forEach((doc) => {
-        console.log("chat room",doc.data())
+        // console.log("chat room",doc.data())
         dataRoomList.push(doc.data() as IChatroom);
       });
       setRoomList(dataRoomList)
@@ -81,9 +81,9 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   }
 
   const searchUser = () => {
-    usersPublicRef.limitToLast(10).once('value', (snapshot) => {
-      const data = snapshot.val()
-      const arr: User[] = Object.values(data)
+    userDB.limit(10).get().then((doc) => {
+      const arr: User[] =[]
+      doc.forEach(ele => arr.push(ele.data() as User))
       console.log(arr)
       setSearchUserResult(arr)
     })
