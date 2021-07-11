@@ -7,35 +7,27 @@ import IChatroom from '../../../../interface/IChatroom'
 import { loginUser } from '../../../../services/authService'
 
 type groupProfileProps = {
+  roomObject : IChatroom
   roomId: string
   selectedRoomId: string
   onRoomSelected:(roomid:string)=>void
 }
 
-const ListBlock = ({ roomId, selectedRoomId ,onRoomSelected}: groupProfileProps) => {
+const ListBlock = ({ roomObject,roomId, selectedRoomId ,onRoomSelected}: groupProfileProps) => {
   const [room, setRoom] = useState<IChatroom>()
 
   useEffect(() => {
-    const litsener = chatRef.child(`/chatrooms/${roomId}`)
-    litsener.on('value', (snapshot) => {
-      const data = snapshot.val()
-      console.log(data)
-      setRoom(data)
-    })
-
-    return () => {
-      litsener.off()
-    }
-  }, [roomId])
+    setRoom(roomObject)
+  }, [roomObject])
 
   const DMTitle = () => {
-    const theOtherUser = Object.keys(room?.members!).filter((ele) => ele !== loginUser().uid)[0]
-    return room!.members[theOtherUser].username;
+    const theOtherUser = room?.members!.filter((ele) => ele !== loginUser().uid)[0]
+    return room!.memberInfos[theOtherUser!].username;
   }
 
   const DMProfile = () => {
-    const theOtherUser = Object.keys(room?.members!).filter((ele) => ele !== loginUser().uid)[0]
-    return <img className="h-16 w-16 rounded-full object-cover" alt="" src={room!.members[theOtherUser].avatar} />
+    const theOtherUser = room?.members!.filter((ele) => ele !== loginUser().uid)[0]
+    return <img className="h-16 w-16 rounded-full object-cover" alt="" src={room!.memberInfos[theOtherUser!].avatar} />
   }
 
   const groupProfile = (members: StringMap<IMember>) => {
@@ -82,7 +74,7 @@ const ListBlock = ({ roomId, selectedRoomId ,onRoomSelected}: groupProfileProps)
           {room.roomPhoto ? (
             <img className="h-16 w-16 rounded-full object-cover" alt="" src={room.roomPhoto} />
           ) : room!.group ? (
-            groupProfile(room!.members)
+            groupProfile(room!.memberInfos)
           ) : (
             DMProfile()
           )}

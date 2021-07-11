@@ -5,7 +5,8 @@ interface IChatroom {
     id:string;
     title?:string;
     roomPhoto?:string;
-    members:StringMap<IMember>;
+    members:string[];
+    memberInfos:StringMap<IMember>;
     latestMessage:string;
     latestMessageId:string;
     latestActiveDate:number;

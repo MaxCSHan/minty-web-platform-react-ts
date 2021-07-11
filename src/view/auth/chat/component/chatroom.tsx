@@ -6,7 +6,7 @@ import Message from '../../../../interface/IMessage'
 import User from '../../../../interface/IUser'
 import Chatblock from './chatBlock'
 import IChatroom from '../../../../interface/IChatroom'
-import { chatRef, usersRef, usersPublicRef, usersPrivateRef } from '../../../../setup/setupFirebase'
+import { chatroomDB, messageDB, chatRef, usersRef, usersPublicRef, usersPrivateRef, userDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 import { useParams } from 'react-router-dom'
 import StringMap from '../../../../interface/StringMap'
@@ -63,27 +63,30 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     setIsDetailed(false)
     let isExist: boolean
     const theOtherUid = id?.replace(loginUser().uid, '')
-    const otherUserListener = usersPublicRef.child(theOtherUid!)
+    let otherUserListener: () => void
 
-    const chatRoomListener = chatRef.child(`chatrooms/${id}`)
-    chatRoomListener.on('value', (snapshot) => {
-      const chatroomData: IChatroom = snapshot.val()
+    const chatRoomListener = chatroomDB.doc(id).onSnapshot((doc) => {
+      // console.log('Current data: ', doc.data())
+      const data = doc.data() as IChatroom
+      const chatroomData: IChatroom = data
 
-      const isExist = snapshot.exists()
+      const isExist = data !== undefined
       console.log('isExist ', isExist, chatroomData, 'tempRef', tempRef, 'memberRef', memberRef, 'typingRef', typingRef, 'forwardingRoom')
       setIsChatroomExist(isExist)
       if (isExist) {
-        chatRef.child(`chatrooms/${id}/members/${loginUser().uid}/`).update({ username: loginUser()?.fullName, avatar: loginUser().avatar })
+
+        
+        // chatRef.child(`chatrooms/${id}/members/${loginUser().uid}/`).update({ username: loginUser()?.fullName, avatar: loginUser().avatar })
 
         // console.log("messages id=>",chatroomData.messages)
         setTempRef(chatroomData.messages)
 
-        // console.log("membersRef =>",chatroomData.members)
-        if (chatroomData.members) {
-          setMemberRef(chatroomData.members)
+        console.log('membersRef =>', chatroomData.memberInfos)
+        if (chatroomData.memberInfos) {
+          setMemberRef(chatroomData.memberInfos)
 
-          const arr = Object.keys(chatroomData.members)
-            .map((key) => [key, chatroomData.members[key]])
+          const arr = Object.keys(chatroomData.memberInfos)
+            .map((key) => [key, chatroomData.memberInfos[key]])
             .map((ele) => ({ ...(ele[1] as IMember), uid: ele[0] as string } as IMember))
           //  console.log(arr)
           setMembers(arr)
@@ -104,26 +107,39 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
         // console.log("Room =>",chatroomData);
         setForwardingRoom(chatroomData)
-      } else if (theOtherUid) {
-        otherUserListener.once('value', (snapshot) => {
-          const data: User = snapshot.val()
-          setNewUser(data)
-          // console.log("Antother user is",data)
-          setRoomTitle(data.username)
-        })
       }
+      // else if (theOtherUid) {
+      //   otherUserListener = userDB.doc(theOtherUid!).onSnapshot((doc) => {
+      //     const data: User = doc.data() as User;
+      //     setNewUser(data)
+      //     // console.log("Antother user is",data)
+      //     setRoomTitle(data.username)
+      //   })
+      // }
     })
 
     if (theOtherUid) {
-      otherUserListener.once('value', (snapshot) => {
-        const data: User = snapshot.val()
-        if (data) setNewUser(data)
+      otherUserListener = userDB.doc(theOtherUid!).onSnapshot((doc) => {
+        const data: User = doc.data() as User
+        console.log(!forwardingRoom.group,'Antother user is', data)
+
+        if (!forwardingRoom.group && data) {
+          setNewUser(data)
+          setRoomTitle(data.username)
+        }
       })
     }
 
+    // if (theOtherUid) {
+    //   otherUserListener.once('value', (snapshot) => {
+    //     const data: User = snapshot.val()
+    //     if (data) setNewUser(data)
+    //   })
+    // }
+
     return () => {
-      chatRoomListener.off()
-      otherUserListener.off()
+      chatRoomListener()
+      otherUserListener()
       setTempRef('')
       setMemberRef({})
       setNewUser({} as User)
@@ -140,47 +156,81 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }, [id])
 
   useEffect(() => {
-    const messageListener = chatRef.child(`Messages/${tempRef}`)
-    if (tempRef) {
-      messageListener.on('value', (snapshot) => {
-        const data = snapshot.val()
-        // console.log("Messages raw data =>",data)
-        if (data) {
-          const arr = Object.keys(data)
-            .map((key) => [key, data[key]])
-            .map((ele) => ({ ...ele[1], id: ele[0] })) as Message[]
-          // console.log("Messages process =>",arr)
-          setMes(arr)
-          console.log('Messages set called =>')
+    let messageListener: () => void
+    if (isChatroomExist) {
+      console.log("isChatroomExist",isChatroomExist)
+      messageListener = chatroomDB
+      .doc(id)
+      .collection("messages")
+      .onSnapshot((doc) => {
+        if (doc) {
+          const mesarr =[] as Message[];
+          doc.forEach( (mes) => {
+            mesarr.push(mes.data() as Message);
+          })
+          setMes(mesarr)
         }
         setIsloaded(true)
       })
     }
     return () => {
-      messageListener.off()
+      if (isChatroomExist) messageListener()
       setIsloaded(false)
     }
-  }, [tempRef])
+  }, [id,isChatroomExist])
+
+  // useEffect(() => {
+  //   let messageListener: () => void
+  //   if (tempRef) {
+  //     messageListener = messageDB.doc(tempRef).onSnapshot((doc) => {
+  //       const data = doc.data()
+  //       // console.log("Messages raw data =>",data)
+  //       if (data) {
+  //         const arr = Object.keys(data)
+  //           .map((key) => [key, data[key]])
+  //           .map((ele) => ({ ...ele[1], id: ele[0] })) as Message[]
+  //         // console.log("Messages process =>",arr)
+  //         setMes(arr)
+  //         console.log('Messages set called =>')
+  //       }
+  //       setIsloaded(true)
+  //     })
+  //   }
+  //   return () => {
+  //     if (tempRef) messageListener()
+  //     setIsloaded(false)
+  //   }
+  // }, [tempRef])
 
   useEffect(() => {
-    const readSetter = chatRef.child(`chatrooms/${id}/read/${loginUser().uid}/`)
+    if(messages.length>0)
+    {
+    const readSetter = chatroomDB.doc(id);
+    var usersUpdate:any = forwardingRoom;
+    usersUpdate[`read.${loginUser().uid}`] = messages[messages.length - 1].id;
     if (messages?.length > 0 && !stay) scrollToBottom()
     setStay(false)
-    if (messages?.length > 0) readSetter.set(messages[messages.length - 1].id)
+    if (messages?.length > 0) readSetter.set(usersUpdate)
+    }
+
   }, [messages])
 
   /// Hooks end
 
   /** Creat a new DM room */
   const creatDM = async (uid: string, input: string) => {
-    await usersPrivateRef
-      .child(`${loginUser().uid}/roomList`)
-      .once('value')
-      .then(function (snapshot) {
-        const group = false
-        const privateCoId = [loginUser().uid, uid].sort().join('')
+    const privateCoId = [loginUser().uid, uid].sort().join('')
+    const group = false
 
-        const setupNew = !snapshot.hasChild(`/${privateCoId}`)
+    await userDB
+      .doc(loginUser().uid)
+      .collection('roomList')
+      .doc(privateCoId)
+      .get()
+      .then((doc) => {
+        console.log(doc)
+
+        const setupNew = !doc.exists
         console.log('haschild ', setupNew)
 
         if (setupNew) {
@@ -218,7 +268,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           newRoom.set({
             id: newRoom.key,
             title: `${loginUser().username}`,
-            members: defaultMembers,
+            members: memberUids,
+            memberInfos: defaultMembers,
             latestMessage: input,
             latestMessageId: newMessgaesList.key,
             latestActiveDate: creatDate,
@@ -298,25 +349,36 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const updateLatest = (newMessage: string, lastActiveDate: number, latestMessageId: string) => {
-    chatRef.child(`chatrooms/${id}/latestMessage`).set(newMessage)
-    chatRef.child(`chatrooms/${id}/latestActiveDate`).set(lastActiveDate)
-    chatRef.child(`chatrooms/${id}/latestMessageId`).set(latestMessageId)
+    chatroomDB
+    .doc(id)
+    .update({
+      latestMessage: newMessage,
+      latestActiveDate:lastActiveDate,
+      latestMessageId:latestMessageId
+    })
+    
+    // chatRef.child(`chatrooms/${id}/latestMessage`).set(newMessage)
+    // chatRef.child(`chatrooms/${id}/latestActiveDate`).set(lastActiveDate)
+    // chatRef.child(`chatrooms/${id}/latestMessageId`).set(latestMessageId)
   }
 
   const sendInput = () => {
     if (isChatroomExist && inputValue.match(/^(?!\s*$).+/)) {
-      const newMessageRef = chatRef.child(`Messages/${tempRef}`).push()
+      const newMessageRef = chatroomDB
+      .doc(id)
+      .collection('messages')
+      .doc();
       newMessageRef.set({
         username: myUserName,
         message: inputValue,
         date: new Date().getTime(),
         timeHint: (new Date().getTime() - messages[messages.length - 1]?.date) / (1000 * 60) > 5,
         reply: replyMessage?.to.length ? replyMessage : null,
-        id: newMessageRef.key,
+        id: newMessageRef.id,
         uid: loginUser().uid,
         reaction: []
       })
-      updateLatest(inputValue, new Date().getTime(), newMessageRef?.key!)
+      updateLatest(inputValue, new Date().getTime(), newMessageRef.id!)
     } else {
       creatDM(newUser?.uid!, inputValue)
     }
@@ -324,14 +386,14 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     resetReply()
   }
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' ) {
-      sendInput();
+    if (e.key === 'Enter') {
+      sendInput()
     }
   }
 
   const handleTouchSend = () => {
-    sendInput();
-    inputRef!.current?.focus();
+    sendInput()
+    inputRef!.current?.focus()
   }
 
   const handleHeartClick = () => {
@@ -583,7 +645,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
             ></input>
           </div>
           {inputValue.length > 0 ? (
-            <div className="w-8 ml-2  origin-center cursor-pointer" onClick={()=>handleTouchSend()}>
+            <div className="w-8 ml-2  origin-center cursor-pointer" onClick={() => handleTouchSend()}>
               <i className="fas fa-location-arrow fa-rotate-45"></i>
             </div>
           ) : (

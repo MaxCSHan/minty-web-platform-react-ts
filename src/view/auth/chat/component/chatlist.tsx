@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 // import { getUsers,getChatrooms } from "../../../../services/userService";
 import IChatroom from '../../../../interface/IChatroom'
-import { chatRef, usersRef ,usersPublicRef,usersPrivateRef} from '../../../../setup/setupFirebase'
+import { chatRef, usersRef ,usersPublicRef,usersPrivateRef,chatroomDB} from '../../../../setup/setupFirebase'
 import { Link, useLocation } from 'react-router-dom'
 import { loginUser } from '../../../../services/authService'
 import IMember from '../../../../interface/IMember'
@@ -27,7 +27,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   const [selectedRoom, setSelectedRoom] = useState<string>()
   const [searchUserResult, setSearchUserResult] = useState<User[]>()
 
-  const [roomList, setRoomList] = useState<string[]>([])
+  const [roomList, setRoomList] = useState<IChatroom[]>([])
 
   // const [roomList, setRoomList] = useState<IChatroom[]>([])
 
@@ -43,17 +43,31 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     //     console.log("user",data)
        
     //   })
-    usersPrivateRef
-      .child(`/${loginUid}/roomList`)
-      .on('value', (snapshot) => {
-        const data = snapshot.val()
-        console.log("user",data)
-        if(data){
-           const arr = Object.keys(data);
-        setRoomList(arr)
-        }
+
+    chatroomDB
+    .where(`members`, "array-contains", loginUid)
+    .orderBy("latestActiveDate", "desc")
+    .onSnapshot((querySnapshot) => {
+      var dataRoomList: IChatroom[] = [];
+      querySnapshot.forEach((doc) => {
+        console.log("chat room",doc.data())
+        dataRoomList.push(doc.data() as IChatroom);
+      });
+      setRoomList(dataRoomList)
+    });
+
+
+    // usersPrivateRef
+    //   .child(`/${loginUid}/roomList`)
+    //   .on('value', (snapshot) => {
+    //     const data = snapshot.val()
+    //     console.log("user",data)
+    //     if(data){
+    //        const arr = Object.keys(data);
+    //     setRoomList(arr)
+    //     }
        
-      })
+    //   })
     searchUser()
     // console.log("API CHatroom =>",roomList)
   }, [])
@@ -123,8 +137,8 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     </Link >
   ))
 
-  const roomListComponent = ["-Mdtq1YgZ08zGZtk6Ejy",...roomList].map((ele, index) => (
-    <ListBlock roomId={ele} selectedRoomId={selectedRoom!} onRoomSelected={onRoomSelected} ></ListBlock>
+  const roomListComponent = [...roomList].map((ele, index) => (
+    <ListBlock roomObject={ele} roomId={ele.id} selectedRoomId={selectedRoom!} onRoomSelected={onRoomSelected} ></ListBlock>
   ))
 
   const searchArea = (
