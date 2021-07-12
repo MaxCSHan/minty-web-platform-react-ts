@@ -523,8 +523,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   )
   const detailedComponent = (
     <div className="flex-grow w-screen overflow-y-scroll sm:overflow-hidden sm:w-160 bg-white  border flex flex-col">
-      <div className="h-10 sm:h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
-        <div className="h-10 sm:h-16  w-full flex flex-col items-start justify-center">
+      <div className="h-12 sm:h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
+        <div className="h-12 sm:h-16  w-full flex flex-col items-start justify-center">
           <div className="w-full flex items-center text-base sm:text-xl font-semibold ml-4 sm:ml-0">Chatroom settings</div>
         </div>
         <div
@@ -574,7 +574,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   const chatroomTemplate = (
     <div className=" overflow-hidden  w-screen sm:w-160 bg-white  sm:border flex flex-col">
-      <div className="fixed z-20 sm:static h-10 sm:h-16 bg-white w-full flex  items-center justify-center px-2 sm:px-8 border-b">
+      <div className="fixed z-20 sm:static h-12 sm:h-16 bg-white w-full flex  items-center justify-center px-2 sm:px-8 border-b">
         <Link to="/chat/inbox">
           <div className="mx-4 sm:hidden">
             <i className="fas fa-chevron-left "></i>

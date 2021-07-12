@@ -113,13 +113,13 @@ const MiniSearchbar = () => {
 
 const Navbar = () => {
   const [isDropdown, setIsDropdown] = useState(false);
-
+  const location =usePathname()
   return (
-    <div className="fixed h-14 flex w-screen z-20 bg-white dark:bg-gray-800 dark:text-white items-center border-b justify-between">
+    <div className={`fixed h-14  w-screen z-20 bg-white dark:bg-gray-800 dark:text-white items-center border-b justify-between ${location.includes("/chat/room")?"hidden sm:flex":"flex"}`}>
       <div className="h-full ml-3 mr-1 sm:mr-3 text-sm sm:text-base flex items-center">
         <Link to="/">MintySpace</Link>
       </div>
-      {usePathname() === "/search" ? "" : <MiniSearchbar></MiniSearchbar>}
+      {location === "/search" ? "" : <MiniSearchbar></MiniSearchbar>}
 
       <div className="h-full w-48 md:w-64  flex items-center justify-around mr-3">
         <Link to="/">
