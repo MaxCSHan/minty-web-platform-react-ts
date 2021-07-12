@@ -45,7 +45,10 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const [isDetailed, setIsDetailed] = useState(false)
   const [messages, setMes] = useState<Message[]>([])
   const [stay, setStay] = useState(false)
-  // const [isTyping,setIsTyping] = useState(false)
+
+  const [inputTitleValue, setInputTitleValue] = useState<string | undefined>('')
+  const [editTitle, setEditTitle] = useState(false)
+
 
   useBeforeunload((event) => {
     if (isChatroomExist) {
@@ -90,8 +93,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       const isExist = data !== undefined
       setIsChatroomExist(isExist)
       if (isExist) {
-        // chatRef.child(`chatrooms/${id}/members/${loginUser().uid}/`).update({ username: loginUser()?.fullName, avatar: loginUser().avatar })
-
+        setInputTitleValue(chatroomData.title)
+        setEditTitle(!chatroomData.title)
         // console.log("messages id=>",chatroomData.messages)
         setTempRef(chatroomData.messages)
 
@@ -270,6 +273,25 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleTitleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (value === '') setInputTitleValue('')
+    else {
+      setInputTitleValue(value)
+    }
+  }
+  const saveTitle = () => {
+    setEditTitle(false);
+    chatroomDB
+    .doc(id)
+    .update({"title":inputTitleValue})
+  }
+  const discardTitle = () => {
+    setEditTitle(false);
+    setInputTitleValue(forwardingRoom.title);
+  }
+
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -528,8 +550,16 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         <div className="w-full flex flex-col justify-center px-8 py-4 border-b">
           <div className="font-semibold text-lg mb-2">Room name</div>
           <div className="flex items-center justify-between">
-            <div className="mx-2 my-2 flex items-center">{forwardingRoom?.title}</div>
-            {forwardingRoom?.title && <div className="font-semibold cursor-pointer text-blue-500">Change Name</div>}
+            <div className="mx-2 my-2 flex items-center"><input onChange={(e) => handleTitleInput(e)} className={`bg-white`} value={inputTitleValue} disabled={!editTitle} placeholder={"Set a room name"}></input></div>
+            {/* <div className="mx-2 my-2 flex items-center">{forwardingRoom?.title}</div> */}
+
+            {editTitle && 
+            <div className="flex">
+              <div className="font-semibold cursor-pointer text-blue-500 mr-3" onClick={()=>saveTitle()}>Save</div>
+              {<div className="font-semibold cursor-pointer text-red-500" onClick={()=>discardTitle()}>Discard</div>}
+            </div>
+            }
+            {!editTitle && <div className="font-semibold cursor-pointer text-blue-500" onClick={()=>setEditTitle(true)}>Change Name</div>}
           </div>
         </div>
       )}
