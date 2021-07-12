@@ -492,8 +492,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     ))
 
   const messengerComponent = (
-      <div className={`flex flex-col flex-grow overflow-hidden  transition-all duration-150 ease-in-out pt-10 sm:pt-0 sm:pb-0 ${replyMessage?.to.length! > 0 ? 'pb-34' : 'pb-14'}`}>
-        <div className="flex flex-col flex-grow flex-shrink px-4 pt-4 overflow-x-hidden overflow-y-scroll" id="messagesList" onScroll={(e) => handleScroll(e)}>
+      <div className={`flex flex-col flex-grow overflow-hidden  transition-all duration-150 ease-in-out pt-10 sm:pt-0`}>
+        <div className="flex flex-col flex-grow flex-shrink h-screen px-4 pt-4 overflow-x-hidden overflow-y-scroll" id="messagesList" onScroll={(e) => handleScroll(e)}>
           {messages && messages.length > 0 ? messagesList : messagesLoading}
         </div>
         {typingRef && (
@@ -573,7 +573,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   )
 
   const chatroomTemplate = (
-    <div className=" overflow-hidden  w-screen sm:w-160 bg-white  sm:border flex flex-col">
+    <div className=" overflow-hidden h-screen sm:h-auto  w-screen sm:w-160 bg-white   sm:border flex flex-col">
       <div className="fixed z-20 sm:static h-12 sm:h-16 bg-white w-full flex  items-center justify-center px-2 sm:px-8 border-b">
         <Link to="/chat/inbox">
           <div className="mx-4 sm:hidden">
@@ -596,7 +596,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         )}
       </div>
       {messengerComponent}
-      <div className={`${replyMessage?.to.length! > 0 ? 'h-34' : 'h-14'} fixed bottom-0 w-full border-t sm:border-0 sm:static  py-2 flex flex-col items-center px-4`}>
+      <div className={`${replyMessage?.to.length! > 0 ? 'h-34' : 'h-14'}    py-2 flex flex-col items-center px-4`}>
         {replyMessage?.to.length! > 0 && (
           <div className="w-full h-16 px-4  flex flex-col ">
             <div className="flex items-center justify-between">
@@ -611,7 +611,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
             <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">{replyMessage!.message}</div>
           </div>
         )}
-        <div className=" flex   w-full h-10 px-4 border rounded-full  items-center ">
+        <div className=" flex   w-full h-10 px-4 border rounded-full  items-center">
           {/* <div className="w-10">front</div> */}
           <div className="ml-2 flex-grow">
             <input
