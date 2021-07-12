@@ -2,9 +2,16 @@ import Chatroom from "./component/chatroom";
 import Chatlist from "./component/chatlist";
 import { useState,useEffect } from "react";
 import {loginUser} from "../../../services/authService"
-import { Switch, Route,Redirect} from "react-router-dom";
+import { Switch, Route,Redirect, useLocation} from "react-router-dom";
 import Starter from "./component/Starter";
+
+const usePathname = () => {
+  const location = useLocation();
+  return location.pathname;
+};
+
 const Chat = () => {
+  const location = usePathname().includes("/chat/room")
 
   const [myUsername,setMyUserName] = useState("");
 
@@ -25,7 +32,7 @@ const Chat = () => {
 
 
   return (
-    <div className=" overflow-hidden flex h-screen  sm:pt-14  w-screen 	justify-center  sm:items-center sm:bg-gray-100  transition duration-100 ease-in-out">
+    <div className={` overflow-hidden flex h-screen  ${location?"sm:pt-14":"pt-14"}  w-screen 	justify-center  sm:items-center sm:bg-gray-100  transition duration-100 ease-in-out`}>
       <div className=" max-h-180 sm:h-95/100 sm:max-h-240 md:max-h-280  2xl:max-h-320 flex flex-col sm:flex sm:flex-row md:flex-row">
         <Chatlist   myUsername={myUsername}></Chatlist>
         <Switch>
