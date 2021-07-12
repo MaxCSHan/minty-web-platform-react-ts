@@ -77,7 +77,7 @@ const ListBlock = ({ roomObject,roomId, selectedRoomId ,onRoomSelected}: groupPr
     <Link key={`chatroom_link_${roomId}`} to={`/chat/room/${roomId}`}>
       <div
       onClick={()=>onRoomSelected(roomId)}
-        className={`w-full px-4 h-20 flex items-center ${
+        className={`w-full  px-4 h-20 flex items-center ${
           roomId === selectedRoomId ? 'bg-gray-100 hover:bg-gray-100 ' : 'bg-white hover:bg-gray-50 '
         }`}
         key={`chatroom_${roomId}`}
@@ -95,11 +95,11 @@ const ListBlock = ({ roomObject,roomId, selectedRoomId ,onRoomSelected}: groupPr
         <div className="ml-2 flex flex-col">
           <div>{room!.group? room!.title: DMTitle()}</div>
           <div
-            className={`w-64 flex justify-between ${
+            className={` md:w-64 flex justify-between ${
               (room!.read ? room!.read[loginUser().uid] : '') !== room!.latestMessageId || false ? 'font-semibold' : ''
             }`}
           >
-            <div className="whitespace-nowrap overflow-hidden overflow-ellipsis w-48">{room!.latestMessage!.slice(0, 20)} </div>
+            <div className="whitespace-nowrap overflow-hidden overflow-ellipsis md:w-48">{room!.latestMessage!.slice(0, 20)} </div>
             <div className="text-sm mx-1 flex items-center">•</div>
             <div className="text-xs whitespace-nowrap flex items-center">{dateController(room!.latestActiveDate)}</div>
           </div>

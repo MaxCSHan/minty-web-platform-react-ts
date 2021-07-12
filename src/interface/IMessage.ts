@@ -16,6 +16,7 @@ interface Message {
     uid:string;
     heart?:boolean;
     reaction:IReaction[]
+    create?:boolean;
   }
 
   export default Message;

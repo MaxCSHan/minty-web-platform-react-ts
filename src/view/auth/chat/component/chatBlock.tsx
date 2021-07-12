@@ -121,7 +121,7 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
   }
 
   const setEmoji = (emojiToSet: IEmoji) => {
-
+    setOnClikReaction(false);
     const ref = chatroomDB.doc(roomId).collection("messages").doc(message.id);
 
     onReaction()
@@ -165,6 +165,7 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
       {/* date */}
       {dateController(messageData)}
 
+      {!message.create?
       <div
         className={`flex w-full  ${isForward ? 'flex-row-reverse' : 'flex-row'}`}
         id={`message_${messageData.id}`}
@@ -272,6 +273,9 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
           )}
         </div>
       </div>
+    :
+    <div className={`text-center text-gray-600 my-3`}>{message.username} has created a new room</div>
+    }
     </div>
   )
 

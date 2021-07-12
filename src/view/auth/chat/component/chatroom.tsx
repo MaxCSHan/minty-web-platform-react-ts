@@ -58,18 +58,29 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   /// Hooks
   useEffect(() => {
     // console.log('started', id)
-    setTempRef('')
-    setMemberRef({})
-    setMembers([])
-    setReadRef({})
-    setTypingRef({})
-    setMes([])
-    setForwardingRoom({} as IChatroom)
-    setMyUserName(loginUser()?.username)
-    setIsDetailed(false)
+    // setTempRef('')
+    // setMemberRef({})
+    // setMembers([])
+    // setReadRef({})
+    // setTypingRef({})
+    // setMes([])
+    // setForwardingRoom({} as IChatroom)
+    // setMyUserName(loginUser()?.username)
+    // setIsDetailed(false)
     let isExist: boolean
     const theOtherUid = id?.replace(loginUser().uid, '')
-    let otherUserListener: () => void
+
+    if (theOtherUid) {
+      userDB.doc(theOtherUid!).get().then((doc) => {
+        const data: User = doc.data() as User
+        // console.log(!forwardingRoom.group, 'Antother user is', data)
+
+        if (theOtherUid && data) {
+          setNewUser(data)
+          setRoomTitle(data.username)
+        }
+      })
+    }
 
     const chatRoomListener = chatroomDB.doc(id).onSnapshot((doc) => {
       // console.log('Current data: ', doc.data())
@@ -93,6 +104,10 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
             .map((ele) => ({ ...(ele[1] as IMember), uid: ele[0] as string } as IMember))
           //  console.log(arr)
           setMembers(arr)
+          if (chatroomData.group && !chatroomData.title) {
+            setRoomTitle(arr.map(ele => ele.username).filter(ele => ele!==loginUser().username).join(", "))
+          }
+
         }
 
         // console.log("readRef =>",chatroomData.read)
@@ -110,39 +125,14 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
         // console.log("Room =>",chatroomData);
         setForwardingRoom(chatroomData)
+
       }
-      // else if (theOtherUid) {
-      //   otherUserListener = userDB.doc(theOtherUid!).onSnapshot((doc) => {
-      //     const data: User = doc.data() as User;
-      //     setNewUser(data)
-      //     // console.log("Antother user is",data)
-      //     setRoomTitle(data.username)
-      //   })
-      // }
+
     })
-
-    if (theOtherUid) {
-      otherUserListener = userDB.doc(theOtherUid!).onSnapshot((doc) => {
-        const data: User = doc.data() as User
-        // console.log(!forwardingRoom.group, 'Antother user is', data)
-
-        if (!forwardingRoom.group && data) {
-          setNewUser(data)
-          setRoomTitle(data.username)
-        }
-      })
-    }
-
-    // if (theOtherUid) {
-    //   otherUserListener.once('value', (snapshot) => {
-    //     const data: User = snapshot.val()
-    //     if (data) setNewUser(data)
-    //   })
-    // }
+ 
 
     return () => {
       chatRoomListener()
-      otherUserListener()
       setTempRef('')
       setMemberRef({})
       setNewUser({} as User)
@@ -154,7 +144,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       setMyUserName(loginUser()?.username)
       setIsChatroomExist(false)
       setIsDetailed(false)
-      // console.log('isExist ', isExist, 'tempRef', tempRef, 'memberRef', memberRef, 'typingRef', typingRef, 'forwardingRoom')
+      console.log("room",forwardingRoom)
     }
   }, [id])
 
@@ -522,7 +512,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       </div>
   )
   const detailedComponent = (
-    <div className="flex-grow w-screen overflow-y-scroll sm:overflow-hidden sm:w-160 bg-white  border flex flex-col">
+    <div className="flex-grow w-screen overflow-y-scroll sm:overflow-hidden sm:w-96 md:w-120 lg:w-160 bg-white  border flex flex-col">
       <div className="h-12 sm:h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
         <div className="h-12 sm:h-16  w-full flex flex-col items-start justify-center">
           <div className="w-full flex items-center text-base sm:text-xl font-semibold ml-4 sm:ml-0">Chatroom settings</div>
@@ -573,7 +563,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   )
 
   const chatroomTemplate = (
-    <div className=" overflow-hidden h-screen sm:h-auto  w-screen sm:w-160 bg-white   sm:border flex flex-col">
+    <div className=" overflow-hidden h-screen sm:h-auto  w-screen sm:w-96 md:w-120 lg:w-160 bg-white   sm:border flex flex-col">
       <div className="fixed z-20 sm:static h-12 sm:h-16 bg-white w-full flex  items-center justify-center px-2 sm:px-8 border-b">
         <Link to="/chat/inbox">
           <div className="mx-4 sm:hidden">
@@ -582,7 +572,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         </Link>
         <div className="h-16  w-full flex flex-col items-start justify-center">
           <div className="w-full flex items-center text-base sm:text-xl font-semibold">
-            {forwardingRoom?.group ? (forwardingRoom.title ? forwardingRoom.title : roomTitle) : newUser?.username}
+            {isChatroomExist? forwardingRoom.title ? forwardingRoom.title : members.filter(ele => ele.uid!==loginUser().uid).map(ele => ele.username).join(", ") : newUser?.username}
           </div>
           <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
         </div>

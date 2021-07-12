@@ -159,13 +159,15 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   )
 
   return (
-    <div className={`w-screen sm:w-96 sm:flex ${locationChecker() ? '' : 'hidden'}`}>
+    <div className={`w-screen sm:max-w-xs md:max-w-none md:w-96 sm:flex ${locationChecker() ? '' : 'hidden'}`}>
       <div className="w-full bg-white border  flex flex-col items-center">
         <div className="flex flex-col w-full">
           <div className="relative h-16 flex items-center justify-center font-semibold text-lg border-b">
             {myUsername}
             <div className="absolute right-10 h-10 w-10 flex items-center justify-center cursor-pointer rounded-full  hover:bg-gray-50">
+            <Link to={"/chat/inbox/new"}>
               <i className="fas fa-paper-plane"></i>
+              </Link>
             </div>
           </div>
           <div className="h-12 flex items-center px-4">
@@ -178,14 +180,14 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
             ></input>{
               searching && 
               <div className="ml-2 text-gray-400 hover:text-gray-600" 
-            onClick={() => setSearching(false)}
+            onClick={() => {setSearching(false); setInputValue("");}}
             >
                 <i className="fas fa-times"></i>
               </div>
             }
             </div>
         </div>
-        <div className="w-full flex-grow border-t overflow-y-scroll">
+        <div className="w-full flex-grow flex-shrink border-t overflow-y-scroll">
           {/* {loadingListComponent} */}
           {((searching || inputValue.length > 0 )? searchArea : roomListComponent) }
         </div>

@@ -1,5 +1,6 @@
 import Chatroom from "./component/chatroom";
 import Chatlist from "./component/chatlist";
+import NewRoom from "./component/NewRoom"
 import { useState,useEffect } from "react";
 import {loginUser} from "../../../services/authService"
 import { Switch, Route,Redirect, useLocation} from "react-router-dom";
@@ -37,6 +38,7 @@ const Chat = () => {
         <Chatlist   myUsername={myUsername}></Chatlist>
         <Switch>
           <Route exact path="/chat/inbox" component={Starter} />
+          <Route exact path="/chat/inbox/new" component={NewRoom} />
           <Redirect exact from="/chat/room/" to="/chat/inbox" />
           <Redirect exact from="/chat/" to="/chat/inbox" />
           <Route exact path="/chat/room/:id" component={Chatroom} />
