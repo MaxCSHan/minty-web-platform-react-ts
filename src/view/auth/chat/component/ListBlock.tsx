@@ -8,34 +8,33 @@ import { userDB } from '../../../../setup/setupFirebase'
 import User from '../../../../interface/IUser'
 
 type groupProfileProps = {
-  roomObject : IChatroom
+  roomObject: IChatroom
   roomId: string
   selectedRoomId: string
-  onRoomSelected:(roomid:string)=>void
+  onRoomSelected: (roomid: string) => void
 }
 
-const ListBlock = ({ roomObject,roomId, selectedRoomId ,onRoomSelected}: groupProfileProps) => {
+const ListBlock = ({ roomObject, roomId, selectedRoomId, onRoomSelected }: groupProfileProps) => {
   const [room, setRoom] = useState<IChatroom>()
-  const [theOtherUser,setTheOtherUser] =useState("");
-  const [loginStatus,setLoginStatus] =useState(false);
-
+  const [theOtherUser, setTheOtherUser] = useState('')
+  const [loginStatus, setLoginStatus] = useState(false)
 
   useEffect(() => {
     setRoom(roomObject)
-    setTheOtherUser(roomObject?.members!.filter((ele) => ele !== loginUser().uid)[0]!);
+    setTheOtherUser(roomObject?.members!.filter((ele) => ele !== loginUser().uid)[0]!)
   }, [roomObject])
 
   useEffect(() => {
-    if(theOtherUser){
-      userDB.doc(theOtherUser).onSnapshot((doc)=>{
-      const data = doc.data() as User
-      setLoginStatus(data.loginStatus)})
+    if (theOtherUser) {
+      userDB.doc(theOtherUser).onSnapshot((doc) => {
+        const data = doc.data() as User
+        setLoginStatus(data.loginStatus)
+      })
     }
-    
   }, [theOtherUser])
 
   const DMTitle = () => {
-    return room!.memberInfos[theOtherUser!].username;
+    return room!.memberInfos[theOtherUser!].username
   }
 
   const DMProfile = () => {
@@ -76,7 +75,7 @@ const ListBlock = ({ roomObject,roomId, selectedRoomId ,onRoomSelected}: groupPr
   return room ? (
     <Link key={`chatroom_link_${roomId}`} to={`/chat/room/${roomId}`}>
       <div
-      onClick={()=>onRoomSelected(roomId)}
+        onClick={() => onRoomSelected(roomId)}
         className={`w-full  px-4 h-20 flex items-center ${
           roomId === selectedRoomId ? 'bg-gray-100 hover:bg-gray-100 ' : 'bg-white hover:bg-gray-50 '
         }`}
@@ -93,15 +92,23 @@ const ListBlock = ({ roomObject,roomId, selectedRoomId ,onRoomSelected}: groupPr
           {loginStatus && <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-green-500 border-2 border-white"></div>}
         </div>
         <div className="ml-2 flex flex-col">
-          <div>{room!.group? room!.title: DMTitle()}</div>
+          <div className="whitespace-nowrap overflow-hidden overflow-ellipsis w-40  md:w-44">
+            {room!.group
+              ? room!.title ||
+                Object.values(room.memberInfos)
+                  .filter((ele) => ele.uid !== loginUser().uid)
+                  .map((ele) => ele.username)
+                  .join(', ')
+              : DMTitle()}
+          </div>
           <div
             className={` md:w-64 flex justify-between ${
               (room!.read ? room!.read[loginUser().uid] : '') !== room!.latestMessageId || false ? 'font-semibold' : ''
             }`}
           >
-            <div className="whitespace-nowrap overflow-hidden overflow-ellipsis md:w-48">{room!.latestMessage!.slice(0, 20)} </div>
-            <div className="text-sm mx-1 flex items-center">•</div>
-            <div className="text-xs whitespace-nowrap flex items-center">{dateController(room!.latestActiveDate)}</div>
+            <div className="whitespace-nowrap overflow-hidden overflow-ellipsis  w-40 md:w-44">{room!.latestMessage!.slice(0, 20)} </div>
+            <div className="text-sm mx-1 flex items-center"></div>
+            <div className="text-xs whitespace-nowrap flex items-center ml-1">•  {dateController(room!.latestActiveDate)}</div>
           </div>
         </div>
       </div>
