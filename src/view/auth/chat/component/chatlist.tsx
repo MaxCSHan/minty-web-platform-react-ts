@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
-// import { getUsers,getChatrooms } from "../../../../services/userService";
 import IChatroom from '../../../../interface/IChatroom'
 import {  chatroomDB, userDB} from '../../../../setup/setupFirebase'
 import { Link, useLocation } from 'react-router-dom'
 import { loginUser } from '../../../../services/authService'
 import IMember from '../../../../interface/IMember'
-import IMessage from '../../../../interface/IMessage'
 import StringMap from '../../../../interface/StringMap'
 import User from '../../../../interface/IUser'
 import ListBlock from "./ListBlock"
@@ -19,32 +17,18 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
    */
   const location = useLocation()
   const locationChecker = () => location.pathname === '/chat/inbox'
-  const loginUid = loginUser().uid;
   //
+  const loginUid = loginUser().uid;
+
   const [inputValue, setInputValue] = useState('')
   const [searching, setSearching] = useState(false)
-
   const [selectedRoom, setSelectedRoom] = useState<string>()
   const [searchUserResult, setSearchUserResult] = useState<User[]>()
-
   const [roomList, setRoomList] = useState<IChatroom[]>([])
 
-  // const [roomList, setRoomList] = useState<IChatroom[]>([])
-
   useEffect(() => {
-    // getUsers().subscribe((response) => setUserList(response));
-    // getChatrooms().subscribe((response) => setRoomList(response));
-    // chatRef
-    //   .child("/chatrooms")
-    //   .orderByChild(`/members/${loginUid}/uid`)
-    //   .equalTo(loginUid)
-    //   .on('value', (snapshot) => {
-    //     const data = snapshot.val()
-    //     console.log("user",data)
-       
-    //   })
-
-    chatroomDB
+ 
+    const listener= chatroomDB
     .where(`members`, "array-contains", loginUid)
     .orderBy("latestActiveDate", "desc")
     .onSnapshot((querySnapshot) => {
@@ -55,21 +39,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
       });
       setRoomList(dataRoomList)
     });
-
-
-    // usersPrivateRef
-    //   .child(`/${loginUid}/roomList`)
-    //   .on('value', (snapshot) => {
-    //     const data = snapshot.val()
-    //     console.log("user",data)
-    //     if(data){
-    //        const arr = Object.keys(data);
-    //     setRoomList(arr)
-    //     }
-       
-    //   })
-    searchUser()
-    // console.log("API CHatroom =>",roomList)
+    return ()=> listener();
   }, [])
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {

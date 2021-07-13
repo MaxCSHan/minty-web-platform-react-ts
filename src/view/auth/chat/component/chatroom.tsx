@@ -68,7 +68,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     // setTypingRef({})
     // setMes([])
     // setForwardingRoom({} as IChatroom)
-    // setMyUserName(loginUser()?.username)
+    setMyUserName(loginUser()?.username)
     // setIsDetailed(false)
     let isExist: boolean
     const theOtherUid = id?.replace(loginUser().uid, '')
@@ -246,7 +246,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
           chatroomDB.doc(privateCoId).set({
             id: newRoom.id,
-            title: `${loginUser().username}`,
             members: memberUids,
             memberInfos: defaultMembers,
             latestMessage: input,
