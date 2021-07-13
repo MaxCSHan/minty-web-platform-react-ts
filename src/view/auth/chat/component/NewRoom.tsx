@@ -8,6 +8,7 @@ import { loginUser } from '../../../../services/authService'
 import { chatroomDB, userDB } from '../../../../setup/setupFirebase'
 import {Subject} from "rxjs"
 import { debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, startWith, switchMap } from 'rxjs/operators'
+import UserSelecter from './UserSelecter'
 
 const NewRoom = () => {
   const [title, setTitle] = useState('')
@@ -201,6 +202,7 @@ const NewRoom = () => {
           </div>
         ))}
       </div> */}
+      <UserSelecter></UserSelecter>
       <div className="flex flex-col flex-grow px-6 mt-12 sm:mt-0">
         <div className="flex flex-col ">
           <div className="mt-3">To:</div>
