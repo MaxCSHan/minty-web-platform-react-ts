@@ -7,6 +7,7 @@ import IMember from '../../../../interface/IMember'
 import StringMap from '../../../../interface/StringMap'
 import User from '../../../../interface/IUser'
 import ListBlock from "./ListBlock"
+import {Subject} from "rxjs"
 type ChatlistProps = {
   myUsername: string
 }
