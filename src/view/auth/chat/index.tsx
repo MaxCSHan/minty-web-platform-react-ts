@@ -33,7 +33,7 @@ const Chat = () => {
 
 
   return (
-    <div className={` overflow-hidden flex h-screen  ${location?"sm:pt-14":"pt-14"}  w-screen 	justify-center  sm:items-center sm:bg-gray-100  transition duration-100 ease-in-out`}>
+    <div className={` flex h-screen  ${location?"sm:pt-14":"pt-14"}  w-screen 	justify-center  sm:items-center sm:bg-gray-100  transition duration-100 ease-in-out`}>
       <div className="sm:h-95/100 sm:max-h-240 md:max-h-280  2xl:max-h-320 flex flex-col sm:flex sm:flex-row md:flex-row">
         <Chatlist   myUsername={myUsername}></Chatlist>
         <Switch>

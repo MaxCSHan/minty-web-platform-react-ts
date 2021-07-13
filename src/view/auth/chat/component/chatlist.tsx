@@ -130,7 +130,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   )
 
   return (
-    <div className={`w-screen sm:max-w-xs md:max-w-none md:w-96 sm:flex ${locationChecker() ? '' : 'hidden'}`}>
+    <div className={`w-screen sm:max-w-xs md:max-w-none md:w-96 sm:flex  ${locationChecker() ? '' : 'hidden'}`}>
       <div className="w-full bg-white border  flex flex-col items-center">
         <div className="flex flex-col w-full">
           <div className="relative h-16 flex items-center justify-center font-semibold text-lg border-b">
