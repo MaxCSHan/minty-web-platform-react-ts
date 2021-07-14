@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import IChatroom from '../../../../interface/IChatroom'
-import {  chatroomDB, userDB} from '../../../../setup/setupFirebase'
 import { Link, useLocation } from 'react-router-dom'
+import { Subject } from 'rxjs'
+import { debounceTime, distinctUntilChanged, startWith, switchMap } from 'rxjs/operators'
+import { chatroomDB, userDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
+import IChatroom from '../../../../interface/IChatroom'
 import IMember from '../../../../interface/IMember'
 import StringMap from '../../../../interface/StringMap'
 import User from '../../../../interface/IUser'
-import ListBlock from "./ListBlock"
-import {Subject} from "rxjs"
+import ListBlock from './ListBlock'
+
 type ChatlistProps = {
   myUsername: string
 }
@@ -19,58 +21,95 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   const location = useLocation()
   const locationChecker = () => location.pathname === '/chat/inbox'
   //
-  const loginUid = loginUser().uid;
+  const loginUid = loginUser().uid
 
   const [inputValue, setInputValue] = useState('')
   const [searching, setSearching] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState<string>()
   const [searchUserResult, setSearchUserResult] = useState<User[]>()
+  const [recommendUserResult, setRecommendResult] = useState<User[]>()
   const [roomList, setRoomList] = useState<IChatroom[]>([])
 
+  const keyword$ = new Subject<string>()
+  const suggestList$ = keyword$.pipe(
+    debounceTime(300),
+    distinctUntilChanged(),
+    switchMap((ele) => {
+      if (ele.replace(/\s/g, '').length === 0) return [[]]
+      return userDB
+        .where('username', '>=', ele)
+        .where('username', '<=', ele + '\uf8ff')
+        .get()
+        .then((docs) => docs.docs.map(doc => doc.data() as User))
+        })
+      )
   useEffect(() => {
- 
-    const listener= chatroomDB
-    .where(`members`, "array-contains", loginUid)
-    .orderBy("latestActiveDate", "desc")
-    .onSnapshot((querySnapshot) => {
-      var dataRoomList: IChatroom[] = [];
-      querySnapshot.forEach((doc) => {
-        // console.log("chat room",doc.data())
-        dataRoomList.push(doc.data() as IChatroom);
-      });
-      setRoomList(dataRoomList)
-    });
-    return ()=> listener();
+    const subscription = suggestList$.subscribe((ele) => {
+      setSearchUserResult(ele)
+    })
+    return () => {
+      subscription.unsubscribe()
+    }
+  })
+  useEffect(() => keyword$.next(inputValue), [inputValue])
+
+  useEffect(() => {
+    const listener = chatroomDB
+      .where(`members`, 'array-contains', loginUid)
+      .orderBy('latestActiveDate', 'desc')
+      .onSnapshot((querySnapshot) => {
+        var dataRoomList: IChatroom[] = []
+        querySnapshot.forEach((doc) => {
+          // console.log("chat room",doc.data())
+          dataRoomList.push(doc.data() as IChatroom)
+        })
+        setRoomList(dataRoomList)
+      })
+    userDB
+      .limit(10)
+      .get()
+      .then((doc) => {
+        const arr: User[] = []
+        doc.forEach((ele) => arr.push(ele.data() as User))
+        // console.log(arr)
+        setRecommendResult(arr)
+      })
+    return () => {
+      listener()
+    }
   }, [])
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     if (value === '') setInputValue('')
     else {
-      setInputValue(value.toLocaleLowerCase())
+      setInputValue(value)
     }
   }
 
   const searchUser = () => {
-    userDB.limit(10).get().then((doc) => {
-      const arr: User[] =[]
-      doc.forEach(ele => arr.push(ele.data() as User))
-      // console.log(arr)
-      setSearchUserResult(arr)
-    })
+    userDB
+      .limit(10)
+      .get()
+      .then((doc) => {
+        const arr: User[] = []
+        doc.forEach((ele) => arr.push(ele.data() as User))
+        // console.log(arr)
+        setSearchUserResult(arr)
+      })
   }
 
   const searchResult = () => {
     // const res = userList.filter((ele) =>
     //   ele.username.toLocaleLowerCase().includes(inputValue)
     // );
-    const res = searchUserResult?.filter((ele) => ele.username.toLocaleLowerCase().includes(inputValue)) || []
+    const res = searchUserResult?.filter((ele) => ele.username.includes(inputValue)) || []
     return res
   }
 
-  const onRoomSelected = (roomid:string) =>{
-    setSearching(false);
-    setSelectedRoom(roomid);
+  const onRoomSelected = (roomid: string) => {
+    setSearching(false)
+    setSelectedRoom(roomid)
   }
 
   //Components
@@ -98,33 +137,45 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     </div>
   ))
 
-  const searchResultComponent = searchResult().map((ele, index) => (
-   
-    <Link key={`search_result_${index}`} to={`/chat/room/${[loginUser().uid,ele.uid].sort().join('')}`} onClick={()=>setSearching(false)}>
-    <div className="flex items-center  px-3 py-1 cursor-pointer" >
-      <img className="h-10 w-10 rounded-full object-cover" alt="" src={ele.avatar} />
-      <div className="ml-4">{ele.username}</div>
-    </div>
-    </Link >
+  const resultComponent = (userArr: User[] = []) =>
+    userArr.map((ele, index) => (
+      <Link key={`search_result_${index}`} to={`/chat/room/${[loginUser().uid, ele.uid].sort().join('')}`} onClick={() => setSearching(false)}>
+        <div className="flex items-center  px-3 py-1 cursor-pointer">
+          <img className="h-10 w-10 rounded-full object-cover" alt="" src={ele.avatar} />
+          <div className="ml-4">{ele.username}</div>
+        </div>
+      </Link>
+    ))
+
+  const mapRoomList = roomList.map((ele, index) => (
+    <ListBlock roomObject={ele} roomId={ele.id} selectedRoomId={selectedRoom!} onRoomSelected={onRoomSelected}></ListBlock>
   ))
 
-  const roomListComponent = [...roomList].map((ele, index) => (
-    <ListBlock roomObject={ele} roomId={ele.id} selectedRoomId={selectedRoom!} onRoomSelected={onRoomSelected} ></ListBlock>
-  ))
+  const roomListComponent = <div className="z-20 bg-white">{mapRoomList}</div>
 
-  const searchArea = (
+  const searchComponent = (
     <div
-      className={`transition-all duration-200 delay-500 ease-in flex ${
-        searching || inputValue.length > 0 ? 'opacity-100 visible ' : 'opacity-0 invisible '
+      className={`transition-all duration-200  ease-in-out flex ${
+        searching || inputValue.length > 0 ? 'opacity-100 visible  max-h-140 h-full' : 'opacity-0 invisible h-0/100'
       }`}
     >
-      {searchResultComponent.length > 0 ? (
-        <div className="flex flex-col flex-grow justify-center">
-          {inputValue.length === 0 && <div className="h-14 flex items-center  pl-8 font-semibold">Suggested</div>}
-          <div className={`${inputValue.length > 0?"mt-5":""}`}>{searchResultComponent}</div>
+      {inputValue.length !== 0 ? (
+        <div className="flex flex-col flex-grow mt-4">
+          {searchUserResult ? (
+            resultComponent(searchUserResult)
+          ) : (
+            <div className="w-full flex justify-center">
+              <div className="animate-spin relative border-4 border-gray-500 rounded-full w-8 h-8">
+                <div className="absolute bg-white w-4 h-4 -top-1 -left-1"></div>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
-        <div className="h-14 flex items-center  pl-8 font-semibold">No result matched</div>
+        <div className="flex flex-col flex-grow">
+          <div className="h-14 flex items-center  pl-8 font-semibold ">Suggested</div>
+          {resultComponent(recommendUserResult)}
+        </div>
       )}
     </div>
   )
@@ -136,8 +187,8 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
           <div className="relative h-16 flex items-center justify-center font-semibold text-lg border-b">
             {myUsername}
             <div className="absolute right-10 h-10 w-10 flex items-center justify-center cursor-pointer rounded-full  hover:bg-gray-50">
-            <Link to={"/chat/inbox/new"}>
-              <i className="fas fa-paper-plane"></i>
+              <Link to={'/chat/inbox/new'}>
+                <i className="fas fa-paper-plane"></i>
               </Link>
             </div>
           </div>
@@ -148,19 +199,24 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
               value={inputValue}
               onFocus={() => setSearching(true)}
               onChange={(e) => handleInput(e)}
-            ></input>{
-              searching && 
-              <div className="ml-2 text-gray-400 hover:text-gray-600" 
-            onClick={() => {setSearching(false); setInputValue("");}}
-            >
+            ></input>
+            {searching && (
+              <div
+                className="ml-2 text-gray-400 hover:text-gray-600"
+                onClick={() => {
+                  setSearching(false)
+                  setInputValue('')
+                }}
+              >
                 <i className="fas fa-times"></i>
               </div>
-            }
-            </div>
+            )}
+          </div>
         </div>
         <div className="w-full flex-grow flex-shrink border-t overflow-y-scroll">
           {/* {loadingListComponent} */}
-          {((searching || inputValue.length > 0 )? searchArea : roomListComponent) }
+          {searchComponent}
+          {roomListComponent}
         </div>
       </div>
     </div>

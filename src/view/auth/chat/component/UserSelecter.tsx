@@ -91,7 +91,7 @@ const UserSelecter = ({ selectedUser, setSelectedUser ,description}: UserSelecte
     <div className="flex flex-col flex-grow px-6">
       {description && <div className="mt-3">{description}</div>}
       <div className="flex flex-col ">
-        <div className={`mb-3 flex  items-center  scrollbar-hide  overflow-x-scroll transition-all duration-300 ease-in-out my-3`}>
+        <div className={`mb-3 flex h-14  items-center  scrollbar-hide  overflow-x-scroll transition-all duration-300 ease-in-out my-3`}>
           {selectedUser?.map((user, index) => (
             <div className="flex flex-shrink-0  items-center justify-center mx-1  border rounded-full px-3 py-1">
               <img className="h-8 w-8 rounded-full mr-1" alt="" src={user.avatar}></img>

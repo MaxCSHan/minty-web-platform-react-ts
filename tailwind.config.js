@@ -35,6 +35,7 @@ module.exports = {
      }),
      maxHeight: {
       '0': '0',
+      '140': '35rem',
       '160': '40rem',
       '180': '45rem',
       '200': '50rem',
@@ -54,6 +55,8 @@ module.exports = {
       height:{
        '11/12': '91.666667%',
        '95/100': '95%',
+       '0/100': '0%',
+
 
       },
       backgroundImage: theme => ({

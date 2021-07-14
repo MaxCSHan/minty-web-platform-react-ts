@@ -113,8 +113,8 @@ const ChatroomSettings = ({ id, forwardingRoom, members, setDetailed }: Chatroom
         </div>
         {forwardingRoom?.group && editMember && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-20 flex items-center justify-center">
-            <div className="w-96 sm:w-120 bg-white px-3 py-2 sm:py-4 rounded-2xl">
-              <div className="w-full flex flex-row justify-between px-8 mt-3">
+            <div className="w-96 sm:w-120 bg-white px-3 py-2 sm:py-4 rounded-2xl shadow-xl">
+              <div className="w-full h-4 flex flex-row justify-between px-8 mt-3">
                 <div className="flex items-center justify-center">
                   <i className="fas fa-times text-gray-700 cursor-pointer" onClick={() => closeModal()}></i>
                 </div>
