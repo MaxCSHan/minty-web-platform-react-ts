@@ -156,7 +156,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   const searchComponent = (
     <div
       className={`transition-all duration-200  ease-in-out flex ${
-        searching || inputValue.length > 0 ? 'opacity-100 visible  max-h-140 h-full' : 'opacity-0 invisible h-0/100'
+        searching || inputValue.length > 0 ? 'opacity-100 visible  max-h-140 h-full' : 'opacity-0 invisible h-0'
       }`}
     >
       {inputValue.length !== 0 ? (
