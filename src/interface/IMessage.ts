@@ -17,6 +17,7 @@ interface Message {
     heart?:boolean;
     reaction:IReaction[]
     create?:boolean;
+    image?:string;
   }
 
   export default Message;

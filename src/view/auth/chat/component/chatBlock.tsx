@@ -60,7 +60,7 @@ type chatBlockProps = {
   roomId: string
   isForward: boolean
   avatar?: string
-  onReply: (id: string, to: string, toId: string, message: string) => void
+  onReply: (id: string, to: string, toId: string, message: string,imageUrl?:string) => void
   jumpTo: (uid: string) => void
   onReaction: () => void
 }
@@ -70,11 +70,11 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
   const [isHoverReaction, setIsHoverReaction] = useState(false)
   const [onClikReaction, setOnClikReaction] = useState(false)
   // const [selectedReaction, setSelectedReaction] = useState<IReaction>()
-  const [messageData, setMessageData] = useState(message)
+  // const [messageData, setMessageData] = useState(message)
 
-  useEffect(() => {
-    setMessageData(message)
-  }, [message])
+  // useEffect(() => {
+  //   setMessageData(message)
+  // }, [message])
 
   // useEffect(() => {
   //   const filter = messageData?.reaction?.filter((ele) => ele.from !== myUserName)
@@ -99,7 +99,7 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
       ele.timeHint &&
       [mesDate].map((ele) => (
         <div
-          className={`text-center text-xs text-gray-600 ${messageData.timeHint ? 'my-3' : ''}`}
+          className={`text-center text-xs text-gray-600 ${message.timeHint ? 'my-3' : ''}`}
         >{`${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit'
@@ -113,7 +113,7 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
   // },[isHover])
 
   const onCheckReply = () => {
-    jumpTo(messageData.reply!.id)
+    jumpTo(message.reply!.id)
   }
 
   const reduceDuplicateEmoji = (accumulator: string[], currentValue: IReaction) => {
@@ -126,154 +126,165 @@ const Chatblock = ({ previousUid,previousHasReply,nextUid,nextHasReply, group, m
 
     onReaction()
 
-    if (messageData && messageData.reaction.length===0) {
+    if (message && message.reaction.length===0) {
       ref.update({"reaction": [{ from: myUserName, emoji: emojiToSet }] })
       return
     }
 
-    const filter = messageData?.reaction?.filter((ele) => !(ele.from === myUserName && ele.emoji.emoji === emojiToSet.emoji))
+    const filter = message?.reaction?.filter((ele) => !(ele.from === myUserName && ele.emoji.emoji === emojiToSet.emoji))
     // console.log(`Filter : ${filter}`)
 
-    if (filter && filter.length === messageData.reaction.length) {
-      const newReaction = [...messageData?.reaction?.filter((ele) => ele.from !== myUserName), { from: myUserName, emoji: emojiToSet }]
-      ref.set({ ...messageData, reaction: newReaction })
+    if (filter && filter.length === message.reaction.length) {
+      const newReaction = [...message?.reaction?.filter((ele) => ele.from !== myUserName), { from: myUserName, emoji: emojiToSet }]
+      ref.set({ ...message, reaction: newReaction })
       // setMessageData({...messageData,reaction:newReaction})
     } else {
-      ref.set({ ...messageData, reaction: filter })
+      ref.set({ ...message, reaction: filter })
       // setMessageData({...messageData,reaction:filter})
     }
   }
 
-  const replyBlock = messageData.reply && (
+  const replyBlock = message.reply && (
     <div className={`max-w-xs  flex flex-col -mb-2  ${isForward ? 'items-end ' : 'items-start ml-4'}`} onClick={() => onCheckReply()}>
       <div className="text-sm  whitespace-nowrap">
-        {messageData.reply.uid === loginUser().uid ? 'You' : messageData.reply.from} replied to
-        <span className="font-semibold"> {messageData.reply.toId === loginUser().uid ? 'You' : messageData.reply.to}</span>
+        {message.reply.uid === loginUser().uid ? 'You' : message.reply.from} replied to
+        <span className="font-semibold"> {message.reply.toId === loginUser().uid ? 'You' : message.reply.to}</span>
       </div>
-      <div className="max-w-3/4  sm:max-w-xs bg-gray-200 rounded-full px-3 py-2 text-sm text-gray-700  whitespace-nowrap overflow-hidden overflow-ellipsis">
-        {messageData.reply.message}
+      <div className="max-w-3/4  sm:max-w-xs bg-gray-200 rounded-3xl px-3 py-2 text-sm text-gray-700  whitespace-nowrap overflow-hidden overflow-ellipsis">
+      { message.reply?.image && <img className="w-10 h-10 rounded object-cover" alt="" src={message.reply?.image}></img>}
+
+        {message.reply.message}
       </div>
     </div>
   )
 
+  const imageBlock = (<img className="rounded-2xl bg-gray-200" alt="" src={message.image}></img> )
+
+  const textBlock = (<div
+    className={`flex w-full  ${isForward ? 'flex-row-reverse' : 'flex-row'}`}
+    id={`message_${message.id}`}
+    key={`message_${message.id}`}
+    onMouseEnter={() => setIsHover(true)}
+    onMouseLeave={() => setIsHover(false)}
+  >
+    <div className={`relative  flex items-end ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
+      {!isForward && group &&<div className="h-10 w-10"> { (message.uid !== nextUid || nextHasReply) && <img className="h-10 w-10 border rounded-full" alt="" src={avatar!} />}</div>}
+      {message.heart ? (
+        <div className={`flex flex-col mx-4 text-8xl text-red-500  ${isForward ? 'items-end' : 'items-start'}`}>
+          {group && !isForward &&  (message.uid !== previousUid || previousHasReply) && <div className="text-xs text-gray-600">{memberRef[message.uid].username}</div>}
+          <div className="relative">
+            <i className=" fas fa-heart"></i>
+            {message?.reaction?.length > 0 && (
+              <div
+                className="absolute z-20 -bottom-4 right-0 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
+                onMouseEnter={() => setIsHoverReaction(true)}
+                onMouseLeave={() => setIsHoverReaction(false)}
+              >
+                {message?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele, index) => (
+                  <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_heart_reaction_${index}`}>
+                    {ele}
+                  </div>
+                ))}
+                <div
+                  className={`absolute z-30 bottom-8 flex-col items-end px-2 py-1 bg-white shadow-xl transition ease-in-out ${
+                    isHoverReaction ? 'opacity-100 visible' : 'opacity-0 invisible'
+                  }`}
+                >
+                  {message?.reaction!.map((ele, index) => (
+                    <div className="mx-0.5 whitespace-nowrap text-black" key={`current_heart_reactionlist_${index}`}>
+                      {ele.emoji.emoji} <span className=" text-xs">{ele.from}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className={`flex flex-col  sm:max-w-none 	 ${isForward ? 'items-end' : 'items-start'} `}>
+          {group && !isForward && !message.reply && (message.uid !== previousUid || previousHasReply)  && <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid]?.username}</div>}
+          {replyBlock}
+          <div className={`z-10 border   ${(message.uid !== previousUid || previousHasReply || message.reply) ? isForward? "rounded-tr-3xl ":"rounded-tl-3xl":""} ${(message.uid !== nextUid || nextHasReply || message.reply)? isForward?"rounded-br-3xl":"rounded-bl-3xl":""}  ${isForward ? `rounded-l-3xl rounded-r-lg ` : ` rounded-r-3xl rounded-l-lg`}   bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}>
+            <div className="relative px-3  py-2 max-w-mini sm:max-w-xs flex   break-all  items-center justify-center">
+              <div className="flex flex-col">
+                 <div className="flex items-center ">{message.message}</div>
+              {imageBlock}
+              </div>
+             
+
+              {message?.reaction?.length > 0 && (
+                <div
+                  className="absolute z-20 -bottom-6 right-2 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
+                  onMouseEnter={() => setIsHoverReaction(true)}
+                  onMouseLeave={() => setIsHoverReaction(false)}
+                >
+                  {message?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele, index) => (
+                    <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_reaction_${index}`}>
+                      {ele}
+                    </div>
+                  ))}
+                  <div
+                    className={`absolute z-30 bottom-8 flex-col items-end px-2 py-1 bg-white shadow-xl transition ease-in-out ${
+                      isHoverReaction ? 'opacity-100 visible' : 'opacity-0 invisible'
+                    }`}
+                  >
+                    {message?.reaction!.map((ele, index) => (
+                      <div className="mx-0.5 whitespace-nowrap" key={`current_reactionlist_${index}`}>
+                        {ele.emoji.emoji} <span className=" text-xs">{ele.from}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {(isHover || onClikReaction) && (
+        <div className={`sm:relative mx-2 w-12 sm:w-16 flex justify-between  text-xl sm:text-2xl text-gray-400 ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
+          {onClikReaction && (
+            <div
+              className={`${
+                isForward ? '-right-2 sm:-right-8' : '-left-5 sm:-left-12'
+              } absolute -top-10 sm:-top-14  z-50  w-64 h-12 shadow-lg rounded-full bg-white flex items-center justify-around px-2`}
+            >
+              {emojiList.map((ele, index) => (
+                <span className="text-3xl cursor-pointer " key={`reaction_selection_${index}`} onMouseDownCapture={() => setEmoji(ele)}>
+                  {ele.emoji}
+                </span>
+              ))}
+            </div>
+          )}
+          <button
+            className="appearance-none focus:outline-none hover:text-gray-500"
+            onClick={() => setOnClikReaction(!onClikReaction)}
+            onBlur={() => setOnClikReaction(false)}
+          >
+            <i className="far fa-smile"></i>
+          </button>
+          <div
+            className="hover:text-gray-500"
+            onClick={() => onReply(message.id, memberRef[message.uid].username, message.uid, message.message,message.image)}
+          >
+            <i className="fas fa-reply"></i>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)
+
   const block = (
     <div
-      className={`transition-all ease-in-out duration-100 ${messageData?.reply?.id ? 'mt-3' : ''} ${
-        messageData?.reaction?.length > 0 ? 'mb-7' : 'mb-1'
+      className={`transition-all ease-in-out duration-100 ${message?.reply?.id ? 'mt-3' : ''} ${
+        message?.reaction?.length > 0 ? 'mb-7' : 'mb-1'
       }`}
     >
       {/* date */}
-      {dateController(messageData)}
+      {dateController(message)}
 
       {!message.create?
-      <div
-        className={`flex w-full  ${isForward ? 'flex-row-reverse' : 'flex-row'}`}
-        id={`message_${messageData.id}`}
-        key={`message_${messageData.id}`}
-        onMouseEnter={() => setIsHover(true)}
-        onMouseLeave={() => setIsHover(false)}
-      >
-        <div className={`relative  flex items-end ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
-          {!isForward && group &&<div className="h-10 w-10"> { (messageData.uid !== nextUid || nextHasReply) && <img className="h-10 w-10 border rounded-full" alt="" src={avatar!} />}</div>}
-          {messageData.heart ? (
-            <div className={`flex flex-col mx-4 text-8xl text-red-500  ${isForward ? 'items-end' : 'items-start'}`}>
-              {group && !isForward &&  (messageData.uid !== previousUid || previousHasReply) && <div className="text-xs text-gray-600">{memberRef[message.uid].username}</div>}
-              <div className="relative">
-                <i className=" fas fa-heart"></i>
-                {messageData?.reaction?.length > 0 && (
-                  <div
-                    className="absolute z-20 -bottom-4 right-0 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
-                    onMouseEnter={() => setIsHoverReaction(true)}
-                    onMouseLeave={() => setIsHoverReaction(false)}
-                  >
-                    {messageData?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele, index) => (
-                      <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_heart_reaction_${index}`}>
-                        {ele}
-                      </div>
-                    ))}
-                    <div
-                      className={`absolute z-30 bottom-8 flex-col items-end px-2 py-1 bg-white shadow-xl transition ease-in-out ${
-                        isHoverReaction ? 'opacity-100 visible' : 'opacity-0 invisible'
-                      }`}
-                    >
-                      {messageData?.reaction!.map((ele, index) => (
-                        <div className="mx-0.5 whitespace-nowrap text-black" key={`current_heart_reactionlist_${index}`}>
-                          {ele.emoji.emoji} <span className=" text-xs">{ele.from}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className={`flex flex-col  sm:max-w-none 	 ${isForward ? 'items-end' : 'items-start'} `}>
-              {group && !isForward && !messageData.reply && (messageData.uid !== previousUid || previousHasReply)  && <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid]?.username}</div>}
-              {replyBlock}
-              <div className={`z-10 border   ${(messageData.uid !== previousUid || previousHasReply || messageData.reply) ? isForward? "rounded-tr-3xl ":"rounded-tl-3xl":""} ${(messageData.uid !== nextUid || nextHasReply || messageData.reply)? isForward?"rounded-br-3xl":"rounded-bl-3xl":""}  ${isForward ? `rounded-l-3xl rounded-r-lg ` : ` rounded-r-3xl rounded-l-lg`}   bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}>
-                <div className="relative px-3  py-2 max-w-mini sm:max-w-xs flex   break-all  items-center justify-center">
-                  <div className="flex items-center ">{messageData.message}</div>
-                  {messageData?.reaction?.length > 0 && (
-                    <div
-                      className="absolute z-20 -bottom-6 right-2 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
-                      onMouseEnter={() => setIsHoverReaction(true)}
-                      onMouseLeave={() => setIsHoverReaction(false)}
-                    >
-                      {messageData?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele, index) => (
-                        <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_reaction_${index}`}>
-                          {ele}
-                        </div>
-                      ))}
-                      <div
-                        className={`absolute z-30 bottom-8 flex-col items-end px-2 py-1 bg-white shadow-xl transition ease-in-out ${
-                          isHoverReaction ? 'opacity-100 visible' : 'opacity-0 invisible'
-                        }`}
-                      >
-                        {messageData?.reaction!.map((ele, index) => (
-                          <div className="mx-0.5 whitespace-nowrap" key={`current_reactionlist_${index}`}>
-                            {ele.emoji.emoji} <span className=" text-xs">{ele.from}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-          {(isHover || onClikReaction) && (
-            <div className={`sm:relative mx-2 w-12 sm:w-16 flex justify-between  text-xl sm:text-2xl text-gray-400 ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
-              {onClikReaction && (
-                <div
-                  className={`${
-                    isForward ? '-right-2 sm:-right-8' : '-left-5 sm:-left-12'
-                  } absolute -top-10 sm:-top-14  z-50  w-64 h-12 shadow-lg rounded-full bg-white flex items-center justify-around px-2`}
-                >
-                  {emojiList.map((ele, index) => (
-                    <span className="text-3xl cursor-pointer " key={`reaction_selection_${index}`} onMouseDownCapture={() => setEmoji(ele)}>
-                      {ele.emoji}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <button
-                className="appearance-none focus:outline-none hover:text-gray-500"
-                onClick={() => setOnClikReaction(!onClikReaction)}
-                onBlur={() => setOnClikReaction(false)}
-              >
-                <i className="far fa-smile"></i>
-              </button>
-              <div
-                className="hover:text-gray-500"
-                onClick={() => onReply(messageData.id, memberRef[messageData.uid].username, messageData.uid, messageData.message)}
-              >
-                <i className="fas fa-reply"></i>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    :
+      textBlock:
     <div className={`text-center text-gray-600 my-3`}>{message.username} has created a new room</div>
     }
     </div>

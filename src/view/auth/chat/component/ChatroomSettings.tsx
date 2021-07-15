@@ -5,6 +5,7 @@ import User from '../../../../interface/IUser'
 import { chatroomDB } from '../../../../setup/setupFirebase'
 import UserSelecter from './UserSelecter'
 
+
 type ChatroomSettingsProps = {
   id: string
   forwardingRoom: IChatroom

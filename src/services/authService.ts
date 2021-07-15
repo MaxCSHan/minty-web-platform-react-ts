@@ -1,4 +1,4 @@
-import firebase, { usersRef, chatRef, usersPublicRef, userDB, chatroomDB, messageDB } from '../setup/setupFirebase'
+import firebase, { userDB, chatroomDB, messageDB } from '../setup/setupFirebase'
 import User from '../interface/IUser'
 import { useHistory } from 'react-router-dom'
 

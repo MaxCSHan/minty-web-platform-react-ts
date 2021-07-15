@@ -5,6 +5,7 @@ interface ReplyMessage {
     to:string;
     toId:string;
     message: string;
+    image?:string;
   }
 
   export default ReplyMessage;
