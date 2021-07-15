@@ -12,7 +12,7 @@ import IMember from '../../../../interface/IMember'
 import IReplyMessage from '../../../../interface/IReplyMessage'
 
 //Firebase
-import firebase,{ chatroomDB, userDB, imagesRef } from '../../../../setup/setupFirebase'
+import firebase, { chatroomDB, userDB, imagesRef } from '../../../../setup/setupFirebase'
 
 //Service
 import { loginUser } from '../../../../services/authService'
@@ -249,8 +249,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   ///Reply
 
   const [replyMessage, setReplyMessage] = useState<IReplyMessage>()
-  const onReply = (id: string, to: string, toId: string, message: string,imageUrl?:string) => {
-    setReplyMessage({ id, uid: loginUser().uid, from: myUserName, to, toId, message,image:imageUrl } as IReplyMessage)
+  const onReply = (id: string, to: string, toId: string, message: string, imageUrl?: string) => {
+    setReplyMessage({ id, uid: loginUser().uid, from: myUserName, to, toId, message, image: imageUrl } as IReplyMessage)
     inputRef!.current?.focus()
   }
 
@@ -284,11 +284,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     chatroomDB.doc(id).update(messageUpdate)
   }
 
-
-  const sendMessage = (text:string,replyMessage?:IReplyMessage, fileUrl?:string) => {
-  
-    const currDateNumber = new Date().getTime();
-    console.log("About to send",fileUrl)
+  const sendMessage = (text: string, replyMessage?: IReplyMessage, fileUrl?: string) => {
+    const currDateNumber = new Date().getTime()
+    console.log('About to send', fileUrl)
 
     if (isChatroomExist && (text.match(/^(?!\s*$).+/) || fileUrl)) {
       const newMessageRef = chatroomDB.doc(id).collection('messages').doc()
@@ -304,31 +302,29 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         reply: replyMessage?.to ? replyMessage : null,
         id: newMessageRef.id,
         uid: loginUser().uid,
-        heart:text==='❤️',
-        reatcion:[] as IReaction[],
-        image: fileUrl?fileUrl:null
-      } )
+        heart: text === '❤️',
+        reatcion: [] as IReaction[],
+        image: fileUrl ? fileUrl : null
+      })
       updateLatest(text, currDateNumber, newMessageRef.id!)
-    }
-    else {
+    } else {
       creatDM(newUser?.uid!, text)
     }
-
   }
 
-  const sendHeart = () => sendMessage('❤️');
+  const sendHeart = () => sendMessage('❤️')
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleSend();
+      handleSend()
     }
   }
 
   const handleSend = () => {
-    if(files.length>0) sendWithImage(files[0],inputValue,replyMessage);
-    else sendMessage(inputValue,replyMessage);
-    setInputValue('');
-    resetReply();
-    setFiles([]);
+    if (files.length > 0) sendWithImage(files[0], inputValue, replyMessage)
+    else sendMessage(inputValue, replyMessage)
+    setInputValue('')
+    resetReply()
+    setFiles([])
   }
   const isTop = () => {
     const elmnt = document.getElementById(`message_${messages[0]?.id}`)
@@ -344,7 +340,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const handleTouchSend = () => {
-    sendMessage(inputValue);
+    sendMessage(inputValue)
     inputRef!.current?.focus()
   }
 
@@ -376,7 +372,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
     // Do something with the files
   }, [])
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ noClick: true, accept: 'image/*', onDrop })
+  const { getRootProps, getInputProps,open, isDragActive } = useDropzone({ noClick: true, accept: 'image/*', onDrop })
   const thumbs = files.map((file: any) => (
     <div className="mr-2" key={file.name}>
       <div className="relative h-14 w-14 rounded-2xl group">
@@ -392,7 +388,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   ))
 
   //Upload Image
-  const sendWithImage = (file:File,inputValue:string,replyMessage?:IReplyMessage) => {
+  const sendWithImage = (file: File, inputValue: string, replyMessage?: IReplyMessage) => {
     // Create the file metadata
 
     var metadata = {
@@ -439,13 +435,12 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       () => {
         // Upload completed successfully, now we can get the download URL
         uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-          console.log('File available at', downloadURL);
-          sendMessage(inputValue,replyMessage,downloadURL);
+          console.log('File available at', downloadURL)
+          sendMessage(inputValue, replyMessage, downloadURL)
         })
       }
     )
   }
-
 
   const beforeLoad = (
     <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col items-center justify-center text-2xl">
@@ -597,12 +592,12 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
                   <i className="fas fa-times"></i>
                 </div>
               </div>
-              { replyMessage?.image && <img className="w-8 h-8 rounded object-cover" alt="" src={replyMessage?.image}></img>}
+              {replyMessage?.image && <img className="w-8 h-8 rounded object-cover" alt="" src={replyMessage?.image}></img>}
               <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">{replyMessage!.message}</div>
             </div>
           )}
           <div className={` flex flex-col flex-grow w-full ${files.length > 0 ? 'h-28' : ' h-10'} px-4 border rounded-3xl `}>
-          <input {...getInputProps()} />
+            <input {...getInputProps()} />
             <div className={`${files.length > 0 ? 'mt-1' : 'invisible'} flex items-center`}>{thumbs}</div>
             {/* <div className="w-10">front</div> */}
             <div className=" flex  items-center flex-grow">
@@ -618,6 +613,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
                   onBlur={() => isTyping(false)}
                 ></input>
               </div>
+              <div className="w-8 ml-2 flex items-center justify-center cursor-pointer"
+              onClick={()=>open()}
+              >
+                  <span className="material-icons">insert_photo</span>
+                </div>
               {inputValue.length > 0 ? (
                 <div className="w-8 ml-2  origin-center cursor-pointer" onClick={() => handleTouchSend()}>
                   <i className="fas fa-location-arrow fa-rotate-45"></i>
