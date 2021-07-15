@@ -52,6 +52,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [files, setFiles] = useState<any>([])
+  const [showImage, setShowImage] = useState("")
 
   useBeforeunload((event) => {
     if (isChatroomExist) {
@@ -496,6 +497,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           message={ele}
           myUserName={myUserName}
           onReaction={onReaction}
+          setShowImage={setShowImage}
         ></Chatblock>
         {readRef && readRef![ele.id] && (
           <div className=" flex justify-end  items-center">
@@ -545,6 +547,19 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   const chatroomTemplate = (
     <div {...getRootProps({ class: 'overflow-hidden h-screen sm:h-auto  w-screen sm:w-96 md:w-120 lg:w-160 bg-white sm:border flex flex-col' })}>
+        {showImage.length > 0 && (
+                    <div
+                      className="fixed inset-0 z-50 bg-gray-600 bg-opacity-50 flex items-center justify-center"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setShowImage("");
+                      }}
+                    >
+                      <div>
+                        <img className=" xl:max-w-7xl xl:max-h-320" alt="" src={showImage}></img>
+                      </div>
+                    </div>
+                  )}
       <div className="fixed z-20 sm:static h-12 sm:h-16 bg-white w-full flex  items-center justify-center px-2 sm:px-8 border-b">
         <Link to="/chat/inbox">
           <div className="mx-4 sm:hidden">

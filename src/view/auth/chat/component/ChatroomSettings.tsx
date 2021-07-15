@@ -57,7 +57,7 @@ const ChatroomSettings = ({ id, forwardingRoom, members, setDetailed }: Chatroom
   return (
     <div className="flex-grow w-screen overflow-y-scroll sm:overflow-hidden sm:w-96 md:w-120 lg:w-160 bg-white  border flex flex-col">
       <div className="h-12 sm:h-16 w-full flex  items-center justify-center px-2 sm:px-8 border-b">
-        <div className="h-12 sm:h-16  w-full flex flex-col items-start justify-center">
+        <div className="h-16 w-60 sm:w-80 md:w-100 lg:w-140  flex flex-col items-start justify-center">
           <div className="w-full flex items-center text-base sm:text-xl font-semibold ml-4 sm:ml-0">Chatroom settings</div>
         </div>
         <div
