@@ -6,6 +6,8 @@ import { chatroomDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 import StringMap from '../../../../interface/StringMap'
 import IMember from '../../../../interface/IMember'
+import { Subject, fromEvent } from 'rxjs'
+import { map, bufferCount, filter } from 'rxjs/operators'
 
 const emojiList = [
   { emoji: '❤️', name: 'red heart', shortname: ':heart:', unicode: '2764', html: '&#10084;', category: 'Smileys & Emotion (emotion)', order: '1286' },
@@ -62,8 +64,8 @@ type chatBlockProps = {
   avatar?: string
   onReply: (id: string, to: string, toId: string, message: string, imageUrl?: string) => void
   jumpTo: (uid: string) => void
-  onReaction: () => void,
-  setShowImage: (imgUrl:string) => void,
+  onReaction: () => void
+  setShowImage: (imgUrl: string) => void
 }
 
 const Chatblock = ({
@@ -86,7 +88,6 @@ const Chatblock = ({
   const [isHover, setIsHover] = useState(false)
   const [isHoverReaction, setIsHoverReaction] = useState(false)
   const [onClikReaction, setOnClikReaction] = useState(false)
-
 
   const dateController = (ele: Message) => {
     const mesDate = new Date(ele.date)
@@ -131,7 +132,6 @@ const Chatblock = ({
     }
 
     const filter = message?.reaction?.filter((ele) => !(ele.from === myUserName && ele.emoji.emoji === emojiToSet.emoji))
-    console.log(`Filter : ${filter}`)
 
     if (filter && filter.length === message.reaction.length) {
       const newReaction = [...message?.reaction?.filter((ele) => ele.from !== myUserName), { from: myUserName, emoji: emojiToSet }]
@@ -143,6 +143,31 @@ const Chatblock = ({
     }
   }
 
+  const clickEvent$ = new Subject()
+  const clickCount = 2
+  const clickTimespan = 2000
+  // const messsageBlock = document.getElementById(`messageBlock_${message.id}`)
+  // console.log('messsageBlock', messsageBlock)
+  const doubleClick$ = clickEvent$.pipe(
+    map(() => new Date().getTime()),
+    // Emit the last `clickCount` timestamps.
+    bufferCount(clickCount, 1),
+    // `timestamps` is an array the length of `clickCount` containing the last added `timestamps`.
+    filter((timestamps) => {
+      // `timestamps[0]` contains the timestamp `clickCount` clicks ago.
+      // Check if `timestamp[0]` was within the `clickTimespan`.
+      return timestamps[0] > new Date().getTime() - clickTimespan
+    })
+  )
+
+  useEffect(() => {
+    const listener = doubleClick$.subscribe((ele) =>
+      setEmoji(emojiList[0])
+    )
+
+    return () => listener.unsubscribe()
+  })
+
   const replyBlock = message.reply && (
     <div className={`max-w-xs  flex flex-col -mb-2  ${isForward ? 'items-end ' : 'items-start ml-4'}`} onClick={() => onCheckReply()}>
       <div className="text-sm  whitespace-nowrap">
@@ -150,7 +175,7 @@ const Chatblock = ({
         <span className="font-semibold"> {message.reply.toId === loginUser().uid ? 'You' : message.reply.to}</span>
       </div>
       <div className="max-w-3/4  sm:max-w-xs bg-gray-200 rounded-3xl px-3 py-2 text-sm text-gray-700  whitespace-nowrap overflow-hidden overflow-ellipsis">
-        {message.reply?.image ? <img className="w-10 h-10 rounded object-cover" alt="" src={message.reply?.image}></img>:message.reply.message}
+        {message.reply?.image ? <img className="w-10 h-10 rounded object-cover" alt="" src={message.reply?.image}></img> : message.reply.message}
       </div>
     </div>
   )
@@ -214,6 +239,8 @@ const Chatblock = ({
             )}
             {replyBlock}
             <div
+              id={`messageBlock_${message.id}`}
+              onClick={(e) => clickEvent$.next(e)}
               className={`z-10 border   ${
                 message.uid !== previousUid || previousHasReply || message.reply ? (isForward ? 'rounded-tr-3xl ' : 'rounded-tl-3xl') : ''
               } ${message.uid !== nextUid || nextHasReply || message.reply ? (isForward ? 'rounded-br-3xl' : 'rounded-bl-3xl') : ''}  ${
@@ -222,7 +249,7 @@ const Chatblock = ({
             >
               <div className="relative px-3  py-2 max-w-mini sm:max-w-xs flex   break-all  items-center justify-center">
                 <div className="flex flex-col">
-                  <div className="flex items-center ">{message.message}</div>
+                  <div className="flex items-center cursor-default">{message.message}</div>
                   {imageBlock}
                 </div>
 
