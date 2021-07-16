@@ -123,16 +123,15 @@ const Chatblock = ({
   const setEmoji = (emojiToSet: IEmoji) => {
     setOnClikReaction(false)
     const ref = chatroomDB.doc(roomId).collection('messages').doc(message.id)
-
     onReaction()
 
-    if (message && message.reaction.length === 0) {
+    if (message && (message.reaction === undefined || message.reaction.length === 0)) {
       ref.update({ reaction: [{ from: myUserName, emoji: emojiToSet }] })
       return
     }
 
     const filter = message?.reaction?.filter((ele) => !(ele.from === myUserName && ele.emoji.emoji === emojiToSet.emoji))
-    // console.log(`Filter : ${filter}`)
+    console.log(`Filter : ${filter}`)
 
     if (filter && filter.length === message.reaction.length) {
       const newReaction = [...message?.reaction?.filter((ele) => ele.from !== myUserName), { from: myUserName, emoji: emojiToSet }]
@@ -151,8 +150,7 @@ const Chatblock = ({
         <span className="font-semibold"> {message.reply.toId === loginUser().uid ? 'You' : message.reply.to}</span>
       </div>
       <div className="max-w-3/4  sm:max-w-xs bg-gray-200 rounded-3xl px-3 py-2 text-sm text-gray-700  whitespace-nowrap overflow-hidden overflow-ellipsis">
-        {message.reply?.image && <img className="w-10 h-10 rounded object-cover" alt="" src={message.reply?.image}></img>}
-        {message.reply.message}
+        {message.reply?.image ? <img className="w-10 h-10 rounded object-cover" alt="" src={message.reply?.image}></img>:message.reply.message}
       </div>
     </div>
   )

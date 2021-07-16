@@ -52,7 +52,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [files, setFiles] = useState<any>([])
-  const [showImage, setShowImage] = useState("")
+  const [showImage, setShowImage] = useState('')
 
   useBeforeunload((event) => {
     if (isChatroomExist) {
@@ -341,7 +341,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const handleTouchSend = () => {
-    sendMessage(inputValue)
+    handleSend()
     inputRef!.current?.focus()
   }
 
@@ -373,7 +373,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
     // Do something with the files
   }, [])
-  const { getRootProps, getInputProps,open, isDragActive } = useDropzone({ noClick: true, accept: 'image/*', onDrop })
+  const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ noClick: true, accept: 'image/*', onDrop })
   const thumbs = files.map((file: any) => (
     <div className="mr-2" key={file.name}>
       <div className="relative h-14 w-14 rounded-2xl group">
@@ -440,6 +440,35 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           sendMessage(inputValue, replyMessage, downloadURL)
         })
       }
+    )
+  }
+
+  const DMProfile = (uid: string) => {
+    return <img className="h-8 w-8 sm:h-12 sm:w-12 rounded-full object-cover" alt="" src={memberRef[uid].avatar} />
+  }
+
+  const groupProfile = (members: StringMap<IMember>) => {
+    const imgArr = Object.values(members)
+      .slice(0, 2)
+      .map((ele) => ele.avatar)
+
+    return (
+      <div className="h-8 w-8 sm:h-12 sm:w-12 flex flex-col justify-center">
+        <img className="object-cover h-6 w-6 sm:h-8 sm:w-8 ml-4 sm:ml-6 rounded-full" alt="" src={imgArr[0]} />
+        <img className="object-cover h-6 w-6 sm:h-8 sm:w-8 -mt-4 border-2 border-white rounded-full" alt="" src={imgArr[1]} />
+      </div>
+    )
+  }
+
+  const profileIMG = (isGroup: boolean) => {
+    return loaded && forwardingRoom ? (
+      isGroup ? (
+        groupProfile(memberRef)
+      ) : (
+        DMProfile(newUser?.uid!)
+      )
+    ) : (
+      <div className="h-8 w-8 sm:h-12 sm:w-12 flex flex-col justify-center bg-gray-200 rounded-full"></div>
     )
   }
 
@@ -547,19 +576,19 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   const chatroomTemplate = (
     <div {...getRootProps({ class: 'overflow-hidden h-screen sm:h-auto  w-screen sm:w-96 md:w-120 lg:w-160 bg-white sm:border flex flex-col' })}>
-        {showImage.length > 0 && (
-                    <div
-                      className="fixed inset-0 z-50 bg-gray-600 bg-opacity-50 flex items-center justify-center"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setShowImage("");
-                      }}
-                    >
-                      <div>
-                        <img className=" xl:max-w-7xl xl:max-h-320" alt="" src={showImage}></img>
-                      </div>
-                    </div>
-                  )}
+      {showImage.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 bg-gray-600 bg-opacity-50 flex items-center justify-center"
+          onClick={(event) => {
+            event.stopPropagation()
+            setShowImage('')
+          }}
+        >
+          <div>
+            <img className=" xl:max-w-7xl xl:max-h-320" alt="" src={showImage}></img>
+          </div>
+        </div>
+      )}
       <div className="fixed z-20 sm:static h-12 sm:h-16 bg-white w-full flex  items-center justify-center px-2 sm:px-8 border-b">
         <Link to="/chat/inbox">
           <div className="mx-4 sm:hidden">
@@ -567,7 +596,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           </div>
         </Link>
         <div className="h-16 w-60 sm:w-80 md:w-100 lg:w-140 flex flex-col items-start justify-center">
-          <div className="w-full  items-center text-base sm:text-xl font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
+          <div className="w-full flex  items-center text-base sm:text-xl font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
+          <div className="mx-3"> {profileIMG(forwardingRoom.group)}</div>
+
             {isChatroomExist
               ? forwardingRoom.title
                 ? forwardingRoom.title
@@ -607,8 +638,10 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
                   <i className="fas fa-times"></i>
                 </div>
               </div>
-              {replyMessage?.image && <img className="w-8 h-8 rounded object-cover" alt="" src={replyMessage?.image}></img>}
-              <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">{replyMessage!.message}</div>
+              {replyMessage?.image ? <img className="w-8 h-8 rounded object-cover" alt="" src={replyMessage?.image}></img>
+            :
+            <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">{replyMessage!.message}</div>  
+            }
             </div>
           )}
           <div className={` flex flex-col flex-grow w-full ${files.length > 0 ? 'h-28' : ' h-10'} px-4 border rounded-3xl `}>
@@ -628,11 +661,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
                   onBlur={() => isTyping(false)}
                 ></input>
               </div>
-              <div className="w-8 ml-2 flex items-center justify-center cursor-pointer"
-              onClick={()=>open()}
-              >
-                  <span className="material-icons">insert_photo</span>
-                </div>
+              <div className="w-8 ml-2 flex items-center justify-center cursor-pointer" onClick={() => open()}>
+                <span className="material-icons">insert_photo</span>
+              </div>
               {inputValue.length > 0 ? (
                 <div className="w-8 ml-2  origin-center cursor-pointer" onClick={() => handleTouchSend()}>
                   <i className="fas fa-location-arrow fa-rotate-45"></i>
