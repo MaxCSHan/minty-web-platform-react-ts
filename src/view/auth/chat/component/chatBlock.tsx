@@ -1,13 +1,14 @@
 import Message from '../../../../interface/IMessage'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import IReaction from '../../../../interface/IReaction'
 import IEmoji from '../../../../interface/IEmoji'
 import { chatroomDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 import StringMap from '../../../../interface/StringMap'
 import IMember from '../../../../interface/IMember'
-import { Subject, fromEvent } from 'rxjs'
-import { map, bufferCount, filter } from 'rxjs/operators'
+import { Subject, fromEvent, of } from 'rxjs'
+import { map, bufferCount, filter, tap, mergeMap, delay, takeUntil } from 'rxjs/operators'
+import { useMediaQuery } from 'react-responsive'
 
 const emojiList = [
   { emoji: '❤️', name: 'red heart', shortname: ':heart:', unicode: '2764', html: '&#10084;', category: 'Smileys & Emotion (emotion)', order: '1286' },
@@ -83,11 +84,14 @@ const Chatblock = ({
   onReply,
   onReaction,
   jumpTo,
-  setShowImage
+  setShowImage,
 }: chatBlockProps) => {
   const [isHover, setIsHover] = useState(false)
   const [isHoverReaction, setIsHoverReaction] = useState(false)
   const [onClikReaction, setOnClikReaction] = useState(false)
+
+  const isMobile = useMediaQuery({ query: '(min-device-width: 640px)' })
+
 
   const dateController = (ele: Message) => {
     const mesDate = new Date(ele.date)
@@ -144,8 +148,11 @@ const Chatblock = ({
   }
 
   const clickEvent$ = new Subject()
+  const mouseDown$ = new Subject()
+  const mouseUp$ = new Subject()
+
   const clickCount = 2
-  const clickTimespan = 2000
+  const clickTimespan = 1000
   // const messsageBlock = document.getElementById(`messageBlock_${message.id}`)
   // console.log('messsageBlock', messsageBlock)
   const doubleClick$ = clickEvent$.pipe(
@@ -160,17 +167,27 @@ const Chatblock = ({
     })
   )
 
-  useEffect(() => {
-    const listener = doubleClick$.subscribe((ele) =>
-      setEmoji(emojiList[0])
-    )
+  const longPress$ = mouseDown$.pipe(
+    mergeMap((e) => {
+      return of(e).pipe(delay(500), takeUntil(mouseUp$))
+    }),
+    tap(() => console.log('longpress'))
+  )
 
-    return () => listener.unsubscribe()
+  useEffect(() => {
+    const listener = doubleClick$.subscribe((ele) => setEmoji(emojiList[0]))
+
+    const longPressSubscriber = longPress$.subscribe((ele) => setOnClikReaction(true))
+
+    return () => {
+      listener.unsubscribe()
+      longPressSubscriber.unsubscribe()
+    }
   })
 
   const replyBlock = message.reply && (
     <div className={`max-w-xs  flex flex-col -mb-2  ${isForward ? 'items-end ' : 'items-start ml-4'}`} onClick={() => onCheckReply()}>
-      <div className="text-sm  whitespace-nowrap">
+      <div className="text-sm  whitespace-nowrap  select-none">
         {message.reply.uid === loginUser().uid ? 'You' : message.reply.from} replied to
         <span className="font-semibold"> {message.reply.toId === loginUser().uid ? 'You' : message.reply.to}</span>
       </div>
@@ -181,7 +198,14 @@ const Chatblock = ({
   )
 
   const imageBlock = (
-    <img className="rounded-2xl bg-gray-200 cursor-pointer" onClick={() => setShowImage(message.image!)} alt="" src={message.image}></img>
+    <img
+      className="rounded-2xl bg-gray-200 cursor-pointer  select-none"
+      onClick={() => {
+        if (!onClikReaction) setShowImage(message.image!)
+      }}
+      alt=""
+      src={message.image}
+    ></img>
   )
 
   const textBlock = (
@@ -195,12 +219,14 @@ const Chatblock = ({
       <div className={`relative  flex items-end ${isForward ? 'flex-row-reverse' : 'flex-row'}`}>
         {!isForward && group && (
           <div className="h-10 w-10">
-            {' '}
-            {(message.uid !== nextUid || nextHasReply) && <img className="h-10 w-10 border rounded-full" alt="" src={avatar!} />}
+            {(message.uid !== nextUid || nextHasReply) && <img className="h-10 w-10 bg-gray-200 border rounded-full" alt="" src={avatar!} />}
           </div>
         )}
         {message.heart ? (
-          <div className={`flex flex-col mx-4 text-8xl text-red-500  ${isForward ? 'items-end' : 'items-start'}`}>
+          <div
+            className={`flex flex-col mx-4 text-8xl text-red-500  ${isForward ? 'items-end' : 'items-start'}`}
+            onClick={(e) => clickEvent$.next(e)}
+          >
             {group && !isForward && (message.uid !== previousUid || previousHasReply) && (
               <div className="text-xs text-gray-600">{memberRef[message.uid].username}</div>
             )}
@@ -208,7 +234,7 @@ const Chatblock = ({
               <i className=" fas fa-heart"></i>
               {message?.reaction?.length > 0 && (
                 <div
-                  className="absolute z-20 -bottom-4 right-0 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
+                  className="absolute z-10 -bottom-4 right-0 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
                   onMouseEnter={() => setIsHoverReaction(true)}
                   onMouseLeave={() => setIsHoverReaction(false)}
                 >
@@ -233,23 +259,27 @@ const Chatblock = ({
             </div>
           </div>
         ) : (
-          <div className={`flex flex-col  sm:max-w-none 	 ${isForward ? 'items-end' : 'items-start'} `}>
+          <div
+            className={`flex flex-col  sm:max-w-none 	 ${isForward ? 'items-end' : 'items-start'} `}
+            onClick={(e) => clickEvent$.next(e)}
+            onTouchStart={(e) => mouseDown$.next(e)}
+            onTouchEnd={(e) => mouseUp$.next(e)}
+          >
             {group && !isForward && !message.reply && (message.uid !== previousUid || previousHasReply) && (
-              <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid]?.username}</div>
+              <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid]?.username || "User Not Found"}</div>
             )}
             {replyBlock}
             <div
               id={`messageBlock_${message.id}`}
-              onClick={(e) => clickEvent$.next(e)}
               className={`z-10 border   ${
                 message.uid !== previousUid || previousHasReply || message.reply ? (isForward ? 'rounded-tr-3xl ' : 'rounded-tl-3xl') : ''
               } ${message.uid !== nextUid || nextHasReply || message.reply ? (isForward ? 'rounded-br-3xl' : 'rounded-bl-3xl') : ''}  ${
                 isForward ? `rounded-l-3xl rounded-r-lg ` : ` rounded-r-3xl rounded-l-lg`
-              }   bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}
+              }  ${onClikReaction ? 'z-40' : ''}  bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}
             >
               <div className="relative px-3  py-2 max-w-mini sm:max-w-xs flex   break-all  items-center justify-center">
                 <div className="flex flex-col">
-                  <div className="flex items-center cursor-default">{message.message}</div>
+                  <div className="flex items-center cursor-default select-none sm:select-auto">{message.message}</div>
                   {imageBlock}
                 </div>
 
@@ -288,20 +318,28 @@ const Chatblock = ({
             }`}
           >
             {onClikReaction && (
-              <div
-                className={`${
-                  isForward ? '-right-2 sm:-right-8' : '-left-5 sm:-left-12'
-                } absolute -top-10 sm:-top-14  z-50  w-64 h-12 shadow-lg rounded-full bg-white flex items-center justify-around px-2`}
-              >
-                {emojiList.map((ele, index) => (
-                  <span className="text-3xl cursor-pointer " key={`reaction_selection_${index}`} onMouseDownCapture={() => setEmoji(ele)}>
-                    {ele.emoji}
-                  </span>
-                ))}
-              </div>
+              <Fragment>
+                <div
+                  className={`${
+                    isForward ? '-right-2 sm:-right-8' : '-left-5 sm:-left-12'
+                  } absolute -top-10 sm:-top-14  z-50  w-64 h-12 shadow-lg rounded-full bg-white flex items-center justify-around px-2 transition-all duration-300 ease-in-out  ${
+                    onClikReaction ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  {emojiList.map((ele, index) => (
+                    <span
+                      className="text-3xl cursor-pointer hover:text-3xl  select-none"
+                      key={`reaction_selection_${index}`}
+                      onMouseDownCapture={() => setEmoji(ele)}
+                    >
+                      {ele.emoji}
+                    </span>
+                  ))}
+                </div>
+              </Fragment>
             )}
             <button
-              className="appearance-none focus:outline-none hover:text-gray-500"
+              className=" appearance-none focus:outline-none hover:text-gray-500"
               onClick={() => setOnClikReaction(!onClikReaction)}
               onBlur={() => setOnClikReaction(false)}
             >
@@ -313,6 +351,39 @@ const Chatblock = ({
             >
               <i className="fas fa-reply"></i>
             </div>
+
+            <div
+              className={`fixed sm:static z-20 sm:hidden inset-0  transition-all duration-200 ease-in-out flex flex-col ${
+                onClikReaction ? 'visible' : 'invisible'
+              }`}
+            >
+              <div
+                className={`flex-grow bg-gray-200 ${onClikReaction ? 'bg-opacity-30 visible' : 'bg-opacity-0 invisible'}`}
+                onTouchStart={() => setOnClikReaction(false)}
+              ></div>
+              <div
+                className={`flex h-16 w-full z-30 justify-around items-center bg-white text-black transition-all duration-200 ease-in-out text-xl font-semibold select-none ${
+                  onClikReaction ? 'opacity-100 visible' : 'opacity-0 invisible'
+                }`}
+              >
+                <div
+                  onTouchStart={() => {
+                    setOnClikReaction(false)
+                    navigator.clipboard.writeText(message.message)
+                  }}
+                >
+                  Copy
+                </div>
+                <div
+                  onTouchStart={() => {
+                    setOnClikReaction(false)
+                    onReply(message.id, memberRef[message.uid].username, message.uid, message.message, message.image)
+                  }}
+                >
+                  Reply
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -320,11 +391,16 @@ const Chatblock = ({
   )
 
   const block = (
-    <div className={`transition-all ease-in-out duration-100 ${message?.reply?.id ? 'mt-3' : ''} ${message?.reaction?.length > 0 ? 'mb-7' : 'mb-1'}`}>
+    <div
+      className={` select-none sm:select-auto transition-all ease-in-out duration-100 ${message?.reply?.id ? 'mt-3' : ''} ${
+        message?.reaction?.length > 0 ? 'mb-7' : 'mb-1'
+      }`}
+    >
       {/* date */}
       {dateController(message)}
 
-      {!message.create ? textBlock : <div className={`text-center text-gray-600 my-3`}>{message.username} has created a new room</div>}
+      {!message.create ? message.notification ? <div className={`text-center text-gray-600 my-3`}>{message.username} {message.notification }</div>: textBlock : <div className={`text-center text-gray-600 my-3`}>{message.username} has created a new room</div>}
+
     </div>
   )
 

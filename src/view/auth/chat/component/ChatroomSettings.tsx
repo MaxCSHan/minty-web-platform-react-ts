@@ -1,19 +1,22 @@
 import { useState } from 'react'
 import IChatroom from '../../../../interface/IChatroom'
 import IMember from '../../../../interface/IMember'
+import Message from '../../../../interface/IMessage'
 import User from '../../../../interface/IUser'
 import { chatroomDB } from '../../../../setup/setupFirebase'
 import UserSelecter from './UserSelecter'
 
 
 type ChatroomSettingsProps = {
-  id: string
-  forwardingRoom: IChatroom
+  id: string;
+  myUserName:string;
+  loginUid:string;
+  forwardingRoom: IChatroom;
   members: IMember[]
   setDetailed: (value: boolean) => void
 }
 
-const ChatroomSettings = ({ id, forwardingRoom, members, setDetailed }: ChatroomSettingsProps) => {
+const ChatroomSettings = ({ id, myUserName, loginUid,forwardingRoom, members, setDetailed }: ChatroomSettingsProps) => {
   const [inputTitleValue, setInputTitleValue] = useState<string | undefined>(forwardingRoom.title)
   const [selectedUser, setSelectedUser] = useState<User[]>([])
   const [editMember, setEditMember] = useState(false)
@@ -26,9 +29,36 @@ const ChatroomSettings = ({ id, forwardingRoom, members, setDetailed }: Chatroom
       setInputTitleValue(value)
     }
   }
+
+  const updateEventLatest = (notification:string) => {
+    const currDateNumber = new Date().getTime();
+
+    const newMessageRef = chatroomDB
+    .doc(id)
+    .collection("messages")
+    .doc();
+
+    newMessageRef.set({
+      username: myUserName,
+      message: "",
+      date: currDateNumber,
+      timeHint: true,
+      id: newMessageRef.id,
+      uid: loginUid,
+      notification:notification
+    } as Message);
+
+    const messageUpdate = {
+      latestActiveDate:currDateNumber,
+      latestMessageId: newMessageRef.id
+    }
+    chatroomDB.doc(id).update(messageUpdate)
+  }
   const saveTitle = () => {
     setEditTitle(false)
-    chatroomDB.doc(id).update({ title: inputTitleValue })
+    chatroomDB.doc(id).update({ title: inputTitleValue });
+    updateEventLatest(`changed the room name into ${inputTitleValue} `);
+    
   }
   const discardTitle = () => {
     setEditTitle(false)
@@ -50,7 +80,8 @@ const ChatroomSettings = ({ id, forwardingRoom, members, setDetailed }: Chatroom
       })
       chatroomDB
       .doc(id)
-      .update({"members":newMembers,"memberInfos":newMemberInfos})
+      .update({"members":newMembers,"memberInfos":newMemberInfos});
+      updateEventLatest(`added ${selectedUser.map(ele => ele.username).join(", ")} into the room.`)
       setSelectedUser([]);
       setEditMember(false);
   }

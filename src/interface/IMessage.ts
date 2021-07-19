@@ -7,16 +7,17 @@ import IReaction from "./IReaction"
  timeHint:boolean;
  */
 interface Message {
+    id:string;
     username:string;
+    uid:string;
     message:string;
     date:number;
     timeHint:boolean;
     reply?:IReplyMessage;
-    id:string;
-    uid:string;
     heart?:boolean;
     reaction:IReaction[]
     create?:boolean;
+    notification?:string;
     image?:string;
   }
 

@@ -34,6 +34,8 @@ type ChatroomProps = {
 }
 
 const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
+
+  const loginUid = loginUser().uid;
   const { id } = useParams<Record<string, string | undefined>>()
   const [isChatroomExist, setIsChatroomExist] = useState(true)
   const [loaded, setIsloaded] = useState(false)
@@ -50,14 +52,15 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const [stay, setStay] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-
   const [files, setFiles] = useState<any>([])
   const [showImage, setShowImage] = useState('')
+  const [isFocusingInput, setIsFocusingInput] = useState(false)
+
 
   useBeforeunload((event) => {
     if (isChatroomExist) {
       var typingUpdate: any = {}
-      typingUpdate[`isTyping.${loginUser().uid}`] = false
+      typingUpdate[`isTyping.${loginUid}`] = false
       chatroomDB.doc(id).update(typingUpdate)
     }
   })
@@ -65,7 +68,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   /// Hooks
   useEffect(() => {
     setMyUserName(loginUser()?.username)
-    const theOtherUid = id?.replace(loginUser().uid, '')
+    const theOtherUid = id?.replace(loginUid, '')
 
     if (theOtherUid) {
       userDB
@@ -152,7 +155,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     if (messages.length > 0) {
       const readSetter = chatroomDB.doc(id)
       var usersUpdate: any = {}
-      usersUpdate[`read.${loginUser().uid}`] = messages[messages.length - 1].id
+      usersUpdate[`read.${loginUid}`] = messages[messages.length - 1].id
       if (messages?.length > 0 && !stay) scrollToBottom()
       setStay(false)
       if (messages?.length > 0) readSetter.update(usersUpdate)
@@ -169,11 +172,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   /** Creat a new DM room */
   const creatDM = async (uid: string, input: string) => {
-    const privateCoId = [loginUser().uid, uid].sort().join('')
+    const privateCoId = [loginUid, uid].sort().join('')
     const group = false
 
     await userDB
-      .doc(loginUser().uid)
+      .doc(loginUid)
       .collection('roomList')
       .doc(privateCoId)
       .get()
@@ -191,12 +194,12 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
             timeHint: true,
             reply: replyMessage?.to.length ? replyMessage : null,
             id: newMessgaesListRef.id,
-            uid: loginUser().uid,
+            uid: loginUid,
             heart: input === '❤️',
             reaction: []
           })
 
-          const memberUids = [loginUser().uid, uid]
+          const memberUids = [loginUid, uid]
           //
 
           const createDefaultMembers = (currentUser: User, memberUser: User) => {
@@ -251,7 +254,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   const [replyMessage, setReplyMessage] = useState<IReplyMessage>()
   const onReply = (id: string, to: string, toId: string, message: string, imageUrl?: string) => {
-    setReplyMessage({ id, uid: loginUser().uid, from: myUserName, to, toId, message, image: imageUrl } as IReplyMessage)
+    setReplyMessage({ id, uid: loginUid, from: myUserName, to, toId, message, image: imageUrl } as IReplyMessage)
     inputRef!.current?.focus()
   }
 
@@ -286,7 +289,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const sendMessage = (text: string, replyMessage?: IReplyMessage, fileUrl?: string) => {
-    const currDateNumber = new Date().getTime()
+    const currDateNumber = new Date().getTime();
     console.log('About to send', fileUrl)
 
     if (isChatroomExist && (text.match(/^(?!\s*$).+/) || fileUrl)) {
@@ -302,7 +305,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         timeHint: isIntervalGreaterThan(5),
         reply: replyMessage?.to ? replyMessage : null,
         id: newMessageRef.id,
-        uid: loginUser().uid,
+        uid: loginUid,
         heart: text === '❤️',
         reatcion: [] as IReaction[],
         image: fileUrl ? fileUrl : null
@@ -349,14 +352,14 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     // console.log('id', id, 'isChatroomExist', isChatroomExist)
     if (isChatroomExist) {
       var typingUpdate: any = {}
-      typingUpdate[`isTyping.${loginUser().uid}`] = action
+      typingUpdate[`isTyping.${loginUid}`] = action
       chatroomDB.doc(id).update(typingUpdate)
     }
   }
 
   const showTyping = () =>
     Object.keys(typingRef!)
-      .filter((uid) => uid !== loginUser().uid)
+      .filter((uid) => uid !== loginUid)
       .map((ele) => typingRef![ele])
       .reduce((accu, curr) => accu || curr, false)
 
@@ -521,7 +524,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           onReply={onReply}
           jumpTo={jumpTo}
           avatar={memberRef[ele.uid]?.avatar || forwardingRoom?.roomPhoto}
-          isForward={ele.uid === loginUser().uid}
+          isForward={ele.uid === loginUid}
           roomId={id!}
           message={ele}
           myUserName={myUserName}
@@ -529,7 +532,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           setShowImage={setShowImage}
         ></Chatblock>
         {readRef && readRef![ele.id] && (
-          <div className=" flex justify-end  items-center">
+          <div className=" flex justify-end  items-center select-none">
             {readRef[ele.id].map((uid) => (
               <img className="w-6 h-6 mx-1 rounded-full" alt="" src={memberRef[uid].avatar}></img>
             ))}
@@ -550,7 +553,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       {typingRef && (
         <div className={`flex items-center px-4 transtion-all duration-200 ease-in-out ${showTyping() ? 'opacity-100 h-14 pt-4 ' : 'opacity-0 h-0'}`}>
           {members
-            .filter((mem) => mem.uid !== loginUser().uid)
+            .filter((mem) => mem.uid !== loginUid)
             .map((ele, index) => {
               return typingRef[ele.uid] ? (
                 <div className="relative h-8 w-8 mr-2">
@@ -571,7 +574,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     </div>
   )
   const detailedComponent = (
-    <ChatroomSettings id={id!} forwardingRoom={forwardingRoom} members={members} setDetailed={(value) => setIsDetailed(value)}></ChatroomSettings>
+    <ChatroomSettings myUserName={myUserName} loginUid={loginUid} id={id!} forwardingRoom={forwardingRoom} members={members} setDetailed={(value) => setIsDetailed(value)}></ChatroomSettings>
   )
 
   const chatroomTemplate = (
@@ -603,7 +606,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
               ? forwardingRoom.title
                 ? forwardingRoom.title
                 : members
-                    .filter((ele) => ele.uid !== loginUser().uid)
+                    .filter((ele) => ele.uid !== loginUid)
                     .map((ele) => ele.username)
                     .join(', ')
               : newUser?.username}
@@ -645,31 +648,31 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
             </div>
           )}
           <div className={` flex flex-col flex-grow w-full ${files.length > 0 ? 'h-28' : ' h-10'} px-4 border rounded-3xl `}>
-            <input {...getInputProps()} />
+            <input className="select-none" {...getInputProps()} />
             <div className={`${files.length > 0 ? 'mt-1' : 'invisible'} flex items-center`}>{thumbs}</div>
             {/* <div className="w-10">front</div> */}
             <div className=" flex  items-center flex-grow">
               <div className="flex-grow">
                 <input
-                  className="w-full outline-none"
+                  className={`w-full outline-none ${isFocusingInput?"select-text":"select-none"}`}
                   value={inputValue}
                   placeholder="Message..."
                   ref={inputRef}
                   onChange={(e) => handleInput(e)}
                   onKeyPress={(e) => handleKeyPress(e)}
-                  onFocus={() => isTyping(true)}
-                  onBlur={() => isTyping(false)}
+                  onFocus={() => {setIsFocusingInput(true);isTyping(true);}}
+                  onBlur={() => {setIsFocusingInput(false);isTyping(false);}}
                 ></input>
               </div>
-              <div className="w-8 ml-2 flex items-center justify-center cursor-pointer" onClick={() => open()}>
+              <div className="w-8 ml-2 flex items-center justify-center cursor-pointer select-none" onClick={() => open()}>
                 <span className="material-icons">insert_photo</span>
               </div>
               {inputValue.length > 0 ? (
-                <div className="w-8 ml-2  origin-center cursor-pointer" onClick={() => handleTouchSend()}>
+                <div className="w-8 ml-2  origin-center cursor-pointer select-none" onClick={() => handleTouchSend()}>
                   <i className="fas fa-location-arrow fa-rotate-45"></i>
                 </div>
               ) : (
-                <div className="w-8 ml-2 " onClick={() => sendHeart()}>
+                <div className="w-8 ml-2 select-none" onClick={() => sendHeart()}>
                   <i className="sm:text-2xl far fa-heart cursor-pointer "></i>
                 </div>
               )}

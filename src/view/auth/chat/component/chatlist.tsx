@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Subject } from 'rxjs'
-import { debounceTime, distinctUntilChanged, startWith, switchMap } from 'rxjs/operators'
+import { debounceTime, distinctUntilChanged, tap, switchMap } from 'rxjs/operators'
 import { chatroomDB, userDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 import IChatroom from '../../../../interface/IChatroom'
@@ -25,6 +25,8 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
 
   const [inputValue, setInputValue] = useState('')
   const [searching, setSearching] = useState(false)
+  const [resultLoading, setResultLoading] = useState(false)
+
   const [selectedRoom, setSelectedRoom] = useState<string>()
   const [searchUserResult, setSearchUserResult] = useState<User[]>()
   const [recommendUserResult, setRecommendResult] = useState<User[]>()
@@ -46,6 +48,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   useEffect(() => {
     const subscription = suggestList$.subscribe((ele) => {
       setSearchUserResult(ele)
+      setResultLoading(false)
     })
     return () => {
       subscription.unsubscribe()
@@ -78,6 +81,8 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
       listener()
     }
   }, [])
+
+  useEffect(()=> console.log(resultLoading),[resultLoading])
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -161,7 +166,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     >
       {inputValue.length !== 0 ? (
         <div className="flex flex-col flex-grow mt-4">
-          {searchUserResult ? (
+          {!resultLoading ? (
             resultComponent(searchUserResult)
           ) : (
             <div className="w-full flex justify-center">

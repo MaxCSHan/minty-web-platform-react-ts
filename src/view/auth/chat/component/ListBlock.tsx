@@ -25,11 +25,16 @@ const ListBlock = ({ roomObject, roomId, selectedRoomId, onRoomSelected }: group
   }, [roomObject])
 
   useEffect(() => {
+    let listener: () => void;
     if (theOtherUser) {
-      userDB.doc(theOtherUser).onSnapshot((doc) => {
+      listener = userDB.doc(theOtherUser).onSnapshot((doc) => {
         const data = doc.data() as User
         setLoginStatus(data.loginStatus)
       })
+    }
+
+    return ()=>{
+      if(theOtherUser) listener();
     }
   }, [theOtherUser])
 
