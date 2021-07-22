@@ -68,7 +68,7 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
   );
 
   return (
-    <div className="fixed w-screen bg-white dark:bg-gray-800 dark:text-white z-10">
+    <div className="fixed w-full bg-white dark:bg-gray-800 dark:text-white z-10">
       <div className=" flex flex-col  ">
         <div className="h-16 flex items-center  border-b">
           <div className=" ml-3 h-10 w-4/6  md:w-7/12 lg:w-4/6 2xl:w-3/4  border rounded-l-full flex items-center bg-gray-100 focus:bg-white">

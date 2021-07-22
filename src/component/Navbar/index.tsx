@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useLocation, useHistory } from "react-router-dom";
-import { loginUser, logout } from "../../services/authService";
+import {  loginUser, logout } from "../../services/authService";
 
 const usePathname = () => {
   const location = useLocation();
@@ -115,13 +115,13 @@ const Navbar = () => {
   const [isDropdown, setIsDropdown] = useState(false);
   const location =usePathname()
   return (
-    <div className={`fixed h-14  w-screen z-20 bg-white dark:bg-gray-800 dark:text-white items-center border-b justify-between ${location.includes("/chat/room")?"hidden sm:flex":"flex"}`}>
+    <div className={`fixed h-14  w-screen z-20 bg-white dark:bg-gray-800 dark:text-white items-center border-b justify-between ${location === "/search"?" shadow-none":"shadow-lg"} ${location.includes("/chat/room")?"hidden sm:flex":"flex"}`}>
       <div className="h-full ml-3 mr-1 sm:mr-3 text-sm sm:text-base flex items-center">
         <Link to="/">MintySpace</Link>
       </div>
       {location === "/search" ? "" : <MiniSearchbar></MiniSearchbar>}
 
-      <div className="h-full w-48 md:w-64  flex items-center justify-around mr-3">
+      <div className="h-full w-48 md:w-64  flex items-center justify-around ">
         <Link to="/">
           <div>
             <i className="sm:text-2xl fas fa-film"></i>
@@ -165,17 +165,17 @@ const Navbar = () => {
 
         <Link to={`/User/${loginUser()?.username}`}>
           <div>
-            <i className=" sm:text-2xl fas fa-user-circle"></i>
+          {loginUser()?<img className="rounded-full h-10 w-10" alt="userProfile" src={loginUser().avatar}></img> : <i className=" sm:text-2xl fas fa-user-circle"></i>}
           </div>
         </Link>
 
-        <Link to="/auth">
+        {/* <Link to="/auth">
               <div className="h-8 hidden sm:flex items-center bg-primary text-white font-semibold cursor-pointer rounded-full px-4"
               onClick={()=> logout()}
               >
                 Logout
               </div>
-            </Link>
+            </Link> */}
       </div>
     </div>
   );

@@ -33,7 +33,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="font-sans ">
+      <div className="font-sans w-screen h-screen">
         {/*
           A <Switch> looks through all its children <Route>
           elements and renders the first one whose path

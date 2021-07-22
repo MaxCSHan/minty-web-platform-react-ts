@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, Fragment } from 'react'
+import React, { useState, } from 'react'
 import { Link } from 'react-router-dom'
 import IChatroom from '../../../../interface/IChatroom'
 import IMember from '../../../../interface/IMember'
@@ -6,13 +6,10 @@ import User from '../../../../interface/IUser'
 import StringMap from '../../../../interface/StringMap'
 import { loginUser } from '../../../../services/authService'
 import { chatroomDB, userDB } from '../../../../setup/setupFirebase'
-import { Subject } from 'rxjs'
-import { debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, startWith, switchMap } from 'rxjs/operators'
 import UserSelecter from './UserSelecter'
 
 const NewRoom = () => {
   const [title, setTitle] = useState('')
-  const [inputValue, setInputValue] = useState('')
   const [selectedUser, setSelectedUser] = useState<User[]>([])
 
   const handleTitleInput = (e: React.ChangeEvent<HTMLInputElement>) => {

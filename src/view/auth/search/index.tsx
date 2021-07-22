@@ -12,11 +12,14 @@ const Search = () => {
 
 
   return (
-    <div className="h-screen w-screen transition duration-100 ease-in-out mt-14">
+    <div className="h-screen w-screen transition duration-100 ease-in-out pt-14">
       <Searchbar onGridSwitch={onGridSwitch}></Searchbar>
-      <div className={`mt-16 flex ${grid?"flex-row flex-wrap":"flex-col"}  justify-center items-center transition duration-100 ease-in-out sm:bg-gray-100 bg-opacity-80`}>
+      <div className="pt-16 w-screen h-full">
+        <div className={` w-full  ${grid?"flex flex-col  md:grid md:grid-cols-2 lg:grid-cols-3  xl:grid-cols-4 2xl:grid-cols-5":"flex flex-col"}  justify-center items-center transition duration-100 ease-in-out sm:bg-gray-100 bg-opacity-80`}>
         {posts.map((ele,index) =><Post key={`post_${index}`}></Post> )}
       </div>
+      </div>
+      
     </div>
   );
 };

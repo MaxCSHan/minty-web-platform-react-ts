@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import User from '../../../../interface/IUser'
 import { Subject } from 'rxjs'
-import { debounceTime, distinctUntilChanged, map, startWith, switchMap } from 'rxjs/operators'
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators'
 import { userDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 

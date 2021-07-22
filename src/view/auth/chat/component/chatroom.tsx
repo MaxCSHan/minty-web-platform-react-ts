@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect, useRef, Fragment, useCallback } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
 import { useBeforeunload } from 'react-beforeunload'
 
 //Interface
@@ -34,7 +34,14 @@ type ChatroomProps = {
 }
 
 const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
-
+  const history = useHistory();
+  const location = useLocation();
+  type stateProps = {
+    roomObject:IChatroom
+    theOtherUser:User
+  }
+  const {roomObject,theOtherUser} = location.state as stateProps ;
+  console.log(theOtherUser)
   const loginUid = loginUser().uid;
   const { id } = useParams<Record<string, string | undefined>>()
   const [isChatroomExist, setIsChatroomExist] = useState(true)
@@ -46,15 +53,18 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const [members, setMembers] = useState<IMember[]>([])
   const [typingRef, setTypingRef] = useState<StringMap<boolean>>()
   const [readRef, setReadRef] = useState<StringMap<string[]>>()
-  const [forwardingRoom, setForwardingRoom] = useState<IChatroom>({} as IChatroom)
+  const [forwardingRoom, setForwardingRoom] = useState<IChatroom>(roomObject || {} as IChatroom)
   const [isDetailed, setIsDetailed] = useState(false)
   const [messages, setMes] = useState<Message[]>([])
   const [stay, setStay] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const [files, setFiles] = useState<any>([])
-  const [showImage, setShowImage] = useState('')
-  const [isFocusingInput, setIsFocusingInput] = useState(false)
+  const [showImage, setShowImage] = useState('');
+  const [isFocusingInput, setIsFocusingInput] = useState(false);
+  const [isShowTags, setIsShowTags] = useState(false)
+  const [inputTags, setInputTags] = useState("")
+
 
 
   useBeforeunload((event) => {
@@ -68,17 +78,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   /// Hooks
   useEffect(() => {
     setMyUserName(loginUser()?.username)
-    const theOtherUid = id?.replace(loginUid, '')
-
-    if (theOtherUid) {
-      userDB
-        .doc(theOtherUid)
-        .get()
-        .then((doc) => {
-          const userData: User = doc.data() as User
-          if (userData) setNewUser(userData)
-        })
-    }
+   
 
     const chatRoomListener = chatroomDB.doc(id).onSnapshot((doc) => {
       const isExist = doc.exists
@@ -93,6 +93,14 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           const arr = Object.keys(chatroomData.memberInfos)
             .map((key) => [key, chatroomData.memberInfos[key]])
             .map((ele) => ({ ...(ele[1] as IMember), uid: ele[0] as string } as IMember))
+            .sort((a,b) => {
+              var nameA=a.username.toLowerCase(), nameB=b.username.toLowerCase();
+              if (nameA < nameB) //sort string ascending
+               return -1;
+              if (nameA > nameB)
+               return 1;
+              return 0; //default return value (no sorting)
+             })
           //  console.log(arr)
           setMembers(arr)
         }
@@ -107,6 +115,18 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         }
         if (chatroomData.read) setReadRef(objectFlip(chatroomData.read))
         if (chatroomData.isTyping) setTypingRef(chatroomData.isTyping)
+      }
+      const theOtherUid = id?.replace(loginUid, '')
+
+      if (theOtherUid) {
+        userDB
+          .doc(theOtherUid)
+          .get()
+          .then((doc) => {
+            const userData: User = doc.data() as User
+            if (userData) setNewUser(userData)
+            if (!userData && !isExist) history.push('/chat/inbox')
+          })
       }
     })
 
@@ -144,7 +164,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           }
           setIsloaded(true)
         })
-    }
+    } 
+    else setIsloaded(true);
     return () => {
       if (isChatroomExist) messageListener()
       setIsloaded(false)
@@ -246,8 +267,15 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     const value = e.target.value
     if (value === '') setInputValue('')
     else {
+      if(value.slice(-1) === " ") {
+        setIsShowTags(false);
+        setInputTags("")
+      }
+      if(isShowTags) setInputTags(inputTags+value.slice(-1))
+      if(value.slice(-1) === "@" && inputValue.slice(-1)===(" " || "")) setIsShowTags(true)
       setInputValue(value)
     }
+    console.log(inputTags)
   }
 
   ///Reply
@@ -447,7 +475,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const DMProfile = (uid: string) => {
-    return <img className="h-8 w-8 sm:h-12 sm:w-12 rounded-full object-cover" alt="" src={memberRef[uid].avatar} />
+    return <img className="h-8 w-8 sm:h-12 sm:w-12 rounded-full object-cover" alt="" src={memberRef[uid]?.avatar} />
   }
 
   const groupProfile = (members: StringMap<IMember>) => {
@@ -464,13 +492,15 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const profileIMG = (isGroup: boolean) => {
-    return loaded && forwardingRoom ? (
+    return loaded  ? (
+      forwardingRoom?
       isGroup ? (
         groupProfile(memberRef)
       ) : (
         DMProfile(newUser?.uid!)
-      )
-    ) : (
+      ):
+     <img className="h-8 w-8 sm:h-12 sm:w-12 rounded-full object-cover" alt="" src={theOtherUser?.avatar} />
+      ) : (
       <div className="h-8 w-8 sm:h-12 sm:w-12 flex flex-col justify-center bg-gray-200 rounded-full"></div>
     )
   }
@@ -573,6 +603,17 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       )}
     </div>
   )
+
+  const tagComponent = (
+    <div className="absolute bottom-10  h-48 bg-gray-200 overflow-y-scroll flex flex-col shadow-xl">
+      {members.map(member => <div className="flex items-center justify-start cursor-default bg-white hover:bg-gray-100 px-1 h-10">
+        <img className="w-6 h-6 rounded-full mr-2" alt="profile" src={member.avatar}></img>
+        <div>{member.username}</div>
+      </div>)}
+
+    </div>
+  )
+
   const detailedComponent = (
     <ChatroomSettings myUserName={myUserName} loginUid={loginUid} id={id!} forwardingRoom={forwardingRoom} members={members} setDetailed={(value) => setIsDetailed(value)}></ChatroomSettings>
   )
@@ -651,7 +692,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
             <input className="select-none" {...getInputProps()} />
             <div className={`${files.length > 0 ? 'mt-1' : 'invisible'} flex items-center`}>{thumbs}</div>
             {/* <div className="w-10">front</div> */}
-            <div className=" flex  items-center flex-grow">
+            <div className="relative flex  items-center flex-grow">
               <div className="flex-grow">
                 <input
                   className={`w-full outline-none ${isFocusingInput?"select-text":"select-none"}`}
@@ -663,6 +704,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
                   onFocus={() => {setIsFocusingInput(true);isTyping(true);}}
                   onBlur={() => {setIsFocusingInput(false);isTyping(false);}}
                 ></input>
+                {isShowTags && tagComponent}
               </div>
               <div className="w-8 ml-2 flex items-center justify-center cursor-pointer select-none" onClick={() => open()}>
                 <span className="material-icons">insert_photo</span>

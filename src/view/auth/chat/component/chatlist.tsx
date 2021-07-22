@@ -144,7 +144,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
 
   const resultComponent = (userArr: User[] = []) =>
     userArr.map((ele, index) => (
-      <Link key={`search_result_${index}`} to={`/chat/room/${[loginUser().uid, ele.uid].sort().join('')}`} onClick={() => setSearching(false)}>
+      <Link key={`search_result_${index}`} to={{pathname:`/chat/room/${[loginUser().uid, ele.uid].sort().join('')}`,state:{theOtherUser:ele}}} onClick={() => setSearching(false)}>
         <div className="flex items-center  px-3 py-1 cursor-pointer">
           <img className="h-10 w-10 rounded-full object-cover" alt="" src={ele.avatar} />
           <div className="ml-4">{ele.username}</div>
@@ -156,7 +156,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     <ListBlock roomObject={ele} roomId={ele.id} selectedRoomId={selectedRoom!} onRoomSelected={onRoomSelected}></ListBlock>
   ))
 
-  const roomListComponent = <div className="z-20 bg-white">{mapRoomList}</div>
+  const roomListComponent = <div className="z-20 bg-white">{mapRoomList.length>0?mapRoomList:loadingListComponent}</div>
 
   const searchComponent = (
     <div
@@ -219,7 +219,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
           </div>
         </div>
         <div className="w-full flex-grow flex-shrink border-t overflow-y-scroll">
-          {/* {loadingListComponent} */}
+          
           {searchComponent}
           {roomListComponent}
         </div>

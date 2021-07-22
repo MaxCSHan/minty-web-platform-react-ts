@@ -1,5 +1,6 @@
 import React from "react";
-import {loginUser} from "../../../services/authService"
+import { Link } from "react-router-dom";
+import {loginUser, logout} from "../../../services/authService"
 
 const User = () => {
   return (
@@ -14,6 +15,14 @@ const User = () => {
         <div>Likes | 320</div>
         <div>Followers | 320</div>
       </div>
+
+      <div> <Link to="/auth">
+              <div className="h-8 flex items-center bg-primary text-white font-semibold cursor-pointer rounded-full px-4"
+              onClick={()=> logout()}
+              >
+                Logout
+              </div>
+            </Link></div>
     </div>
   );
 };

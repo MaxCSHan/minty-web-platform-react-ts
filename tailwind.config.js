@@ -100,6 +100,7 @@ module.exports = {
     },
   },
   plugins: [
-    scrollbarHide
+    scrollbarHide,
+    require('@tailwindcss/aspect-ratio')
   ],
 }

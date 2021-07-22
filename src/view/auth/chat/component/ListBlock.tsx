@@ -21,7 +21,7 @@ const ListBlock = ({ roomObject, roomId, selectedRoomId, onRoomSelected }: group
 
   useEffect(() => {
     setRoom(roomObject)
-    setTheOtherUser(roomObject?.members!.filter((ele) => ele !== loginUser().uid)[0]!)
+    if(!roomObject.group)setTheOtherUser(roomObject?.members!.filter((ele) => ele !== loginUser().uid)[0]!)
   }, [roomObject])
 
   useEffect(() => {
@@ -78,7 +78,7 @@ const ListBlock = ({ roomObject, roomId, selectedRoomId, onRoomSelected }: group
     </div>
   )
   return room ? (
-    <Link key={`chatroom_link_${roomId}`} to={`/chat/room/${roomId}`}>
+    <Link key={`chatroom_link_${roomId}`} to={{pathname: `/chat/room/${roomId}` ,state:{ roomObject }}} >
       <div
         onClick={() => onRoomSelected(roomId)}
         className={`w-full  px-4 h-20 flex items-center ${

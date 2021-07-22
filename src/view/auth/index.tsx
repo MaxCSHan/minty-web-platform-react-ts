@@ -3,8 +3,8 @@ import User from "./user/index";
 import Chat from "./chat/index";
 import Search from "./search";
 import Onboarding from "../login/onboarding"
-
-import Navbar from "../../component/Navebar";
+import NotFound from "../auth/notfound"
+import Navbar from "../../component/Navbar";
 
 // import {withRouter} from 'react-router';
 
@@ -21,6 +21,7 @@ const Container = () => {
           <Route  path="/Search" component={Search}/>
           <Route  path="/User/:userId" component={User}/>
           <Route  path="/Chat" component={Chat}/>
+          <Route component={NotFound} />
         </Switch>
       </div>
     </div>
