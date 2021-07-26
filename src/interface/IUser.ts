@@ -1,5 +1,5 @@
 
-interface User {
+interface IUser {
     uid:string;
     username: string;
     email: string;
@@ -9,4 +9,4 @@ interface User {
     intro?:string;
   }
 
-  export default User;
+  export default IUser;

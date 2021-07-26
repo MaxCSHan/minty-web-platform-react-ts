@@ -132,7 +132,7 @@ const Navbar = () => {
             <i className="sm:text-2xl far fa-comment"></i>
           </div>
         </Link>
-        <div className="relative">
+        <div className="relative z-40">
           <button
             className="focus:outline-none"
             onClick={() => setIsDropdown(!isDropdown)}
@@ -142,7 +142,7 @@ const Navbar = () => {
           </button>
 
           <div
-            className={`origin-top-right absolute  -right-10 mt-2 py-2 w-80 sm:w-120 h-140 z-20 text-xs sm:text-base rounded-md bg-white border  focus:outline-none ${
+            className={`origin-top-right absolute  -right-10 mt-2 py-2 w-80 sm:w-120 h-140 z-40 text-xs sm:text-base rounded-md bg-white border  focus:outline-none ${
               isDropdown
                 ? "opacity-100 scale-100 visible "
                 : "opacity-0 scale-90 invisible "
@@ -153,7 +153,7 @@ const Navbar = () => {
           >
             {notifications.map((note, index) => (
               <div
-                className="h-12 border-b border-gray-50 flex items-center px-2"
+                className="h-12 border-b border-gray-50 flex items-center px-2  z-40"
                 key={`notification_${index}`}
               >
                 <div className="h-10 w-10 rounded-full bg-gray-200"></div>

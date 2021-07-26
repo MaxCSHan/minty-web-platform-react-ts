@@ -9,47 +9,8 @@ import IMember from '../../../../interface/IMember'
 import { Subject, fromEvent, of } from 'rxjs'
 import { map, bufferCount, filter, tap, mergeMap, delay, takeUntil } from 'rxjs/operators'
 import { useMediaQuery } from 'react-responsive'
+import {emojiList} from '../../../../constant/development'
 
-const emojiList = [
-  { emoji: '❤️', name: 'red heart', shortname: ':heart:', unicode: '2764', html: '&#10084;', category: 'Smileys & Emotion (emotion)', order: '1286' },
-  {
-    emoji: '😂',
-    name: 'face with tears of joy',
-    shortname: ':joy:',
-    unicode: '1f602',
-    html: '&#128514;',
-    category: 'Smileys & Emotion (face-smiling)',
-    order: '3'
-  },
-  {
-    emoji: '😢',
-    name: 'crying face',
-    shortname: ':cry:',
-    unicode: '1f622',
-    html: '&#128546;',
-    category: 'Smileys & Emotion (face-concerned)',
-    order: '54'
-  },
-  {
-    emoji: '😮',
-    name: 'face with open mouth',
-    shortname: ':open_mouth:',
-    unicode: '1f62e',
-    html: '&#128558;',
-    category: 'Smileys & Emotion (face-concerned)',
-    order: '29'
-  },
-  { emoji: '🔥', name: 'fire', shortname: ':fire:', unicode: '1f525', html: '&#128293;', category: 'Travel & Places (sky & weather)', order: '1753' },
-  {
-    emoji: '👍',
-    name: 'thumbs up',
-    shortname: ':thumbsup:',
-    unicode: '1f44d',
-    html: '&#128077;',
-    category: 'People & Body (hand-fingers-closed)',
-    order: '1176'
-  }
-]
 
 type chatBlockProps = {
   previousUid?: string
@@ -104,6 +65,7 @@ const Chatblock = ({
       ele.timeHint &&
       [mesDate].map((ele) => (
         <div
+        key={`datehint_${message.id}`}
           className={`text-center text-xs text-gray-600 ${message.timeHint ? 'my-3' : ''}`}
         >{`${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([], {
           hour: '2-digit',

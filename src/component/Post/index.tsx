@@ -9,10 +9,7 @@ const Post = () => {
   const title = 'La belle Famme'
   const userName = 'Max'
 
-  const loaded = () => {
-    setInterval(() => setState({ loaded: true }), 2000)
-  }
-  loaded()
+
   return (
     <div className={`${state.loaded ? '' : 'animate-pulse'} max-w-5xl  h-full sm:h-140 md:h-full  xl:h-full my-3`}>
       <div className="h-full flex flex-col items-center justify-evenly p-1">
@@ -22,16 +19,14 @@ const Post = () => {
           onMouseLeave={() => setBookmarkShown(false)}
         >
           <div className={`absolute  inset-0 bg-gray-700 transition-all duration-300 ease-in-out ${bookmarkShown?" bg-opacity-10 visible":" bg-opacity-0 invisible"}`}></div>
-          {state.loaded ? (
+          {
             <img
               src="https://www.creative-tim.com/learning-lab/tailwind-starter-kit/img/team-2-800x800.jpg"
               alt="..."
               className=" object-cover w-full h-full align-middle border-none"
               onLoad={() => setState({ loaded: true })}
             />
-          ) : (
-            <div className="h-72 sm:h-96 w-full bg-gray-200"></div>
-          )}
+         }
 
           {state.loaded && (
             <div

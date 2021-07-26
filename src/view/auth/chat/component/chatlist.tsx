@@ -153,7 +153,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     ))
 
   const mapRoomList = roomList.map((ele, index) => (
-    <ListBlock roomObject={ele} roomId={ele.id} selectedRoomId={selectedRoom!} onRoomSelected={onRoomSelected}></ListBlock>
+    <ListBlock key={`list_block_${index}`} roomObject={ele} roomId={ele.id} selectedRoomId={selectedRoom!} onRoomSelected={onRoomSelected}></ListBlock>
   ))
 
   const roomListComponent = <div className="z-20 bg-white">{mapRoomList.length>0?mapRoomList:loadingListComponent}</div>
