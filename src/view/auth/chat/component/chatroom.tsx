@@ -20,6 +20,7 @@ import { loginUser } from '../../../../services/authService'
 //Component
 import Chatblock from './chatBlock'
 import ChatroomSettings from './ChatroomSettings'
+import InputBar from './InputBar'
 
 //Package
 import { useDropzone } from 'react-dropzone'
@@ -40,10 +41,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     roomObject: IChatroom
     theOtherUser: IUser
   }
-  const { roomObject } = location.state as stateProps || {}
-  const { theOtherUser } = location.state as stateProps || {}
+  const { roomObject } = (location.state as stateProps) || {}
+  const { theOtherUser } = (location.state as stateProps) || {}
 
-  
   const loginUid = loginUser().uid
   const { id } = useParams<Record<string, string | undefined>>()
   const [isChatroomExist, setIsChatroomExist] = useState(true)
@@ -64,8 +64,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const [files, setFiles] = useState<any>([])
   const [showImage, setShowImage] = useState('')
   const [isFocusingInput, setIsFocusingInput] = useState(false)
-  const [isShowTags, setIsShowTags] = useState(false)
+  const [isShowTags, setIsShowTags] = useState(-1)
   const [inputTags, setInputTags] = useState('')
+  const [mentionedUser, setMentionedUser] = useState(0)
+
+  const mentionRecommendation = members.filter((member) => member.username.includes(inputTags))
 
   useBeforeunload((event) => {
     if (isChatroomExist) {
@@ -260,23 +263,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     setIsChatroomExist(true)
   }
 
-  ///Input
-
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    if (value === '') setInputValue('')
-    else {
-      if (value.slice(-1) === ' ') {
-        setIsShowTags(false)
-        setInputTags('')
-      }
-      if (isShowTags) setInputTags(inputTags + value.slice(-1))
-      if (value.slice(-1) === '@' && inputValue.slice(-1) === (' ' || '')) setIsShowTags(true)
-      setInputValue(value)
-    }
-    console.log(inputTags)
-  }
-
   ///Reply
 
   const [replyMessage, setReplyMessage] = useState<IReplyMessage>()
@@ -343,22 +329,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     }
   }
 
-  const sendHeart = () => sendMessage('❤️')
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSend()
-    }
-  }
-
-  const handleSend = () => {
-    if (files.length > 0) sendWithImage(files[0], inputValue, replyMessage)
-    else sendMessage(inputValue, replyMessage)
-    setInputValue('')
-    resetReply()
-    setFiles([])
-  }
-
-
   const isTop = () => {
     const elmnt = document.getElementById(`message_${messages[0]?.id}`)
     const mesTop = document.getElementById('messagesList')
@@ -370,11 +340,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     if (isTop() && !loadingTop) {
       setLoadingTop(isTop()!)
     }
-  }
-
-  const handleTouchSend = () => {
-    handleSend()
-    inputRef!.current?.focus()
   }
 
   const isTyping = (action: boolean) => {
@@ -406,19 +371,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     // Do something with the files
   }, [])
   const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ noClick: true, accept: 'image/*', onDrop })
-  const thumbs = files.map((file: any) => (
-    <div className="mr-2" key={file.name}>
-      <div className="relative h-14 w-14 rounded-2xl group">
-        <img className="h-14 w-14 rounded-2xl object-cover" alt="" src={file.preview} />
-        <div
-          className="absolute top-0 right-0 w-4 h-4  items-center justify-center bg-white rounded-full hidden group-hover:flex"
-          onClick={() => setFiles([])}
-        >
-          <span className="material-icons text-xs cursor-pointer">close</span>
-        </div>
-      </div>
-    </div>
-  ))
 
   //Upload Image
   const sendWithImage = (file: File, inputValue: string, replyMessage?: IReplyMessage) => {
@@ -518,7 +470,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     <div className="flex-grow w-screen sm:w-160 flex flex-col items-center justify-center text-2xl">
       <img className="rounded-full w-32 h-32" alt="" src={newUser?.avatar} />
       <div className="mt-4">{newUser?.username}</div>
-      <Link to={`/user/${newUser?.username}`}><div className="mt-6 rounded-xl py-2 px-2  border text-sm font-semibold cursor-pointer">View Profile</div></Link>
+      <Link to={`/user/${newUser?.username}`}>
+        <div className="mt-6 rounded-xl py-2 px-2  border text-sm font-semibold cursor-pointer">View Profile</div>
+      </Link>
     </div>
   )
 
@@ -607,17 +561,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     </div>
   )
 
-  const tagComponent = (
-    <div className="absolute bottom-10  h-48 bg-gray-200 overflow-y-scroll flex flex-col shadow-xl">
-      {members.map((member) => (
-        <div className="flex items-center justify-start cursor-default bg-white hover:bg-gray-100 px-1 h-10">
-          <img className="w-6 h-6 rounded-full mr-2" alt="profile" src={member.avatar}></img>
-          <div>{member.username}</div>
-        </div>
-      ))}
-    </div>
-  )
-
   const detailedComponent = (
     <ChatroomSettings
       myUserName={myUserName}
@@ -663,8 +606,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
                     .join(', ')
               : newUser.username}
           </div>
-          <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
         </div>
+        <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
+
         {isChatroomExist && (
           <div
             className="cursor-pointer text-base sm:text-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full h-6 w-6 sm:h-10 sm:w-10 mr-6 sm:mr-0 flex items-center justify-center"
@@ -681,64 +625,19 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           </div>
         )}
         {messengerComponent}
-        <div className={`${replyMessage?.to.length! > 0 ? 'h-34' : files.length > 0 ? 'h-36' : ' h-14'}   py-2 flex flex-col items-center px-4`}>
-          {replyMessage?.to.length! > 0 && (
-            <div className="w-full h-16 px-4  flex flex-col ">
-              <div className="flex items-center justify-between">
-                <div>
-                  Replying to:
-                  <span className="font-semibold"> {replyMessage!.to} </span>
-                </div>
-                <div className="text-gray-400 hover:text-gray-600" onClick={() => resetReply()}>
-                  <i className="fas fa-times"></i>
-                </div>
-              </div>
-              {replyMessage?.image ? (
-                <img className="w-8 h-8 rounded object-cover" alt="" src={replyMessage?.image}></img>
-              ) : (
-                <div className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">{replyMessage!.message}</div>
-              )}
-            </div>
-          )}
-          <div className={` flex flex-col flex-grow w-full ${files.length > 0 ? 'h-28' : ' h-10'} px-4 border rounded-3xl `}>
-            <input className="select-none" {...getInputProps()} />
-            <div className={`${files.length > 0 ? 'mt-1' : 'invisible'} flex items-center`}>{thumbs}</div>
-            {/* <div className="w-10">front</div> */}
-            <div className="relative flex  items-center flex-grow">
-              <div className="flex-grow">
-                <input
-                  className={`w-full outline-none ${isFocusingInput ? 'select-text' : 'select-none'}`}
-                  value={inputValue}
-                  placeholder="Message..."
-                  ref={inputRef}
-                  onChange={(e) => handleInput(e)}
-                  onKeyPress={(e) => handleKeyPress(e)}
-                  onFocus={() => {
-                    setIsFocusingInput(true)
-                    isTyping(true)
-                  }}
-                  onBlur={() => {
-                    setIsFocusingInput(false)
-                    isTyping(false)
-                  }}
-                ></input>
-                {isShowTags && tagComponent}
-              </div>
-              <div className="w-8 ml-2 flex items-center justify-center cursor-pointer select-none" onClick={() => open()}>
-                <span className="material-icons">insert_photo</span>
-              </div>
-              {inputValue.length > 0 ? (
-                <div className="w-8 ml-2  origin-center cursor-pointer select-none" onClick={() => handleTouchSend()}>
-                  <i className="fas fa-location-arrow fa-rotate-45"></i>
-                </div>
-              ) : (
-                <div className="w-8 ml-2 select-none" onClick={() => sendHeart()}>
-                  <i className="sm:text-2xl far fa-heart cursor-pointer "></i>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+
+          <InputBar
+            files={files}
+            setFiles={setFiles}
+            members={members}
+            replyMessage={replyMessage}
+            sendMessage={sendMessage}
+            resetReply={resetReply}
+            open={open}
+            sendWithImage={sendWithImage}
+            getInputProps={getInputProps}
+            isTyping={isTyping}
+          ></InputBar>
       </div>
     </div>
   )

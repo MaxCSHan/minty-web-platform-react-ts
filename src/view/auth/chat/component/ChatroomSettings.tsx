@@ -2,7 +2,7 @@ import { useState } from 'react'
 import IChatroom from '../../../../interface/IChatroom'
 import IMember from '../../../../interface/IMember'
 import Message from '../../../../interface/IMessage'
-import User from '../../../../interface/IUser'
+import IUser from '../../../../interface/IUser'
 import { chatroomDB } from '../../../../setup/setupFirebase'
 import UserSelecter from './UserSelecter'
 
@@ -18,7 +18,7 @@ type ChatroomSettingsProps = {
 
 const ChatroomSettings = ({ id, myUserName, loginUid,forwardingRoom, members, setDetailed }: ChatroomSettingsProps) => {
   const [inputTitleValue, setInputTitleValue] = useState<string | undefined>(forwardingRoom.title)
-  const [selectedUser, setSelectedUser] = useState<User[]>([])
+  const [selectedUser, setSelectedUser] = useState<IUser[]>([])
   const [editMember, setEditMember] = useState(false)
 
   const [editTitle, setEditTitle] = useState(false)
@@ -158,7 +158,7 @@ const ChatroomSettings = ({ id, myUserName, loginUid,forwardingRoom, members, se
             </div>
           </div>
         )}
-        <div className="flex flex-col">
+        <div className="flex flex-col sm:max-h-180 sm:overflow-y-scroll scrollbar-hide" >
           {members &&
             members.map((member: IMember, index) => (
               <div className="mx-2 my-2 flex items-center" key={`member_${index}`}>
@@ -168,13 +168,13 @@ const ChatroomSettings = ({ id, myUserName, loginUid,forwardingRoom, members, se
             ))}
         </div>
       </div>
-      <div className="w-full flex flex-col justify-center px-8 py-4 border-b">
+      <div className="sm:h-24 w-full flex flex-col justify-center px-8 py-4 border-b">
         <div className="font-semibold text-lg mb-2">Created Date</div>
         <div className="flex flex-col">
           <div className="mx-2 my-2 flex items-center">{new Date(forwardingRoom?.createdDate!).toLocaleDateString()}</div>
         </div>
       </div>
-      <div className="w-full flex flex-col justify-center px-8 py-3 border-b">
+      <div className=" sm:h-24 w-full flex flex-col justify-center px-8 py-3 border-b">
         <div className="font-semibold text-lg text-red-500 cursor-pointer">Leave this chatroom</div>
         <div className=" my-2 flex items-center text-sm">You won't get messages from this group unless someone adds you back to the chat.</div>
       </div>

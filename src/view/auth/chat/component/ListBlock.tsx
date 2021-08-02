@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import IChatroom from '../../../../interface/IChatroom'
 import { loginUser } from '../../../../services/authService'
 import { userDB } from '../../../../setup/setupFirebase'
-import User from '../../../../interface/IUser'
+import IUser from '../../../../interface/IUser'
 
 type groupProfileProps = {
   roomObject: IChatroom
@@ -28,7 +28,7 @@ const ListBlock = ({ roomObject, roomId, selectedRoomId, onRoomSelected }: group
     let listener: () => void;
     if (theOtherUser) {
       listener = userDB.doc(theOtherUser).onSnapshot((doc) => {
-        const data = doc.data() as User
+        const data = doc.data() as IUser
         setLoginStatus(data.loginStatus)
       })
     }

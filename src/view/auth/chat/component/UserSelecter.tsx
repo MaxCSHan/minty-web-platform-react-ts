@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import User from '../../../../interface/IUser'
+import IUser from '../../../../interface/IUser'
 import { Subject } from 'rxjs'
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators'
 import { userDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 
 type UserSelecterProps = {
-  selectedUser: User[]
-  setSelectedUser: (value: User[]) => void
+  selectedUser: IUser[]
+  setSelectedUser: (value: IUser[]) => void
   description?: string
 }
 
 const UserSelecter = ({ selectedUser, setSelectedUser ,description}: UserSelecterProps) => {
   const [inputValue, setInputValue] = useState('')
-  const [reccomendList, setReccomendList] = useState<User[]>()
+  const [reccomendList, setReccomendList] = useState<IUser[]>()
   const [selectedUserId, setSelectedUserId] = useState<string[]>([])
-  const [searchUserResult, setSearchUserResult] = useState<User[]>()
+  const [searchUserResult, setSearchUserResult] = useState<IUser[]>()
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -30,8 +30,8 @@ const UserSelecter = ({ selectedUser, setSelectedUser ,description}: UserSelecte
         .where('username', '<=', ele + '\uf8ff')
         .get()
         .then((docs) => {
-          const arr: User[] = []
-          docs.forEach((doc) => arr.push(doc.data() as User))
+          const arr: IUser[] = []
+          docs.forEach((doc) => arr.push(doc.data() as IUser))
           return arr
         })
     })
@@ -55,8 +55,8 @@ const UserSelecter = ({ selectedUser, setSelectedUser ,description}: UserSelecte
       .limit(10)
       .get()
       .then((doc) => {
-        const arr: User[] = []
-        doc.forEach((ele) => arr.push(ele.data() as User))
+        const arr: IUser[] = []
+        doc.forEach((ele) => arr.push(ele.data() as IUser))
         console.log(arr)
         setReccomendList(arr.filter((user) => user.uid !== loginUser().uid))
       })
@@ -71,17 +71,17 @@ const UserSelecter = ({ selectedUser, setSelectedUser ,description}: UserSelecte
   })
   useEffect(() => keyword$.next(inputValue), [inputValue])
 
-  const radioBtnUserList = (newUser: User) => {
+  const radioBtnUserList = (newUser: IUser) => {
     if (!selectedUserId.includes(newUser.uid)) addToUserlist(newUser)
     else removeFromUserList(newUser)
   }
 
-  const addToUserlist = (user: User) => {
+  const addToUserlist = (user: IUser) => {
     setSelectedUserId([...selectedUserId!, user.uid])
     setSelectedUser([...selectedUser!, user])
   }
 
-  const removeFromUserList = (user: User) => {
+  const removeFromUserList = (user: IUser) => {
     const newList = selectedUser.filter((item) => item.uid !== user.uid)
     setSelectedUserId(newList.map((ele) => ele.uid))
     setSelectedUser(newList)

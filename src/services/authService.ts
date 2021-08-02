@@ -1,5 +1,5 @@
 import firebase, { userDB, chatroomDB, messageDB } from '../setup/setupFirebase'
-import User from '../interface/IUser'
+import IUser from '../interface/IUser'
 import { useHistory } from 'react-router-dom'
 
 const loginWithGoogle = async () => {
@@ -8,7 +8,7 @@ const loginWithGoogle = async () => {
   const result = await firebase.auth().signInWithPopup(provider)
   const userInfo = result.user
   //   console.log(result.user)
-  const userData: User = {
+  const userData: IUser = {
     uid: userInfo?.uid!,
     username: userInfo?.displayName!,
     email: userInfo?.email!,
@@ -148,7 +148,7 @@ const logout = async () => {
 
 const firbaseAuth = firebase.auth()
 const loginUser = () => {
-  const user = JSON.parse(sessionStorage.getItem('user')!) as User
+  const user = JSON.parse(sessionStorage.getItem('user')!) as IUser
   return user
 }
 

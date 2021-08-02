@@ -2,7 +2,7 @@ import React, { useState, } from 'react'
 import { Link } from 'react-router-dom'
 import IChatroom from '../../../../interface/IChatroom'
 import IMember from '../../../../interface/IMember'
-import User from '../../../../interface/IUser'
+import IUser from '../../../../interface/IUser'
 import StringMap from '../../../../interface/StringMap'
 import { loginUser } from '../../../../services/authService'
 import { chatroomDB, userDB } from '../../../../setup/setupFirebase'
@@ -10,7 +10,7 @@ import UserSelecter from './UserSelecter'
 
 const NewRoom = () => {
   const [title, setTitle] = useState('')
-  const [selectedUser, setSelectedUser] = useState<User[]>([])
+  const [selectedUser, setSelectedUser] = useState<IUser[]>([])
 
   const handleTitleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -20,7 +20,7 @@ const NewRoom = () => {
     }
   }
 
-  const creatDM = async (selectedList: User[]) => {
+  const creatDM = async (selectedList: IUser[]) => {
     if (selectedList.length > 0) {
       const group = true
       const groupUserList = [loginUser(), ...selectedList]

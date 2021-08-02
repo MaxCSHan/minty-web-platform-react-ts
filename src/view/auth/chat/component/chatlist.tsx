@@ -7,7 +7,7 @@ import { loginUser } from '../../../../services/authService'
 import IChatroom from '../../../../interface/IChatroom'
 import IMember from '../../../../interface/IMember'
 import StringMap from '../../../../interface/StringMap'
-import User from '../../../../interface/IUser'
+import IUser from '../../../../interface/IUser'
 import ListBlock from './ListBlock'
 
 type ChatlistProps = {
@@ -28,8 +28,8 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   const [resultLoading, setResultLoading] = useState(false)
 
   const [selectedRoom, setSelectedRoom] = useState<string>()
-  const [searchUserResult, setSearchUserResult] = useState<User[]>()
-  const [recommendUserResult, setRecommendResult] = useState<User[]>()
+  const [searchUserResult, setSearchUserResult] = useState<IUser[]>()
+  const [recommendUserResult, setRecommendResult] = useState<IUser[]>()
   const [roomList, setRoomList] = useState<IChatroom[]>([])
 
   const keyword$ = new Subject<string>()
@@ -42,7 +42,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
         .where('username', '>=', ele)
         .where('username', '<=', ele + '\uf8ff')
         .get()
-        .then((docs) => docs.docs.map(doc => doc.data() as User))
+        .then((docs) => docs.docs.map(doc => doc.data() as IUser))
         })
       )
   useEffect(() => {
@@ -72,8 +72,8 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
       .limit(10)
       .get()
       .then((doc) => {
-        const arr: User[] = []
-        doc.forEach((ele) => arr.push(ele.data() as User))
+        const arr: IUser[] = []
+        doc.forEach((ele) => arr.push(ele.data() as IUser))
         // console.log(arr)
         setRecommendResult(arr)
       })
@@ -97,8 +97,8 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
       .limit(10)
       .get()
       .then((doc) => {
-        const arr: User[] = []
-        doc.forEach((ele) => arr.push(ele.data() as User))
+        const arr: IUser[] = []
+        doc.forEach((ele) => arr.push(ele.data() as IUser))
         // console.log(arr)
         setSearchUserResult(arr)
       })
@@ -142,7 +142,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     </div>
   ))
 
-  const resultComponent = (userArr: User[] = []) =>
+  const resultComponent = (userArr: IUser[] = []) =>
     userArr.map((ele, index) => (
       <Link key={`search_result_${index}`} to={{pathname:`/chat/room/${[loginUser().uid, ele.uid].sort().join('')}`,state:{theOtherUser:ele}}} onClick={() => setSearching(false)}>
         <div className="flex items-center  px-3 py-1 cursor-pointer">
