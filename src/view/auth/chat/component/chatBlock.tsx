@@ -10,6 +10,7 @@ import { Subject, fromEvent, of } from 'rxjs'
 import { map, bufferCount, filter, tap, mergeMap, delay, takeUntil } from 'rxjs/operators'
 import { useMediaQuery } from 'react-responsive'
 import {emojiList} from '../../../../constant/development'
+import { Link } from 'react-router-dom'
 
 
 type chatBlockProps = {
@@ -241,7 +242,10 @@ const Chatblock = ({
             >
               <div className="relative px-3  py-2 max-w-mini sm:max-w-xs flex   break-all  items-center justify-center">
                 <div className="flex flex-col">
-                  <div className="flex items-center cursor-default select-none sm:select-auto">{message.message}</div>
+                  <div className="flex items-center cursor-default select-none sm:select-auto">
+                    {message.message.split(' ').map((ele) => {
+                return /^@\S+/.test(ele) && message.mention && memberRef[ele.slice(1)].username ?      <Link to={`/user/${memberRef[ele.slice(1)].username}`}> <span className="text-green-300 cursor-pointer hover:underline">{message.mention && memberRef[ele.slice(1)].username}</span> </Link>: ele + ' '
+              })}</div>
                   {imageBlock}
                 </div>
 

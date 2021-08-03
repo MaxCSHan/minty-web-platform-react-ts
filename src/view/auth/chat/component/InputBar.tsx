@@ -1,16 +1,19 @@
 import { useRef, useState } from 'react'
 import { imagesRef } from '../../../../setup/setupFirebase'
+import { MentionsInput, Mention } from 'react-mentions'
 
 //Interface
 import IMember from '../../../../interface/IMember'
 import IReplyMessage from '../../../../interface/IReplyMessage'
 import IUser from '../../../../interface/IUser'
+import StringMap from '../../../../interface/StringMap'
 
 type InputBarProps = {
+  isGroup: boolean
   files: any
   members: IMember[]
   replyMessage?: IReplyMessage
-  sendMessage: (text: string, replyMessage?: IReplyMessage, fileUrl?: string) => void
+  sendMessage: ({text, replyMessage, fileUrl, mention} : {text: string, replyMessage?: IReplyMessage, fileUrl?: string, mention?:StringMap<string>}) => void
   resetReply: () => void
   open: () => void
   sendWithImage: (file: File, inputValue: string, replyMessage?: IReplyMessage) => void
@@ -20,6 +23,7 @@ type InputBarProps = {
 }
 
 const InputBar = ({
+  isGroup,
   files,
   setFiles,
   members,
@@ -38,22 +42,27 @@ const InputBar = ({
   const [isShowTags, setIsShowTags] = useState(-1)
   const [inputTags, setInputTags] = useState('')
   const [mentionedUser, setMentionedUser] = useState(0)
-  const [mentionList, setMentionList] = useState<IMember[]>([])
+  const [mentionList, setMentionList] = useState<StringMap<string>>({})
 
+  const mentionRecommendation = () =>
+    members.filter((member) => member.username.includes(inputTags)).map((ele) => ({ ...ele, id: ele.uid, display: ele.username }))
 
-  const mentionRecommendation = members.filter((member) => member.username.includes(inputTags))
-
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInput = (e: any) => {
     const value = e.target.value
+    console.log("value",inputValue);
+    console.log("parser",mentionParser())
     if (value.slice(-1) === ' ') {
       setIsShowTags(-1)
       setInputTags('')
     }
-    if (isShowTags) setInputTags(value.slice(isShowTags))
-    if (value.slice(-1) === '@' && (inputValue.slice(-1) === ' ' || inputValue ==="")) {
-      setIsShowTags(inputValue.length + 1)
-      setInputTags('')
+    if (isGroup) {
+      if (isShowTags) setInputTags(value.slice(isShowTags))
+      if (value.slice(-1) === '@' && (inputValue.slice(-1) === ' ' || inputValue === '')) {
+        setIsShowTags(inputValue.length + 1)
+        setInputTags('')
+      }
     }
+
     setInputValue(value)
 
     console.log(isShowTags)
@@ -61,17 +70,17 @@ const InputBar = ({
     console.log(inputTags)
   }
 
-  const sendHeart = () => sendMessage('❤️')
+  const sendHeart = () => sendMessage({text:'❤️'})
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      if (isShowTags >= 0) mentioned(mentionRecommendation[mentionedUser])
+      if (isShowTags >= 0) mentioned(mentionRecommendation()[mentionedUser])
       else handleSend()
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (isShowTags >= 0) {
-      const limit = mentionRecommendation.length - 1
+      const limit = mentionRecommendation().length - 1
       if (e.key === 'ArrowUp') setMentionedUser(mentionedUser > 0 ? mentionedUser - 1 : limit)
       if (e.key === 'ArrowDown') setMentionedUser(mentionedUser + 1 > limit ? 0 : mentionedUser + 1)
     }
@@ -79,7 +88,8 @@ const InputBar = ({
 
   const handleSend = () => {
     if (files.length > 0) sendWithImage(files[0], inputValue, replyMessage)
-    else sendMessage(inputValue, replyMessage)
+    else sendMessage({text:inputValue, replyMessage,mention:mentionList})
+    setMentionList({});
     setInputValue('')
     resetReply()
     setFiles([])
@@ -89,9 +99,16 @@ const InputBar = ({
     inputRef!.current?.focus()
   }
 
+  const mentionParser = () =>{
+    return inputValue.split(' ').map((ele) => {
+        return /^@\S+/.test(ele) && mentionList[ele.slice(1)] ?  mentionList[ele.slice(1)] +" ": ele
+    }).join("")
+      
+  }
+
   const mentioned = (member: IMember) => {
-    setMentionList([...mentionList,member])
-    setInputValue(inputValue.slice(0,isShowTags) + member.username)
+    setMentionList({...mentionList, [member.uid] :member.username})
+    setInputValue(inputValue.slice(0, isShowTags) + member.uid + ' ')
     inputRef!.current?.focus()
     setIsShowTags(-1)
     setInputTags('')
@@ -99,7 +116,7 @@ const InputBar = ({
 
   const tagComponent = (
     <div className="absolute z-30 bottom-10 min-h-full bg-gray-200 overflow-y-scroll scrollbar-hide  flex flex-col shadow-xl">
-      {mentionRecommendation.map((member, index) => (
+      {mentionRecommendation().map((member, index) => (
         <div
           className={`${index === mentionedUser ? 'bg-gray-100' : 'bg-white'} px-2 flex items-center justify-start cursor-default bg-whitepx-1 h-10`}
           onClick={() => mentioned(member)}
@@ -151,9 +168,29 @@ const InputBar = ({
         {/* <div className="w-10">front</div> */}
         <div className="relative flex  items-center flex-grow">
           <div className="flex-grow">
+            {/* <MentionsInput
+              className={`w-full outline-none focus:outline-none  ${isFocusingInput ?  'select-text' : 'select-none'}`}
+              value={inputValue}
+              singleLine={true}
+              placeholder="Message..."
+              inputRef={inputRef}
+              onChange={(e) => handleInput(e)}
+            //   onKeyPress={(e) => handleKeyPress(e)}
+            //   onKeyDown={(e) => handleKeyDown(e)}
+              onFocus={() => {
+                setIsFocusingInput(true)
+                isTyping(true)
+              }}
+              onBlur={() => {
+                setIsFocusingInput(false)
+                isTyping(false)
+              }}
+            >
+              <Mention trigger="@" className={`bg-green-200 text-white`} data={mentionRecommendation}  />
+            </MentionsInput> */}
             <input
               className={`w-full outline-none ${isFocusingInput ? 'select-text' : 'select-none'}`}
-              value={inputValue}
+              value={mentionParser()}
               placeholder="Message..."
               ref={inputRef}
               onChange={(e) => handleInput(e)}

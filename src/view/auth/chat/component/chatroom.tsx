@@ -301,7 +301,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     chatroomDB.doc(id).update(messageUpdate)
   }
 
-  const sendMessage = (text: string, replyMessage?: IReplyMessage, fileUrl?: string) => {
+  const sendMessage = ({text, replyMessage, fileUrl, mention} : {text: string, replyMessage?: IReplyMessage, fileUrl?: string, mention?:StringMap<string>}) => {
     const currDateNumber = new Date().getTime()
     console.log('About to send', fileUrl)
 
@@ -321,7 +321,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         uid: loginUid,
         heart: text === '❤️',
         reatcion: [] as IReaction[],
-        image: fileUrl ? fileUrl : null
+        image: fileUrl ? fileUrl : null,
+        mention:mention
       })
       updateLatest(text, currDateNumber, newMessageRef.id!)
     } else {
@@ -421,7 +422,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         // Upload completed successfully, now we can get the download URL
         uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
           console.log('File available at', downloadURL)
-          sendMessage(inputValue, replyMessage, downloadURL)
+          sendMessage({text:inputValue, replyMessage, fileUrl:downloadURL})
         })
       }
     )
@@ -625,19 +626,19 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           </div>
         )}
         {messengerComponent}
-
-          <InputBar
-            files={files}
-            setFiles={setFiles}
-            members={members}
-            replyMessage={replyMessage}
-            sendMessage={sendMessage}
-            resetReply={resetReply}
-            open={open}
-            sendWithImage={sendWithImage}
-            getInputProps={getInputProps}
-            isTyping={isTyping}
-          ></InputBar>
+        <InputBar
+          isGroup={forwardingRoom?.group || false}
+          files={files}
+          setFiles={setFiles}
+          members={members}
+          replyMessage={replyMessage}
+          sendMessage={sendMessage}
+          resetReply={resetReply}
+          open={open}
+          sendWithImage={sendWithImage}
+          getInputProps={getInputProps}
+          isTyping={isTyping}
+        ></InputBar>
       </div>
     </div>
   )
