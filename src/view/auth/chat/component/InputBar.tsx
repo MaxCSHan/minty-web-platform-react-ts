@@ -13,7 +13,17 @@ type InputBarProps = {
   files: any
   members: IMember[]
   replyMessage?: IReplyMessage
-  sendMessage: ({text, replyMessage, fileUrl, mention} : {text: string, replyMessage?: IReplyMessage, fileUrl?: string, mention?:StringMap<string>}) => void
+  sendMessage: ({
+    text,
+    replyMessage,
+    fileUrl,
+    mention
+  }: {
+    text: string
+    replyMessage?: IReplyMessage
+    fileUrl?: string
+    mention?: StringMap<string>
+  }) => void
   resetReply: () => void
   open: () => void
   sendWithImage: (file: File, inputValue: string, replyMessage?: IReplyMessage) => void
@@ -49,8 +59,8 @@ const InputBar = ({
 
   const handleInput = (e: any) => {
     const value = e.target.value
-    console.log("value",inputValue);
-    console.log("parser",mentionParser())
+    console.log('value', inputValue)
+    console.log('parser', mentionParser())
     if (value.slice(-1) === ' ') {
       setIsShowTags(-1)
       setInputTags('')
@@ -70,7 +80,7 @@ const InputBar = ({
     console.log(inputTags)
   }
 
-  const sendHeart = () => sendMessage({text:'❤️'})
+  const sendHeart = () => sendMessage({ text: '❤️' })
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       if (isShowTags >= 0) mentioned(mentionRecommendation()[mentionedUser])
@@ -88,8 +98,8 @@ const InputBar = ({
 
   const handleSend = () => {
     if (files.length > 0) sendWithImage(files[0], inputValue, replyMessage)
-    else sendMessage({text:inputValue, replyMessage,mention:mentionList})
-    setMentionList({});
+    else sendMessage({ text: inputValue, replyMessage, mention: mentionList })
+    setMentionList({})
     setInputValue('')
     resetReply()
     setFiles([])
@@ -99,15 +109,17 @@ const InputBar = ({
     inputRef!.current?.focus()
   }
 
-  const mentionParser = () =>{
-    return inputValue.split(' ').map((ele) => {
-        return /^@\S+/.test(ele) && mentionList[ele.slice(1)] ?  mentionList[ele.slice(1)] +" ": ele
-    }).join("")
-      
+  const mentionParser = () => {
+    return inputValue
+      .split(' ')
+      .map((ele) => {
+        return /^@\S+/.test(ele) && mentionList[ele.slice(1)] ? mentionList[ele.slice(1)] + ' ' : ele
+      })
+      .join('')
   }
 
   const mentioned = (member: IMember) => {
-    setMentionList({...mentionList, [member.uid] :member.username})
+    setMentionList({ ...mentionList, [member.uid]: member.username })
     setInputValue(inputValue.slice(0, isShowTags) + member.uid + ' ')
     inputRef!.current?.focus()
     setIsShowTags(-1)
@@ -118,7 +130,7 @@ const InputBar = ({
     <div className="absolute z-30 bottom-10 min-h-full bg-gray-200 overflow-y-scroll scrollbar-hide  flex flex-col shadow-xl">
       {mentionRecommendation().map((member, index) => (
         <div
-          className={`${index === mentionedUser ? 'bg-gray-100' : 'bg-white'} px-2 flex items-center justify-start cursor-default bg-whitepx-1 h-10`}
+          className={`${index === mentionedUser ? 'bg-gray-100' : 'bg-white'} px-2 flex items-center justify-start cursor-default bg-white  h-10`}
           onClick={() => mentioned(member)}
           onMouseEnter={() => setMentionedUser(index)}
         >
@@ -168,15 +180,15 @@ const InputBar = ({
         {/* <div className="w-10">front</div> */}
         <div className="relative flex  items-center flex-grow">
           <div className="flex-grow">
-            {/* <MentionsInput
-              className={`w-full outline-none focus:outline-none  ${isFocusingInput ?  'select-text' : 'select-none'}`}
+            <MentionsInput
+              className={`mentions ${isFocusingInput ? 'select-text' : 'select-none'}`}
               value={inputValue}
               singleLine={true}
               placeholder="Message..."
               inputRef={inputRef}
               onChange={(e) => handleInput(e)}
-            //   onKeyPress={(e) => handleKeyPress(e)}
-            //   onKeyDown={(e) => handleKeyDown(e)}
+              //   onKeyPress={(e) => handleKeyPress(e)}
+              //   onKeyDown={(e) => handleKeyDown(e)}
               onFocus={() => {
                 setIsFocusingInput(true)
                 isTyping(true)
@@ -186,26 +198,17 @@ const InputBar = ({
                 isTyping(false)
               }}
             >
-              <Mention trigger="@" className={`bg-green-200 text-white`} data={mentionRecommendation}  />
-            </MentionsInput> */}
-            <input
-              className={`w-full outline-none ${isFocusingInput ? 'select-text' : 'select-none'}`}
-              value={mentionParser()}
-              placeholder="Message..."
-              ref={inputRef}
-              onChange={(e) => handleInput(e)}
-              onKeyPress={(e) => handleKeyPress(e)}
-              onKeyDown={(e) => handleKeyDown(e)}
-              onFocus={() => {
-                setIsFocusingInput(true)
-                isTyping(true)
-              }}
-              onBlur={() => {
-                setIsFocusingInput(false)
-                isTyping(false)
-              }}
-            ></input>
-            {isShowTags >= 0 && tagComponent}
+              <Mention
+                trigger="@"
+                style={{
+                  backgroundColor: '#daf4fa'
+                }}
+                data={mentionRecommendation}
+                appendSpaceOnAdd={true}
+              />
+            </MentionsInput>
+
+            {/* {isShowTags >= 0 && tagComponent} */}
           </div>
           <div className="w-8 ml-2 flex items-center justify-center cursor-pointer select-none" onClick={() => open()}>
             <span className="material-icons">insert_photo</span>

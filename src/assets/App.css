@@ -5,6 +5,74 @@
 
 @layer components {
     .mentions {
-      @apply py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md ;
+      @apply z-30;
     }
+
+    .mentions__suggestions__list  {
+        @apply bg-white z-30 absolute bottom-10 overflow-y-scroll py-2 px-3 w-48 max-h-88 border shadow-xl;
+      }
+
+      .mentions__suggestions__item {
+        @apply  px-4 py-2 border-b border-gray-50 w-48 cursor-default;
+      }
+
+      .mentions__suggestions__item--focused {
+       @apply bg-gray-200; 
+      }
+
+      .mentions--singleLine .mentions__higlighter {
+        @apply text-blue-500 p-1;
+      }
   }
+
+
+
+.mentions--singleLine .mentions__control {
+  display: inline-block;
+}
+/* .mentions--singleLine .mentions__higlighter {
+  padding: 1px;
+  border: 2px inset transparent;
+} */
+.mentions--singleLine .mentions__input {
+  outline: 0;
+  padding: 5px;
+}
+
+.mentions--multiLine .mentions__control {
+  font-family: monospace;
+  font-size: 11pt;
+}
+.mentions--multiLine .mentions__highlighter {
+  padding: 9px;
+}
+.mentions--multiLine .mentions__input {
+  padding: 9px;
+  min-height: 63px;
+  outline: 0;
+  border: 0;
+}
+
+/* .mentions__suggestions__list {
+  z-index: 30;
+  position: absolute;
+  bottom: 10rem;
+  height: 20rem;
+  overflow-y: scroll;
+  width: 10rem;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  padding-left: 3rem;
+  padding-right: 3rem;
+
+
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  
+} */
+
+
+
+.mentions__mention {
+  background-color: #cee4e5;
+}

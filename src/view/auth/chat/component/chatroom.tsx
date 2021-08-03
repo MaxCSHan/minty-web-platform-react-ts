@@ -324,7 +324,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         image: fileUrl ? fileUrl : null,
         mention:mention
       })
-      updateLatest(text, currDateNumber, newMessageRef.id!)
+      updateLatest(text.replaceAll(/(@\[.+\]\([A-Za-z0-9]*\))/g,(match)=> "@"+match.match(/@\[(.+)\]/)![1]), currDateNumber, newMessageRef.id!)
     } else {
       creatDM(newUser?.uid!, text)
     }

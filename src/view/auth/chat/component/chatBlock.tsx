@@ -9,9 +9,9 @@ import IMember from '../../../../interface/IMember'
 import { Subject, fromEvent, of } from 'rxjs'
 import { map, bufferCount, filter, tap, mergeMap, delay, takeUntil } from 'rxjs/operators'
 import { useMediaQuery } from 'react-responsive'
-import {emojiList} from '../../../../constant/development'
+import { emojiList } from '../../../../constant/development'
 import { Link } from 'react-router-dom'
-
+import reactStringReplace from 'react-string-replace'
 
 type chatBlockProps = {
   previousUid?: string
@@ -46,14 +46,13 @@ const Chatblock = ({
   onReply,
   onReaction,
   jumpTo,
-  setShowImage,
+  setShowImage
 }: chatBlockProps) => {
   const [isHover, setIsHover] = useState(false)
   const [isHoverReaction, setIsHoverReaction] = useState(false)
   const [onClikReaction, setOnClikReaction] = useState(false)
 
   const isMobile = useMediaQuery({ query: '(min-device-width: 640px)' })
-
 
   const dateController = (ele: Message) => {
     const mesDate = new Date(ele.date)
@@ -66,7 +65,7 @@ const Chatblock = ({
       ele.timeHint &&
       [mesDate].map((ele) => (
         <div
-        key={`datehint_${message.id}`}
+          key={`datehint_${message.id}`}
           className={`text-center text-xs text-gray-600 ${message.timeHint ? 'my-3' : ''}`}
         >{`${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([], {
           hour: '2-digit',
@@ -147,6 +146,20 @@ const Chatblock = ({
       longPressSubscriber.unsubscribe()
     }
   })
+
+  const parser = () => {
+    return reactStringReplace(message.message, /(@\[.+\]\([A-Za-z0-9]*\))/, (match) => {
+      const res = match.match(/@\[(.+)\]\(([A-Za-z0-9]*)\)/)
+      const display = res![1]
+      const uid = res![2]
+
+      return (
+        <Link to={`/User/${memberRef[uid].username}`}>
+          <span className="text-blue-400">{display}</span>
+        </Link>
+      )
+    })
+  }
 
   const replyBlock = message.reply && (
     <div className={`max-w-xs  flex flex-col -mb-2  ${isForward ? 'items-end ' : 'items-start ml-4'}`} onClick={() => onCheckReply()}>
@@ -229,7 +242,7 @@ const Chatblock = ({
             onTouchEnd={(e) => mouseUp$.next(e)}
           >
             {group && !isForward && !message.reply && (message.uid !== previousUid || previousHasReply) && (
-              <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid]?.username || "User Not Found"}</div>
+              <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid]?.username || 'User Not Found'}</div>
             )}
             {replyBlock}
             <div
@@ -242,10 +255,12 @@ const Chatblock = ({
             >
               <div className="relative px-3  py-2 max-w-mini sm:max-w-xs flex   break-all  items-center justify-center">
                 <div className="flex flex-col">
-                  <div className="flex items-center cursor-default select-none sm:select-auto">
-                    {message.message.split(' ').map((ele) => {
-                return /^@\S+/.test(ele) && message.mention && memberRef[ele.slice(1)].username ?      <Link to={`/user/${memberRef[ele.slice(1)].username}`}> <span className="text-green-300 cursor-pointer hover:underline">{message.mention && memberRef[ele.slice(1)].username}</span> </Link>: ele + ' '
-              })}</div>
+                  <div className=" flex items-center flex-wrap cursor-default select-none sm:select-auto">
+                    {/* {message.message.match(/^@\[.+\]\([A-Za-z0-9]*\)/)} */}
+                    {/* {message.message.replace(/^@\[.+\]\([A-Za-z0-9]*\)/, (match) => match.match(/^@\[.+\]/)![0] )} */}
+
+                    {parser()}
+                  </div>
                   {imageBlock}
                 </div>
 
@@ -365,8 +380,17 @@ const Chatblock = ({
       {/* date */}
       {dateController(message)}
 
-      {!message.create ? message.notification ? <div className={`text-center text-gray-600 my-3`}>{message.username} {message.notification }</div>: textBlock : <div className={`text-center text-gray-600 my-3`}>{message.username} has created a new room</div>}
-
+      {!message.create ? (
+        message.notification ? (
+          <div className={`text-center text-gray-600 my-3`}>
+            {message.username} {message.notification}
+          </div>
+        ) : (
+          textBlock
+        )
+      ) : (
+        <div className={`text-center text-gray-600 my-3`}>{message.username} has created a new room</div>
+      )}
     </div>
   )
 

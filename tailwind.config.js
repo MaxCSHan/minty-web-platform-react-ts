@@ -35,6 +35,7 @@ module.exports = {
      }),
      maxHeight: {
       '0': '0',
+      '88': '22rem',
       '140': '35rem',
       '160': '40rem',
       '180': '45rem',
