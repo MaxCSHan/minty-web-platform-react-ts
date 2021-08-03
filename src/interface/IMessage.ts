@@ -1,6 +1,7 @@
 import IReplyMessage from "./IReplyMessage"
 import IReaction from "./IReaction"
 import IMember from "./IMember"
+import StringMap from "./StringMap";
 /**
  username:string;
  message:string;
@@ -20,7 +21,7 @@ interface Message {
     create?:boolean;
     notification?:string;
     image?:string;
-    mention?:IMember[];
+    mention?:string[];
   }
 
   export default Message;

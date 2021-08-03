@@ -301,7 +301,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     chatroomDB.doc(id).update(messageUpdate)
   }
 
-  const sendMessage = ({text, replyMessage, fileUrl, mention} : {text: string, replyMessage?: IReplyMessage, fileUrl?: string, mention?:StringMap<string>}) => {
+  const sendMessage = ({text, replyMessage, fileUrl, mention} : {text: string, replyMessage?: IReplyMessage, fileUrl?: string, mention?:string[]}) => {
     const currDateNumber = new Date().getTime()
     console.log('About to send', fileUrl)
 
@@ -322,9 +322,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         heart: text === '❤️',
         reatcion: [] as IReaction[],
         image: fileUrl ? fileUrl : null,
-        mention:mention
+        mention:mention && mention.length>0?mention:null
       })
-      updateLatest(text.replaceAll(/(@\[.+\]\([A-Za-z0-9]*\))/g,(match)=> "@"+match.match(/@\[(.+)\]/)![1]), currDateNumber, newMessageRef.id!)
+      updateLatest(mention && mention.length>0? text.replaceAll(/(@\[[^\]]+\]\([A-Za-z0-9]*\))/g,(match)=> "@"+match.match(/@\[(.+)\]/)![1]) :text, currDateNumber, newMessageRef.id!)
     } else {
       creatDM(newUser?.uid!, text)
     }
@@ -374,7 +374,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ noClick: true, accept: 'image/*', onDrop })
 
   //Upload Image
-  const sendWithImage = (file: File, inputValue: string, replyMessage?: IReplyMessage) => {
+  const sendWithImage = ({file, inputValue, replyMessage,mention}:{file: File, inputValue: string, replyMessage?: IReplyMessage,mention?:string[]}) => {
     // Create the file metadata
 
     var metadata = {
@@ -422,7 +422,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         // Upload completed successfully, now we can get the download URL
         uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
           console.log('File available at', downloadURL)
-          sendMessage({text:inputValue, replyMessage, fileUrl:downloadURL})
+          sendMessage({text:inputValue, replyMessage, fileUrl:downloadURL,mention:mention})
         })
       }
     )

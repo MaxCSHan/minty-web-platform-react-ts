@@ -148,14 +148,14 @@ const Chatblock = ({
   })
 
   const parser = () => {
-    return reactStringReplace(message.message, /(@\[.+\]\([A-Za-z0-9]*\))/, (match) => {
+    return reactStringReplace(message.message, /(@\[[^\]]+\]\([A-Za-z0-9]*\))/g, (match) => {
       const res = match.match(/@\[(.+)\]\(([A-Za-z0-9]*)\)/)
       const display = res![1]
       const uid = res![2]
 
       return (
         <Link to={`/User/${memberRef[uid].username}`}>
-          <span className="text-blue-400">{display}</span>
+          <span className="text-blue-400 cursor-pointer hover:underline">{display}</span>
         </Link>
       )
     })

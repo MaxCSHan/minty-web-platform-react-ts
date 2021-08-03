@@ -22,11 +22,11 @@ type InputBarProps = {
     text: string
     replyMessage?: IReplyMessage
     fileUrl?: string
-    mention?: StringMap<string>
+    mention?: string[]
   }) => void
   resetReply: () => void
   open: () => void
-  sendWithImage: (file: File, inputValue: string, replyMessage?: IReplyMessage) => void
+  sendWithImage: ({file, inputValue, replyMessage,mention}:{file: File, inputValue: string, replyMessage?: IReplyMessage,mention?:string[]}) => void
   getInputProps: any
   isTyping: (typing: boolean) => void
   setFiles: (arr: any) => void
@@ -52,7 +52,7 @@ const InputBar = ({
   const [isShowTags, setIsShowTags] = useState(-1)
   const [inputTags, setInputTags] = useState('')
   const [mentionedUser, setMentionedUser] = useState(0)
-  const [mentionList, setMentionList] = useState<StringMap<string>>({})
+  const [mentionList, setMentionList] = useState<string[]>([])
 
   const mentionRecommendation = () =>
     members.filter((member) => member.username.includes(inputTags)).map((ele) => ({ ...ele, id: ele.uid, display: ele.username }))
@@ -60,7 +60,6 @@ const InputBar = ({
   const handleInput = (e: any) => {
     const value = e.target.value
     console.log('value', inputValue)
-    console.log('parser', mentionParser())
     if (value.slice(-1) === ' ') {
       setIsShowTags(-1)
       setInputTags('')
@@ -83,16 +82,15 @@ const InputBar = ({
   const sendHeart = () => sendMessage({ text: '❤️' })
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
-      if (isShowTags >= 0) mentioned(mentionRecommendation()[mentionedUser])
-      else handleSend()
+       handleSend()
     }
   }
 
 
   const handleSend = () => {
-    if (files.length > 0) sendWithImage(files[0], inputValue, replyMessage)
+    if (files.length > 0) sendWithImage({file:files[0], inputValue:inputValue, replyMessage:replyMessage, mention:mentionList})
     else sendMessage({ text: inputValue, replyMessage, mention: mentionList })
-    setMentionList({})
+    setMentionList([])
     setInputValue('')
     resetReply()
     setFiles([])
@@ -102,29 +100,15 @@ const InputBar = ({
     inputRef!.current?.focus()
   }
 
-  const mentionParser = () => {
-    return inputValue
-      .split(' ')
-      .map((ele) => {
-        return /^@\S+/.test(ele) && mentionList[ele.slice(1)] ? mentionList[ele.slice(1)] + ' ' : ele
-      })
-      .join('')
-  }
 
-  const mentioned = (member: IMember) => {
-    setMentionList({ ...mentionList, [member.uid]: member.username })
-    setInputValue(inputValue.slice(0, isShowTags) + member.uid + ' ')
-    inputRef!.current?.focus()
-    setIsShowTags(-1)
-    setInputTags('')
-  }
+
+
 
   const tagComponent = (
     <div className="absolute z-30 bottom-10 min-h-full bg-gray-200 overflow-y-scroll scrollbar-hide  flex flex-col shadow-xl">
       {mentionRecommendation().map((member, index) => (
         <div
           className={`${index === mentionedUser ? 'bg-gray-100' : 'bg-white'} px-2 flex items-center justify-start cursor-default bg-white  h-10`}
-          onClick={() => mentioned(member)}
           onMouseEnter={() => setMentionedUser(index)}
         >
           <img className="w-6 h-6 rounded-full mr-2" alt="profile" src={member.avatar}></img>
@@ -197,6 +181,7 @@ const InputBar = ({
                 }}
                 data={mentionRecommendation}
                 appendSpaceOnAdd={true}
+                onAdd={(id) => setMentionList((mentionList) => [...mentionList, id as string])}
               />
             </MentionsInput>
 
