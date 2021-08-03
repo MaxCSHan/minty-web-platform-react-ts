@@ -81,20 +81,13 @@ const InputBar = ({
   }
 
   const sendHeart = () => sendMessage({ text: '❤️' })
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       if (isShowTags >= 0) mentioned(mentionRecommendation()[mentionedUser])
       else handleSend()
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (isShowTags >= 0) {
-      const limit = mentionRecommendation().length - 1
-      if (e.key === 'ArrowUp') setMentionedUser(mentionedUser > 0 ? mentionedUser - 1 : limit)
-      if (e.key === 'ArrowDown') setMentionedUser(mentionedUser + 1 > limit ? 0 : mentionedUser + 1)
-    }
-  }
 
   const handleSend = () => {
     if (files.length > 0) sendWithImage(files[0], inputValue, replyMessage)
@@ -187,8 +180,7 @@ const InputBar = ({
               placeholder="Message..."
               inputRef={inputRef}
               onChange={(e) => handleInput(e)}
-              //   onKeyPress={(e) => handleKeyPress(e)}
-              //   onKeyDown={(e) => handleKeyDown(e)}
+              onKeyPress={(e) => handleKeyPress(e)}
               onFocus={() => {
                 setIsFocusingInput(true)
                 isTyping(true)
