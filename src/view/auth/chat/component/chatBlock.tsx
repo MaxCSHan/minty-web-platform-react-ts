@@ -154,7 +154,7 @@ const Chatblock = ({
       const uid = res![2]
 
       return (
-        <Link to={`/User/${memberRef[uid].username}`}>
+        <Link to={`/User/${memberRef[uid]?.username}`}>
           <span className="text-blue-400 cursor-pointer hover:underline">{display}</span>
         </Link>
       )

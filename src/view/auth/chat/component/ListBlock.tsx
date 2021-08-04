@@ -54,7 +54,7 @@ const ListBlock = ({ roomObject, roomId, selectedRoomId, onRoomSelected }: group
     return (
       <div className="h-16 w-16 flex flex-col justify-center">
         <img className="object-cover h-10 w-10 ml-6 rounded-full" alt="" src={imgArr[0]} />
-        <img className="object-cover h-11 w-11 -mt-4 border-2 border-white rounded-full" alt="" src={imgArr[1]} />
+        <img className="object-cover h-11 w-11 -mt-4 border  border-white rounded-full" alt="" src={imgArr[1]} />
       </div>
     )
   }

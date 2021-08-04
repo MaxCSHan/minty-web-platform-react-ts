@@ -124,12 +124,12 @@ const Navbar = () => {
       <div className="h-full w-48 md:w-64  flex items-center justify-around ">
         <Link to="/">
           <div>
-            <i className="sm:text-2xl fas fa-film"></i>
+            <i className="sm:text-2xl fas fa-film cursor-pointer"></i>
           </div>
         </Link>
         <Link to="/chat">
           <div>
-            <i className="sm:text-2xl far fa-comment"></i>
+            <i className="sm:text-2xl far fa-comment cursor-pointer"></i>
           </div>
         </Link>
         <div className="relative z-40">
@@ -164,7 +164,7 @@ const Navbar = () => {
         </div>
 
         <Link to={`/User/${loginUser()?.username}`}>
-          <div>
+          <div className="cursor-pointer">
           {loginUser()?<img className="rounded-full h-10 w-10" alt="userProfile" src={loginUser().avatar}></img> : <i className=" sm:text-2xl fas fa-user-circle"></i>}
           </div>
         </Link>
