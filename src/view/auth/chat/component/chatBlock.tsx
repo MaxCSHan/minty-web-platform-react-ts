@@ -253,7 +253,7 @@ const Chatblock = ({
                 isForward ? `rounded-l-3xl rounded-r-lg ` : ` rounded-r-3xl rounded-l-lg`
               }  ${onClikReaction ? 'z-40' : ''}  bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}
             >
-              <div className="relative px-3  py-2 max-w-mini sm:max-w-xs flex   break-all  items-center justify-center">
+              <div className={`relative ${message.message.length>0 && "px-3  py-2"} max-w-mini sm:max-w-xs flex   break-all  items-center justify-center`}>
                 <div className="flex flex-col">
                   <div className=" flex items-center flex-wrap cursor-default select-none sm:select-auto">
                     {/* {message.message.match(/^@\[.+\]\([A-Za-z0-9]*\)/)} */}

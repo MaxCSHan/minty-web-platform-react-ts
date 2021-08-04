@@ -13,8 +13,8 @@ const axiosGet = <T>(url: string, queryParams?: object): Observable<T> => {
 
 //
 
-const get = <T>(url: string): Observable<T[]> => {
-  return axiosGet<T[]>(url).pipe(
+const get = <T>(url: string, queryParams?: object): Observable<T[]> => {
+  return axiosGet<T[]>(url,queryParams).pipe(
     take(1),
     retryWhen((err) =>
       err.pipe(
@@ -25,6 +25,8 @@ const get = <T>(url: string): Observable<T[]> => {
     )
   ) as Observable<T[]>;
 };
+
+
 
 
 export { get };

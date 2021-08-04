@@ -1,13 +1,12 @@
 import { useRef, useState } from 'react'
-import { imagesRef } from '../../../../setup/setupFirebase'
 import { MentionsInput, Mention } from 'react-mentions'
 
 //Interface
 import IMember from '../../../../interface/IMember'
 import IReplyMessage from '../../../../interface/IReplyMessage'
-import IUser from '../../../../interface/IUser'
-import StringMap from '../../../../interface/StringMap'
-import { getGIFs } from '../../../../services/giphyService'
+
+
+import GifSearchbar from "./GifSearchbar"
 
 type InputBarProps = {
   isGroup: boolean
@@ -24,20 +23,12 @@ type InputBarProps = {
     text: string
     replyMessage?: IReplyMessage
     fileUrl?: string
-    mention?: string[],
+    mention?: string[]
     notification?: string
   }) => void
   resetReply: () => void
-  open: () => void,
-  sendWithGif:({
-    url,
-    inputValue,
-    replyMessage,
-  }: {
-    url: string
-    inputValue: string
-    replyMessage?: IReplyMessage
-  }) =>void,
+  open: () => void
+  sendWithGif: ({ url, inputValue, replyMessage }: { url: string; inputValue: string; replyMessage?: IReplyMessage }) => void
   sendWithImage: ({
     file,
     inputValue,
@@ -79,6 +70,7 @@ const InputBar = ({
   const [showGif, setShowGif] = useState(false)
   const [gifList, setGifList] = useState<string[]>([])
 
+
   const mentionRecommendation = () =>
     members.filter((member) => member.username.includes(inputTags)).map((ele) => ({ ...ele, id: ele.uid, display: ele.username }))
 
@@ -97,7 +89,6 @@ const InputBar = ({
     }
 
     setInputValue(value)
-
   }
 
   const sendHeart = () => sendMessage({ text: '❤️' })
@@ -119,16 +110,10 @@ const InputBar = ({
     handleSend()
     inputRef!.current?.focus()
   }
-  const loadGif = () => {
-    setShowGif(true)
-    if(gifList.length===0) getGIFs().subscribe((observer) => {
-      const data = observer as any
-       setGifList((gifList) => [...gifList, ...data.data.map((ele: any) => ele.images.fixed_height.url)])
-    })
-  }
 
-  const sendGIf = (url:string) =>{
-    sendWithGif({url,inputValue,replyMessage});
+
+  const sendGIf = (url: string) => {
+    sendWithGif({ url, inputValue, replyMessage })
     setShowGif(false)
   }
 
@@ -160,21 +145,12 @@ const InputBar = ({
   ))
 
   return (
-    <div className={`${replyMessage?.to.length! > 0 ? showGif?"h-72":'h-34' : showGif?"h-60":files.length > 0 ? 'h-36' : 'h-14'}   py-2 flex flex-col items-center px-4`}>
-      {showGif && (
-        <div className="flex flex-col w-full overflow-hidden pb-1">
-          <div className="flex justify-end">
-            <div className="w-6 h-6 px-2 py-3 grid place-content-center rounded-full bg-gray-50 cursor-pointer" onClick={() => setShowGif(false)}>
-              <i className="text-gray-300 fas fa-times"></i>
-            </div>
-          </div>
-          <div className="flex  overflow-x-scroll">
-            {gifList.map((url) => (
-              <img onClick={()=>sendGIf(url)} className=" cursor-pointer w-40 h-32 object-cover ml-1" alt="gif" src={url}></img>
-            ))}
-          </div>
-        </div>
-      )}
+    <div
+      className={`${
+        replyMessage?.to.length! > 0 ? (showGif ? 'h-72' : 'h-34') : showGif ? 'h-60' : files.length > 0 ? 'h-36' : 'h-14'
+      }   py-2 flex flex-col items-center px-4`}
+    >
+      {showGif && <GifSearchbar sendGIf={sendGIf} setShowGif={setShowGif}></GifSearchbar>}
       {replyMessage?.to.length! > 0 && (
         <div className="w-full h-16 px-4  flex flex-col ">
           <div className="flex items-center justify-between">
@@ -230,7 +206,10 @@ const InputBar = ({
             {/* {isShowTags >= 0 && tagComponent} */}
           </div>
           <div>
-            <button className="focus:outline-none" onClick={() => loadGif()}>GIF</button>
+            <button className="focus:outline-none" onClick={() => setShowGif(true)
+}>
+              GIF
+            </button>
           </div>
           <div className="w-8 ml-2 flex items-center justify-center cursor-pointer select-none" onClick={() => open()}>
             <span className="material-icons">insert_photo</span>

@@ -2,5 +2,8 @@ import IUser from '../interface/IUser';
 import {get} from '../utilities/giphyApiHelper';
 
 
-const getGIFs = () => get<any>(`/gifs/trending`);
-export {getGIFs};
+const getTrendyGIFs = () => get<any>(`/gifs/trending`);
+const getSearchGIFs = (query:string) => get<any>(`/gifs/search`,{q:query});
+
+
+export {getTrendyGIFs,getSearchGIFs};
