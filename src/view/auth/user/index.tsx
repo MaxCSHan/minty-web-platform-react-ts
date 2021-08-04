@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import IUser from '../../../interface/IUser'
 import { loginUser, logout } from '../../../services/authService'
+import { getGIFs } from '../../../services/giphyService'
 import { userDB } from '../../../setup/setupFirebase'
 
 const User = () => {
@@ -9,6 +10,13 @@ const User = () => {
   const { userId } = useParams<Record<string, string | undefined>>()
   const [userInfo, setUserInfo] = useState<IUser>()
   const [loaded, setLoaded] = useState(false)
+
+  useEffect(()=>{
+   
+getGIFs().subscribe(observer => {
+  console.log(observer)
+})
+  },[])
 
   useEffect(() => {
     userDB

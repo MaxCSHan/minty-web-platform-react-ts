@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig, AxiosInstance, AxiosPromise } from 'axios';
 import constant from '../constant/development'
 const initialization = (config: AxiosRequestConfig): AxiosInstance => {
     const axiosInstance = axios.create(config);
-    axiosInstance.defaults.baseURL = constant.apiUrl;
+    axiosInstance.defaults.baseURL = constant.giphyApiUrl;
     /*
         Add default headers, interceptors etc..
     */

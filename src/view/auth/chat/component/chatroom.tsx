@@ -167,32 +167,29 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       setIsDetailed(false)
       setLoadingTop(false)
       setIsloaded(false)
-
     }
   }, [id])
 
   useEffect(() => {
     let messageListener: () => void
+    console.log(loaded)
     if (isChatroomExist && loaded) {
       messageListener = chatroomDB
         .doc(id)
         .collection('messages')
         .orderBy('date', 'desc')
         .limit(1)
-        .onSnapshot((doc) => {
-          if (doc) {
-            const mesarr = [] as Message[]
-            doc.forEach((mes) => {
-              mesarr.unshift(mes.data() as Message)
-            })
-            setMes((messages) => [...messages, ...mesarr])
+        .onSnapshot((snap) => {
+          if (snap) {
+            const mes = snap.docs[0].data() as Message
+            setMes((messages) => [...messages, mes])
           }
         })
     }
     return () => {
       if (isChatroomExist && loaded) messageListener()
     }
-  }, [id, isChatroomExist, loaded])
+  }, [id, isChatroomExist,loaded])
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -344,12 +341,14 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     text,
     replyMessage,
     fileUrl,
-    mention
+    mention,
+    notification
   }: {
     text: string
     replyMessage?: IReplyMessage
     fileUrl?: string
-    mention?: string[]
+    mention?: string[],
+    notification?:string
   }) => {
     const currDateNumber = new Date().getTime()
     // console.log('About to send', fileUrl)
@@ -373,8 +372,10 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         image: fileUrl ? fileUrl : null,
         mention: mention && mention.length > 0 ? mention : null
       })
+
+      const latestText = notification? notification:mention && mention.length > 0 ? text.replaceAll(/(@\[[^\]]+\]\([A-Za-z0-9]*\))/g, (match) => '@' + match.match(/@\[(.+)\]/)![1]) : text
       updateLatest(
-        mention && mention.length > 0 ? text.replaceAll(/(@\[[^\]]+\]\([A-Za-z0-9]*\))/g, (match) => '@' + match.match(/@\[(.+)\]/)![1]) : text,
+        latestText,
         currDateNumber,
         newMessageRef.id!
       )
@@ -425,6 +426,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     // Do something with the files
   }, [])
   const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ noClick: true, accept: 'image/*', onDrop })
+
+  //
+  const sendWithGif = ({ url, inputValue, replyMessage }: { url: string; inputValue: string; replyMessage?: IReplyMessage }) => {
+    sendMessage({ text: inputValue, replyMessage, fileUrl: url ,notification:`${myUserName} sent a GIF`})
+  }
 
   //Upload Image
   const sendWithImage = ({
@@ -594,24 +600,23 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   const messengerComponent = (
     <div className={`flex flex-col flex-grow overflow-hidden  transition-all duration-150 ease-in-out pt-10 sm:pt-0`}>
-      
       <div
         className="flex flex-col flex-grow flex-shrink h-screen px-4 pt-4 overflow-x-hidden overflow-y-scroll"
         id="messagesList"
         onScroll={(e) => handleScroll(e)}
       >
-        {loadingTop && lastVisible &&
-        <div className="grid place-content-center my-3">
-          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
-        </div>
-      }
+        {loadingTop && lastVisible && (
+          <div className="grid place-content-center my-3">
+            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </div>
+        )}
         {messages && messages.length > 0 ? messagesList : messagesLoading}
       </div>
       {typingRef && (
@@ -711,6 +716,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
           sendMessage={sendMessage}
           resetReply={resetReply}
           open={open}
+          sendWithGif={sendWithGif}
           sendWithImage={sendWithImage}
           getInputProps={getInputProps}
           isTyping={isTyping}

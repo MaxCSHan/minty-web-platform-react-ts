@@ -3,6 +3,7 @@
 const constant = {
   // apiUrl: 'https://60d9c7045f7bf10017547741.mockapi.io/api/v1',
   apiUrl:"http://localhost:9999",
+  giphyApiUrl:"https://api.giphy.com/v1",
   mode: 'development',
   
 }

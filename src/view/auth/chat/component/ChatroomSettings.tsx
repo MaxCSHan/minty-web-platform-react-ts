@@ -49,6 +49,7 @@ const ChatroomSettings = ({ id, myUserName, loginUid,forwardingRoom, members, se
     } as Message);
 
     const messageUpdate = {
+      latestMessage: `${myUserName} ${notification}`,
       latestActiveDate:currDateNumber,
       latestMessageId: newMessageRef.id
     }
