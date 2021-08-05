@@ -6,7 +6,7 @@ import { chatroomDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 import StringMap from '../../../../interface/StringMap'
 import IMember from '../../../../interface/IMember'
-import { Subject, fromEvent, of } from 'rxjs'
+import { Subject, of } from 'rxjs'
 import { map, bufferCount, filter, tap, mergeMap, delay, takeUntil } from 'rxjs/operators'
 import { useMediaQuery } from 'react-responsive'
 import { emojiList } from '../../../../constant/development'
@@ -175,7 +175,7 @@ const Chatblock = ({
 
   const imageBlock = (
     <img
-      className="rounded-2xl bg-gray-200 cursor-pointer  select-none"
+      className={` bg-gray-200 cursor-pointer  select-none ${message.message.length > 0 && 'rounded-2xl'}`}
       onClick={() => {
         if (!onClikReaction) setShowImage(message.image!)
       }}
@@ -247,21 +247,20 @@ const Chatblock = ({
             {replyBlock}
             <div
               id={`messageBlock_${message.id}`}
-              className={`z-10 border   ${
+              className={`z-10 border  ${
                 message.uid !== previousUid || previousHasReply || message.reply ? (isForward ? 'rounded-tr-3xl ' : 'rounded-tl-3xl') : ''
               } ${message.uid !== nextUid || nextHasReply || message.reply ? (isForward ? 'rounded-br-3xl' : 'rounded-bl-3xl') : ''}  ${
                 isForward ? `rounded-l-3xl rounded-r-lg ` : ` rounded-r-3xl rounded-l-lg`
               }  ${onClikReaction ? 'z-40' : ''}  bg-white mx-2  flex ${isForward ? 'flex-row-reverse' : 'flex-row'}  `}
             >
-              <div className={`relative ${message.message.length>0 && "px-3  py-2"} max-w-mini sm:max-w-xs flex   break-all  items-center justify-center`}>
-                <div className="flex flex-col">
-                  <div className=" flex items-center flex-wrap cursor-default select-none sm:select-auto">
-                    {/* {message.message.match(/^@\[.+\]\([A-Za-z0-9]*\)/)} */}
-                    {/* {message.message.replace(/^@\[.+\]\([A-Za-z0-9]*\)/, (match) => match.match(/^@\[.+\]/)![0] )} */}
-
-                    {parser()}
-                  </div>
-                  {imageBlock}
+              <div
+                className={`relative ${
+                  message.message.length > 0 && 'px-3  py-2'
+                } max-w-mini sm:max-w-xs flex   break-all  items-center justify-center`}
+              >
+                <div className="flex flex-col ">
+                  <div className=" flex items-center flex-wrap cursor-default select-none sm:select-auto">{parser()}</div>
+                  <div className="rounded-3xl overflow-hidden"> {imageBlock}</div>
                 </div>
 
                 {message?.reaction?.length > 0 && (
@@ -334,7 +333,7 @@ const Chatblock = ({
             </div>
 
             <div
-              className={`fixed sm:static z-20 sm:hidden inset-0  transition-all duration-200 ease-in-out flex flex-col ${
+              className={`fixed sm:static z-40 sm:hidden inset-0  transition-all duration-200 ease-in-out flex flex-col ${
                 onClikReaction ? 'visible' : 'invisible'
               }`}
             >

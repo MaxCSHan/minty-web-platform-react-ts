@@ -44,13 +44,10 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const { roomObject } = (location.state as stateProps) || {}
   const { theOtherUser } = (location.state as stateProps) || {}
 
-  const loadMessageLength = 100
-
   const loginUid = loginUser().uid
   const { id } = useParams<Record<string, string | undefined>>()
   const [isChatroomExist, setIsChatroomExist] = useState(true)
   const [loaded, setIsloaded] = useState(false)
-  const [loadingTop, setLoadingTop] = useState(false)
   const [newUser, setNewUser] = useState<IUser>(theOtherUser)
   const [myUserName, setMyUserName] = useState('')
   const [memberRef, setMemberRef] = useState<StringMap<IMember>>({})
@@ -64,7 +61,13 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const [files, setFiles] = useState<any>([])
   const [showImage, setShowImage] = useState('')
+  const [loadingTop, setLoadingTop] = useState(false)
+  const [justLoadedTop, setJustLoadedTop] = useState(false)
+
   const [lastVisible, setLastVisible] = useState<firebase.firestore.DocumentData>()
+  const [currentVisible, setCurrentVisible] = useState<firebase.firestore.DocumentData>()
+  const [loadMessageLength, setLoadMessageLength] = useState(100)
+  const [messageTop, setMessageTop] = useState(false)
 
   useBeforeunload((event) => {
     if (isChatroomExist) {
@@ -78,29 +81,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   useEffect(() => {
     setMyUserName(loginUser()?.username)
 
-    chatroomDB
-      .doc(id)
-      .get()
-      .then((doc) => {
-        if (doc.exists)
-          chatroomDB
-            .doc(id)
-            .collection('messages')
-            .orderBy('date', 'desc')
-            .limit(loadMessageLength)
-            .get()
-            .then((snaps) => {
-              setLastVisible(snaps.docs[snaps.docs.length - 1])
-              if (snaps) {
-                const mesarr = [] as Message[]
-                snaps.forEach((mes) => {
-                  mesarr.unshift(mes.data() as Message)
-                })
-                setMes(mesarr)
-              }
-              setIsloaded(true)
-            })
-      })
+    // chatroomDB
 
     const chatRoomListener = chatroomDB.doc(id).onSnapshot((doc) => {
       const isExist = doc.exists
@@ -172,58 +153,53 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   useEffect(() => {
     let messageListener: () => void
-    console.log(loaded)
     if (isChatroomExist && loaded) {
       messageListener = chatroomDB
         .doc(id)
         .collection('messages')
         .orderBy('date', 'desc')
-        .limit(1)
+        .limit(loadMessageLength)
         .onSnapshot((snap) => {
+          if(loadingTop) setStay(true)
+
           if (snap) {
-            const mes = snap.docs[0].data() as Message
-            setMes((messages) => [...messages, mes])
+            const mesarr = [] as Message[]
+            snap.forEach((mes) => {
+              mesarr.unshift(mes.data() as Message)
+            })
+
+            if (mesarr.length < loadMessageLength) setMessageTop(true)
+            setCurrentVisible(lastVisible)
+            setLastVisible(snap.docs[snap.docs.length - 1])
+            setMes(mesarr)
+            setLoadingTop(false)
           }
         })
-    }
+    } else setIsloaded(true)
     return () => {
       if (isChatroomExist && loaded) messageListener()
     }
-  }, [id, isChatroomExist,loaded])
+  }, [id, isChatroomExist, loaded, loadMessageLength])
+
 
   useEffect(() => {
     if (messages.length > 0) {
       const readSetter = chatroomDB.doc(id)
       var usersUpdate: any = {}
       usersUpdate[`read.${loginUid}`] = messages[messages.length - 1].id
-      if (messages?.length > 0 && !stay) scrollToBottom()
+      if (justLoadedTop) scrollTo((currentVisible!.data() as Message).id)
+      else if (messages?.length > 0 && !stay) scrollToBottom()
       setStay(false)
+      setJustLoadedTop(false)
       if (messages?.length > 0) readSetter.update(usersUpdate)
     }
-  }, [messages])
+  }, [id, loginUid, messages])
 
   useEffect(() => {
     if (loadingTop && lastVisible) {
-      setStay(true)
-      chatroomDB
-        .doc(id)
-        .collection('messages')
-        .orderBy('date', 'desc')
-        .startAfter(lastVisible)
-        .limit(25)
-        .get()
-        .then((snap) => {
-          if (snap) {
-            const mesarr = [] as Message[]
-            snap.forEach((mes) => {
-              mesarr.unshift(mes.data() as Message)
-            })
-            setMes((messages) => [...mesarr, ...messages])
-            scrollTo((lastVisible!.data() as Message).id)
-            setLastVisible(snap.docs[snap.docs.length - 1])
-          }
-          setLoadingTop(false)
-        })
+      const loadLength = loadMessageLength + 25
+      setJustLoadedTop(true)
+      setLoadMessageLength(loadLength)
     }
   }, [loadingTop])
 
@@ -347,8 +323,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     text: string
     replyMessage?: IReplyMessage
     fileUrl?: string
-    mention?: string[],
-    notification?:string
+    mention?: string[]
+    notification?: string
   }) => {
     const currDateNumber = new Date().getTime()
     // console.log('About to send', fileUrl)
@@ -373,12 +349,12 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         mention: mention && mention.length > 0 ? mention : null
       })
 
-      const latestText = notification? notification:mention && mention.length > 0 ? text.replaceAll(/(@\[[^\]]+\]\([A-Za-z0-9]*\))/g, (match) => '@' + match.match(/@\[(.+)\]/)![1]) : text
-      updateLatest(
-        latestText,
-        currDateNumber,
-        newMessageRef.id!
-      )
+      const latestText = notification
+        ? notification
+        : mention && mention.length > 0
+        ? text.replaceAll(/(@\[[^\]]+\]\([A-Za-z0-9]*\))/g, (match) => '@' + match.match(/@\[(.+)\]/)![1])
+        : text
+      updateLatest(latestText, currDateNumber, newMessageRef.id!)
     } else {
       creatDM(newUser?.uid!, text)
     }
@@ -392,8 +368,10 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   }
 
   const handleScroll = (e: any) => {
-    if (isTop() && !loadingTop) {
-      setLoadingTop(isTop()!)
+    if (!messageTop) {
+      if (isTop() && !loadingTop) {
+        setLoadingTop(isTop()!)
+      }
     }
   }
 
@@ -429,7 +407,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
   //
   const sendWithGif = ({ url, inputValue, replyMessage }: { url: string; inputValue: string; replyMessage?: IReplyMessage }) => {
-    sendMessage({ text: inputValue, replyMessage, fileUrl: url ,notification:`${myUserName} sent a GIF`})
+    sendMessage({ text: inputValue, replyMessage, fileUrl: url, notification: `${myUserName} sent a GIF` })
   }
 
   //Upload Image

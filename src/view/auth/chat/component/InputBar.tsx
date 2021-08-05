@@ -61,14 +61,11 @@ const InputBar = ({
 }: InputBarProps) => {
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const [showImage, setShowImage] = useState('')
   const [isFocusingInput, setIsFocusingInput] = useState(false)
   const [isShowTags, setIsShowTags] = useState(-1)
   const [inputTags, setInputTags] = useState('')
-  const [mentionedUser, setMentionedUser] = useState(0)
   const [mentionList, setMentionList] = useState<string[]>([])
   const [showGif, setShowGif] = useState(false)
-  const [gifList, setGifList] = useState<string[]>([])
 
 
   const mentionRecommendation = () =>
@@ -117,19 +114,19 @@ const InputBar = ({
     setShowGif(false)
   }
 
-  const tagComponent = (
-    <div className="absolute z-30 bottom-10 min-h-full bg-gray-200 overflow-y-scroll scrollbar-hide  flex flex-col shadow-xl">
-      {mentionRecommendation().map((member, index) => (
-        <div
-          className={`${index === mentionedUser ? 'bg-gray-100' : 'bg-white'} px-2 flex items-center justify-start cursor-default bg-white  h-10`}
-          onMouseEnter={() => setMentionedUser(index)}
-        >
-          <img className="w-6 h-6 rounded-full mr-2" alt="profile" src={member.avatar}></img>
-          <div>{member.username}</div>
-        </div>
-      ))}
-    </div>
-  )
+//   const tagComponent = (
+//     <div className="absolute z-30 bottom-10 min-h-full bg-gray-200 overflow-y-scroll scrollbar-hide  flex flex-col shadow-xl">
+//       {mentionRecommendation().map((member, index) => (
+//         <div
+//           className={`${index === mentionedUser ? 'bg-gray-100' : 'bg-white'} px-2 flex items-center justify-start cursor-default bg-white  h-10`}
+//           onMouseEnter={() => setMentionedUser(index)}
+//         >
+//           <img className="w-6 h-6 rounded-full mr-2" alt="profile" src={member.avatar}></img>
+//           <div>{member.username}</div>
+//         </div>
+//       ))}
+//     </div>
+//   )
   const thumbs = files.map((file: any) => (
     <div className="mr-2" key={file.name}>
       <div className="relative h-14 w-14 rounded-2xl group">
@@ -174,7 +171,7 @@ const InputBar = ({
         <div className={`${files.length > 0 ? 'mt-1' : 'invisible'} flex items-center`}>{thumbs}</div>
         {/* <div className="w-10">front</div> */}
         <div className="relative flex  items-center flex-grow">
-          <div className="flex-grow">
+          <div className="flex-grow ">
             <MentionsInput
               className={`mentions ${isFocusingInput ? 'select-text' : 'select-none'}`}
               value={inputValue}
@@ -205,22 +202,21 @@ const InputBar = ({
 
             {/* {isShowTags >= 0 && tagComponent} */}
           </div>
-          <div>
-            <button className="focus:outline-none" onClick={() => setShowGif(true)
-}>
+          <div className="grid place-content-center h-10 ">
+            <button className="focus:outline-none select-none bg-primary text-white px-1 py-1 rounded-xl  grid place-content-center" onClick={() => setShowGif(true)}>
               GIF
             </button>
           </div>
           <div className="w-8 ml-2 flex items-center justify-center cursor-pointer select-none" onClick={() => open()}>
-            <span className="material-icons">insert_photo</span>
+            <span className="material-icons text-4xl text-primary">insert_photo</span>
           </div>
           {inputValue.length > 0 || files.length > 0 ? (
             <div className="w-8 ml-2  origin-center cursor-pointer select-none" onClick={() => handleTouchSend()}>
-              <i className="fas fa-location-arrow fa-rotate-45"></i>
+              <i className="fas fa-location-arrow fa-rotate-45 text-lg text-primary"></i>
             </div>
           ) : (
-            <div className="w-8 ml-2 select-none" onClick={() => sendHeart()}>
-              <i className="sm:text-2xl far fa-heart cursor-pointer "></i>
+            <div className="w-8 ml-2 select-none grid place-content-center" onClick={() => sendHeart()}>
+              <i className="sm:text-2xl far fa-heart cursor-pointer text-primary"></i>
             </div>
           )}
         </div>

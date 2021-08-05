@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useLocation, useHistory } from "react-router-dom";
-import {  loginUser, logout } from "../../services/authService";
+import {  loginUser } from "../../services/authService";
 
 const usePathname = () => {
   const location = useLocation();

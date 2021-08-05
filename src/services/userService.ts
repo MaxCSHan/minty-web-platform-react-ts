@@ -1,4 +1,3 @@
-import { Observable } from 'rxjs';
 import Message from '../interface/IMessage';
 import IUser from '../interface/IUser';
 import IChatroom from '../interface/IChatroom';

@@ -1,7 +1,7 @@
 import giphyInitialization from "../setup/axioSetupGiphy";
 import { giphyAxiosRequestConfiguration } from "../setup/axioSetupGiphy";
-import { map, catchError, take, retryWhen, tap, delay } from "rxjs/operators";
-import { defer, Observable, of, Subject } from "rxjs";
+import { map, take, retryWhen, tap, delay } from "rxjs/operators";
+import { defer, Observable } from "rxjs";
 
 const axiosInstance = giphyInitialization(giphyAxiosRequestConfiguration);
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Subject } from 'rxjs'
-import { debounceTime, distinctUntilChanged, tap, switchMap } from 'rxjs/operators'
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators'
 import { chatroomDB, userDB } from '../../../../setup/setupFirebase'
 import { loginUser } from '../../../../services/authService'
 import IChatroom from '../../../../interface/IChatroom'
@@ -82,7 +82,6 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     }
   }, [])
 
-  useEffect(()=> console.log(resultLoading),[resultLoading])
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -92,25 +91,6 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     }
   }
 
-  const searchUser = () => {
-    userDB
-      .limit(10)
-      .get()
-      .then((doc) => {
-        const arr: IUser[] = []
-        doc.forEach((ele) => arr.push(ele.data() as IUser))
-        // console.log(arr)
-        setSearchUserResult(arr)
-      })
-  }
-
-  const searchResult = () => {
-    // const res = userList.filter((ele) =>
-    //   ele.username.toLocaleLowerCase().includes(inputValue)
-    // );
-    const res = searchUserResult?.filter((ele) => ele.username.includes(inputValue)) || []
-    return res
-  }
 
   const onRoomSelected = (roomid: string) => {
     setSearching(false)

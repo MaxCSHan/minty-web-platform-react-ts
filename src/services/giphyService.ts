@@ -1,4 +1,3 @@
-import IUser from '../interface/IUser';
 import {get} from '../utilities/giphyApiHelper';
 
 

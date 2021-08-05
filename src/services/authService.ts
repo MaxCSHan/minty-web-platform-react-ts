@@ -1,6 +1,5 @@
-import firebase, { userDB, chatroomDB, messageDB } from '../setup/setupFirebase'
+import firebase, { userDB } from '../setup/setupFirebase'
 import IUser from '../interface/IUser'
-import { useHistory } from 'react-router-dom'
 
 const loginWithGoogle = async () => {
   const provider = new firebase.auth.GoogleAuthProvider()
