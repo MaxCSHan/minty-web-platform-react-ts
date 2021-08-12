@@ -85,7 +85,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
 
     const chatRoomListener = chatroomDB.doc(id).onSnapshot((doc) => {
       const isExist = doc.exists
+      console.log(isExist)
       const chatroomData = doc.data() as IChatroom
+
 
       setIsChatroomExist(isExist)
       if (isExist) {
@@ -119,7 +121,9 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         }
         if (chatroomData.read) setReadRef(objectFlip(chatroomData.read))
         if (chatroomData.isTyping) setTypingRef(chatroomData.isTyping)
-      } else setIsloaded(true)
+      } 
+      else if (!id?.includes(loginUid) ) history.push('/chat/inbox')
+      else setIsloaded(true)
       const theOtherUid = id?.replace(loginUid, '')
 
       if (theOtherUid) {
@@ -633,7 +637,12 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
   )
 
   const chatroomTemplate = (
-    <div {...getRootProps({ class: 'overflow-hidden h-screen sm:h-auto  w-screen sm:w-96 md:w-120 lg:w-160 bg-white sm:border flex flex-col' })}>
+    <div className="h-screen relative sm:h-auto  w-screen sm:w-96 md:w-120 lg:w-160 bg-white sm:border flex flex-col">
+      {isDetailed && 
+      <div className="absolute z-40 h-full">
+        {detailedComponent}
+      </div> }
+    <div {...getRootProps({ class: 'overflow-hidden h-screen sm:h-auto  w-screen sm:w-96 md:w-120 lg:w-160 bg-white  flex flex-col' })}>
       {showImage.length > 0 && (
         <div
           className="fixed inset-0 z-40 bg-gray-600 bg-opacity-50 flex items-center justify-center"
@@ -664,7 +673,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
                     .filter((ele) => ele.uid !== loginUid)
                     .map((ele) => ele.username)
                     .join(', ')
-              : newUser.username}
+              : newUser && newUser.username}
           </div>
         </div>
         <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
@@ -701,9 +710,11 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         ></InputBar>
       </div>
     </div>
+    </div>
+
   )
 
-  return isDetailed ? detailedComponent : chatroomTemplate
+  return chatroomTemplate
 }
 
 export default Chatroom

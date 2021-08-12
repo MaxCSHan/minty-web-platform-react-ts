@@ -51,6 +51,7 @@ const Chatblock = ({
   const [isHover, setIsHover] = useState(false)
   const [isHoverReaction, setIsHoverReaction] = useState(false)
   const [onClikReaction, setOnClikReaction] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   const isMobile = useMediaQuery({ query: '(min-device-width: 640px)' })
 
@@ -175,10 +176,11 @@ const Chatblock = ({
 
   const imageBlock = (
     <img
-      className={` bg-gray-200 cursor-pointer  select-none ${message.message.length > 0 && 'rounded-2xl'}`}
+      className={` bg-gray-200 cursor-pointer  select-none ${ imageLoaded?"":"h-36 w-40 animate-pulse"} ${message.message.length > 0 && 'rounded-2xl'}`}
       onClick={() => {
         if (!onClikReaction) setShowImage(message.image!)
       }}
+      onLoad={()=>setImageLoaded(true)}
       alt=""
       src={message.image}
     ></img>
@@ -260,7 +262,7 @@ const Chatblock = ({
               >
                 <div className="flex flex-col ">
                   <div className=" flex items-center flex-wrap cursor-default select-none sm:select-auto">{parser()}</div>
-                  <div className="rounded-3xl overflow-hidden"> {imageBlock}</div>
+                  {message.image &&  <div className="rounded-3xl overflow-hidden"> {imageBlock}</div>}
                 </div>
 
                 {message?.reaction?.length > 0 && (

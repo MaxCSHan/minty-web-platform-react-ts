@@ -1,5 +1,5 @@
 import React, { useState, } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import IChatroom from '../../../../interface/IChatroom'
 import IMember from '../../../../interface/IMember'
 import IUser from '../../../../interface/IUser'
@@ -9,6 +9,8 @@ import { chatroomDB, userDB } from '../../../../setup/setupFirebase'
 import UserSelecter from './UserSelecter'
 
 const NewRoom = () => {
+
+  const history = useHistory();
   const [title, setTitle] = useState('')
   const [selectedUser, setSelectedUser] = useState<IUser[]>([])
 
@@ -75,6 +77,12 @@ const NewRoom = () => {
       memberUids.forEach((ele) => {
         userDB.doc(ele).collection('roomList').doc(newRoom.id).set({ id: ele })
       })
+
+      history.push({
+        pathname: "/chat/room/"+newRoom.id,
+      });
+
+
     }
   }
 
