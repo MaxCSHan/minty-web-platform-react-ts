@@ -25,6 +25,9 @@ import InputBar from './InputBar'
 //Package
 import { useDropzone } from 'react-dropzone'
 import IReaction from '../../../../interface/IReaction'
+import { LoadingDots } from 'component/common/loading'
+import Dropzone from './dropzone'
+import { DMProfile, GroupProfile, RoomProfile } from './profile'
 
 type ChatroomProps = {
   userSelected?: IUser
@@ -88,7 +91,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       console.log(isExist)
       const chatroomData = doc.data() as IChatroom
 
-
       setIsChatroomExist(isExist)
       if (isExist) {
         setForwardingRoom(chatroomData)
@@ -121,8 +123,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         }
         if (chatroomData.read) setReadRef(objectFlip(chatroomData.read))
         if (chatroomData.isTyping) setTypingRef(chatroomData.isTyping)
-      } 
-      else if (!id?.includes(loginUid) ) history.push('/chat/inbox')
+      } else if (!id?.includes(loginUid)) history.push('/chat/inbox')
       else setIsloaded(true)
       const theOtherUid = id?.replace(loginUid, '')
 
@@ -164,7 +165,7 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         .orderBy('date', 'desc')
         .limit(loadMessageLength)
         .onSnapshot((snap) => {
-          if(loadingTop) setStay(true)
+          if (loadingTop) setStay(true)
 
           if (snap) {
             const mesarr = [] as Message[]
@@ -184,7 +185,6 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
       if (isChatroomExist && loaded) messageListener()
     }
   }, [id, isChatroomExist, loaded, loadMessageLength])
-
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -479,58 +479,32 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     )
   }
 
-  const DMProfile = (uid: string) => {
-    return <img className="h-8 w-8 sm:h-12 sm:w-12 rounded-full object-cover" alt="" src={memberRef[uid]?.avatar} />
-  }
-
-  const groupProfile = (members: StringMap<IMember>) => {
-    const imgArr = Object.values(members)
-      .slice(0, 2)
-      .map((ele) => ele.avatar)
-
-    return (
-      <div className="h-8 w-8 sm:h-12 sm:w-12 flex flex-col justify-center">
-        <img className="object-cover h-6 w-6 sm:h-8 sm:w-8 ml-4 sm:ml-6 rounded-full" alt="" src={imgArr[0]} />
-        <img className="object-cover h-6 w-6 sm:h-8 sm:w-8 -mt-4 border-2 border-white rounded-full" alt="" src={imgArr[1]} />
-      </div>
-    )
-  }
-
-  const profileIMG = (isGroup: boolean) => {
-    return loaded ? (
-      forwardingRoom.id ? (
-        isGroup ? (
-          groupProfile(memberRef)
-        ) : (
-          DMProfile(newUser?.uid!)
-        )
-      ) : (
-        <img className="h-8 w-8 sm:h-12 sm:w-12 rounded-full object-cover bg-gray-100" alt="" src={newUser?.avatar} />
-      )
-    ) : (
-      <div className="h-8 w-8 sm:h-12 sm:w-12 flex flex-col justify-center bg-gray-200 rounded-full"></div>
-    )
-  }
-
   const beforeLoad = (
     <div className="flex-grow w-screen sm:w-160 bg-white  border flex flex-col items-center justify-center text-2xl">
       <div>Select a chatroom</div>
     </div>
   )
 
-  const starterTemplate = (
-    <div className="flex-grow w-screen sm:w-160 flex flex-col items-center justify-center text-2xl">
-      <img className="rounded-full w-32 h-32" alt="" src={newUser?.avatar} />
-      <div className="mt-4">{newUser?.username}</div>
-      <Link to={`/user/${newUser?.username}`}>
-        <div className="mt-6 rounded-xl py-2 px-2  border text-sm font-semibold cursor-pointer">View Profile</div>
-      </Link>
-    </div>
-  )
+  const starterTemplate = () => {
+    if (isChatroomExist || !loaded) return null
+
+    return (
+      <div className="flex-grow w-screen sm:w-160 flex flex-col items-center justify-center text-2xl">
+        <Link to={`/user/${newUser?.uid}`}>
+          <img className="rounded-full w-32 h-32" alt="" src={newUser?.avatar} />
+        </Link>
+
+        <div className="mt-4">{newUser?.username}</div>
+        <Link to={`/user/${newUser?.uid}`}>
+          <div className="mt-6 rounded-xl py-2 px-2  border text-sm font-semibold cursor-pointer">View Profile</div>
+        </Link>
+      </div>
+    )
+  }
 
   const messagesLoading = (
     <div>
-      {!isChatroomExist && loaded && starterTemplate}
+      {starterTemplate()}
       {isChatroomExist &&
         [...Array(15)].map((ele, index) => (
           <div className="w-full animate-pulse" key={`loading_template_${index}`}>
@@ -547,38 +521,42 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     </div>
   )
 
-  const messagesList =
-    messages &&
-    messages.length > 0 &&
-    messages?.map((ele: Message, index) => (
-      <Fragment>
-        <Chatblock
-          key={`Chatblock_outer_${index}`}
-          previousUid={messages[index - 1]?.uid}
-          previousHasReply={messages[index - 1]?.reply?.to?.length! > 0 || messages[index - 1]?.heart}
-          nextUid={messages[index + 1]?.uid}
-          nextHasReply={messages[index + 1]?.reply?.to?.length! > 0 || messages[index + 1]?.heart}
-          group={forwardingRoom?.group}
-          memberRef={memberRef}
-          onReply={onReply}
-          jumpTo={jumpTo}
-          avatar={memberRef[ele.uid]?.avatar || forwardingRoom?.roomPhoto}
-          isForward={ele.uid === loginUid}
-          roomId={id!}
-          message={ele}
-          myUserName={myUserName}
-          onReaction={onReaction}
-          setShowImage={setShowImage}
-        ></Chatblock>
-        {readRef && readRef![ele.id] && (
-          <div className=" flex justify-end  items-center select-none">
-            {readRef[ele.id].map((uid) => (
-              <img key={`readRef_${uid}`} className="w-6 h-6 mx-1 rounded-full" alt="" src={memberRef[uid].avatar}></img>
-            ))}
-          </div>
-        )}
-      </Fragment>
-    ))
+  const messagesList = () => {
+    if (!messages || messages.length === 0) return messagesLoading
+    return (
+      <>
+        {messages?.map((ele: Message, index) => (
+          <>
+            <Chatblock
+              key={`Chatblock_outer_${index}`}
+              previousUid={messages[index - 1]?.uid}
+              previousHasReply={messages[index - 1]?.reply?.to?.length! > 0 || messages[index - 1]?.heart}
+              nextUid={messages[index + 1]?.uid}
+              nextHasReply={messages[index + 1]?.reply?.to?.length! > 0 || messages[index + 1]?.heart}
+              group={forwardingRoom?.group}
+              memberRef={memberRef}
+              onReply={onReply}
+              jumpTo={jumpTo}
+              avatar={memberRef[ele.uid]?.avatar || forwardingRoom?.roomPhoto}
+              isForward={ele.uid === loginUid}
+              roomId={id!}
+              message={ele}
+              myUserName={myUserName}
+              onReaction={onReaction}
+              setShowImage={setShowImage}
+            ></Chatblock>
+            {readRef && readRef![ele.id] && (
+              <div className=" flex justify-end  items-center select-none">
+                {readRef[ele.id].map((uid) => (
+                  <img key={`readRef_${uid}`} className="w-6 h-6 mx-1 rounded-full" alt="" src={memberRef[uid].avatar}></img>
+                ))}
+              </div>
+            )}
+          </>
+        ))}
+      </>
+    )
+  }
 
   const messengerComponent = (
     <div className={`flex flex-col flex-grow overflow-hidden  transition-all duration-150 ease-in-out pt-10 sm:pt-0`}>
@@ -587,19 +565,8 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
         id="messagesList"
         onScroll={(e) => handleScroll(e)}
       >
-        {loadingTop && lastVisible && (
-          <div className="grid place-content-center my-3">
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-          </div>
-        )}
-        {messages && messages.length > 0 ? messagesList : messagesLoading}
+        <LoadingDots isShow={loadingTop && lastVisible !== undefined} />
+        {messagesList()}
       </div>
       {typingRef && (
         <div className={`flex items-center px-4 transtion-all duration-200 ease-in-out ${showTyping() ? 'opacity-100 h-14 pt-4 ' : 'opacity-0 h-0'}`}>
@@ -625,93 +592,93 @@ const Chatroom = ({ userSelected, roomSelected }: ChatroomProps) => {
     </div>
   )
 
-  const detailedComponent = (
-    <ChatroomSettings
-      myUserName={myUserName}
-      loginUid={loginUid}
-      id={id!}
-      forwardingRoom={forwardingRoom}
-      members={members}
-      setDetailed={(value) => setIsDetailed(value)}
-    ></ChatroomSettings>
-  )
-
   const chatroomTemplate = (
     <div className="h-screen relative sm:h-auto  w-screen sm:w-96 md:w-120 lg:w-160 bg-white sm:border flex flex-col">
-      {isDetailed && 
-      <div className="absolute z-40 h-full">
-        {detailedComponent}
-      </div> }
-    <div {...getRootProps({ class: 'overflow-hidden h-screen sm:h-auto  w-screen sm:w-96 md:w-120 lg:w-160 bg-white  flex flex-col' })}>
-      {showImage.length > 0 && (
-        <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-50 flex items-center justify-center"
-          onClick={(event) => {
-            event.stopPropagation()
-            setShowImage('')
-          }}
-        >
-          <div>
-            <img className=" xl:max-w-7xl xl:max-h-320" alt="" src={showImage}></img>
-          </div>
+      {isDetailed && (
+        <div className="absolute z-40 h-full">
+          <ChatroomSettings
+            myUserName={myUserName}
+            loginUid={loginUid}
+            id={id!}
+            forwardingRoom={forwardingRoom}
+            members={members}
+            setDetailed={(value) => setIsDetailed(value)}
+          ></ChatroomSettings>
         </div>
       )}
-      <div className="fixed z-20 sm:static h-12 sm:h-16 bg-white w-full flex  items-center justify-center px-2 sm:px-8 border-b">
-        <Link to="/chat/inbox">
-          <div className="mx-4 sm:hidden">
-            <i className="fas fa-chevron-left "></i>
-          </div>
-        </Link>
-        <div className="h-16 w-60 sm:w-80 md:w-100 lg:w-140 flex flex-col items-start justify-center">
-          <div className="w-full flex  items-center text-base sm:text-xl font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
-            <div className="mx-3"> {profileIMG(forwardingRoom.group)}</div>
-
-            {isChatroomExist
-              ? forwardingRoom.title
-                ? forwardingRoom.title
-                : members
-                    .filter((ele) => ele.uid !== loginUid)
-                    .map((ele) => ele.username)
-                    .join(', ')
-              : newUser && newUser.username}
-          </div>
-        </div>
-        <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
-
-        {isChatroomExist && (
+      <div {...getRootProps({ class: 'overflow-hidden h-screen sm:h-auto  w-screen sm:w-96 md:w-120 lg:w-160 bg-white  flex flex-col' })}>
+        {showImage.length > 0 && (
           <div
-            className=" flex-shrink-0 cursor-pointer text-base sm:text-lg border text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full h-6 w-6 sm:h-10 sm:w-10 mr-6 sm:mr-0 flex items-center justify-center"
-            onClick={() => setIsDetailed(true)}
+            className="fixed inset-0 z-40 bg-gray-600 bg-opacity-50 flex items-center justify-center"
+            onClick={(event) => {
+              event.stopPropagation()
+              setShowImage('')
+            }}
           >
-            <i className="fas fa-ellipsis-v"></i>
+            <div>
+              <img className=" xl:max-w-7xl xl:max-h-320" alt="" src={showImage}></img>
+            </div>
           </div>
         )}
-      </div>
-      <div className="relative flex flex-col flex-grow flex-shrink w-full overflow-hidden">
-        {isDragActive && (
-          <div className="absolute inset-0 z-30 bg-gray-400 bg-opacity-20 flex justify-center items-center">
-            <div className="text-2xl flex items-center justify-center px-3 py-2">Drop files here</div>
-          </div>
-        )}
-        {messengerComponent}
-        <InputBar
-          isGroup={forwardingRoom?.group || false}
-          files={files}
-          setFiles={setFiles}
-          members={members}
-          replyMessage={replyMessage}
-          sendMessage={sendMessage}
-          resetReply={resetReply}
-          open={open}
-          sendWithGif={sendWithGif}
-          sendWithImage={sendWithImage}
-          getInputProps={getInputProps}
-          isTyping={isTyping}
-        ></InputBar>
-      </div>
-    </div>
-    </div>
+        <div className="fixed z-20 sm:static h-12 sm:h-16 bg-white w-full flex  items-center justify-center px-2 sm:px-8 border-b">
+          <Link to="/chat/inbox">
+            <div className="mx-4 sm:hidden">
+              <i className="fas fa-chevron-left "></i>
+            </div>
+          </Link>
+          <div className="h-16 w-60 sm:w-80 md:w-100 lg:w-140 flex flex-col items-start justify-center">
+            <div className="w-full flex  items-center text-base sm:text-xl font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
+              <div className="mx-3">
+                <RoomProfile
+                  loaded={loaded}
+                  isRoomExist={forwardingRoom.id !== undefined}
+                  isGroup={forwardingRoom.group}
+                  memberRef={memberRef}
+                  newUser={newUser}
+                />
+              </div>
 
+              {isChatroomExist
+                ? forwardingRoom.title
+                  ? forwardingRoom.title
+                  : members
+                      .filter((ele) => ele.uid !== loginUid)
+                      .map((ele) => ele.username)
+                      .join(', ')
+                : newUser && newUser.username}
+            </div>
+          </div>
+          <div className="w-full items-center text-sm">{forwardingRoom ? forwardingRoom.intro : 'text'}</div>
+
+          {isChatroomExist && (
+            <div
+              className=" flex-shrink-0 cursor-pointer text-base sm:text-lg border text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full h-6 w-6 sm:h-10 sm:w-10 mr-6 sm:mr-0 flex items-center justify-center"
+              onClick={() => setIsDetailed(true)}
+            >
+              <i className="fas fa-ellipsis-v"></i>
+            </div>
+          )}
+        </div>
+        <div className="relative flex flex-col flex-grow flex-shrink w-full overflow-hidden">
+          <Dropzone isDragActive={isDragActive} />
+          {messengerComponent}
+          <InputBar
+            isGroup={forwardingRoom?.group || false}
+            files={files}
+            setFiles={setFiles}
+            members={members}
+            replyMessage={replyMessage}
+            sendMessage={sendMessage}
+            resetReply={resetReply}
+            open={open}
+            sendWithGif={sendWithGif}
+            sendWithImage={sendWithImage}
+            getInputProps={getInputProps}
+            isTyping={isTyping}
+          ></InputBar>
+        </div>
+      </div>
+    </div>
   )
 
   return chatroomTemplate

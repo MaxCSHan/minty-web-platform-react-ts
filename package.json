@@ -37,7 +37,8 @@
     "test": "craco test",
     "eject": "react-scripts eject",
     "lint:mock": "eslint ./mock/**/*.js --ext .js",
-    "serve:mock": "nodemon ./mock/app.js --exec \"npm run lint:mock && node\""
+    "serve:mock": "nodemon ./mock/app.js --exec \"npm run lint:mock && node\"",
+    "deploy": "firebase deploy --only hosting"
   },
   "eslintConfig": {
     "extends": [

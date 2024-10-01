@@ -9,6 +9,7 @@ import IMember from '../../../../interface/IMember'
 import StringMap from '../../../../interface/StringMap'
 import IUser from '../../../../interface/IUser'
 import ListBlock from './ListBlock'
+import RoomList from './roomList'
 
 type ChatlistProps = {
   myUsername: string
@@ -30,7 +31,7 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
   const [selectedRoom, setSelectedRoom] = useState<string>()
   const [searchUserResult, setSearchUserResult] = useState<IUser[]>()
   const [recommendUserResult, setRecommendResult] = useState<IUser[]>()
-  const [roomList, setRoomList] = useState<IChatroom[]>([])
+  const [roomList, setRoomList] = useState<IChatroom[]>()
 
   const keyword$ = new Subject<string>()
   const suggestList$ = keyword$.pipe(
@@ -42,9 +43,9 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
         .where('username', '>=', ele)
         .where('username', '<=', ele + '\uf8ff')
         .get()
-        .then((docs) => docs.docs.map(doc => doc.data() as IUser))
-        })
-      )
+        .then((docs) => docs.docs.map((doc) => doc.data() as IUser))
+    })
+  )
   useEffect(() => {
     const subscription = suggestList$.subscribe((ele) => {
       setSearchUserResult(ele)
@@ -60,10 +61,10 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     const listener = chatroomDB
       .where(`members`, 'array-contains', loginUid)
       .orderBy('latestActiveDate', 'desc')
+      .limit(10)
       .onSnapshot((querySnapshot) => {
         var dataRoomList: IChatroom[] = []
         querySnapshot.forEach((doc) => {
-          // console.log("chat room",doc.data())
           dataRoomList.push(doc.data() as IChatroom)
         })
         setRoomList(dataRoomList)
@@ -74,14 +75,13 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
       .then((doc) => {
         const arr: IUser[] = []
         doc.forEach((ele) => arr.push(ele.data() as IUser))
-        // console.log(arr)
+        console.log(arr)
         setRecommendResult(arr)
       })
     return () => {
       listener()
     }
   }, [])
-
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -90,7 +90,6 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
       setInputValue(value)
     }
   }
-
 
   const onRoomSelected = (roomid: string) => {
     setSearching(false)
@@ -112,31 +111,19 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
     )
   }
 
-  const loadingListComponent = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((ele, index) => (
-    <div className="w-full animate-pulse px-4 h-20 flex items-center" key={`chatroomLoad_${index}`}>
-      <div className=" h-16 w-16 rounded-full bg-gray-200"></div>
-      <div className="ml-2 h-14 w-5/6 flex flex-col justify-around">
-        <div className=" h-4 w-full bg-gray-200 rounded-md"></div>
-        <div className=" h-4 w-full bg-gray-200 rounded-md"></div>
-      </div>
-    </div>
-  ))
-
   const resultComponent = (userArr: IUser[] = []) =>
     userArr.map((ele, index) => (
-      <Link key={`search_result_${index}`} to={{pathname:`/chat/room/${[loginUser().uid, ele.uid].sort().join('')}`,state:{theOtherUser:ele}}} onClick={() => setSearching(false)}>
+      <Link
+        key={`search_result_${index}`}
+        to={{ pathname: `/chat/room/${[loginUser().uid, ele.uid].sort().join('')}`, state: { theOtherUser: ele } }}
+        onClick={() => setSearching(false)}
+      >
         <div className="flex items-center  px-3 py-1 cursor-pointer">
           <img className="h-10 w-10 rounded-full object-cover" alt="" src={ele.avatar} />
           <div className="ml-4">{ele.username}</div>
         </div>
       </Link>
     ))
-
-  const mapRoomList = roomList.map((ele, index) => (
-    <ListBlock key={`list_block_${index}`} roomObject={ele} roomId={ele.id} selectedRoomId={selectedRoom!} onRoomSelected={onRoomSelected}></ListBlock>
-  ))
-
-  const roomListComponent = <div className="z-20 bg-white">{mapRoomList.length>0?mapRoomList:loadingListComponent}</div>
 
   const searchComponent = (
     <div
@@ -199,9 +186,8 @@ const Chatlist = ({ myUsername }: ChatlistProps) => {
           </div>
         </div>
         <div className="w-full flex-grow flex-shrink border-t overflow-y-scroll">
-          
           {searchComponent}
-          {roomListComponent}
+          <RoomList roomList={roomList} selectedRoom={selectedRoom} onRoomSelected={onRoomSelected} />
         </div>
       </div>
     </div>

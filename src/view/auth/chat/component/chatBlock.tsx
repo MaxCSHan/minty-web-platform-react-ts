@@ -10,8 +10,10 @@ import { Subject, of } from 'rxjs'
 import { map, bufferCount, filter, tap, mergeMap, delay, takeUntil } from 'rxjs/operators'
 import { useMediaQuery } from 'react-responsive'
 import { emojiList } from '../../../../constant/development'
-import { Link } from 'react-router-dom'
-import reactStringReplace from 'react-string-replace'
+import { DateController, textParser } from 'utilities/chat/chatBlock'
+import Heart from './block/heart'
+import ReplyBlock from './block/reply'
+import ImageBlock from './block/image'
 
 type chatBlockProps = {
   previousUid?: string
@@ -51,34 +53,8 @@ const Chatblock = ({
   const [isHover, setIsHover] = useState(false)
   const [isHoverReaction, setIsHoverReaction] = useState(false)
   const [onClikReaction, setOnClikReaction] = useState(false)
-  const [imageLoaded, setImageLoaded] = useState(false)
 
   const isMobile = useMediaQuery({ query: '(min-device-width: 640px)' })
-
-  const dateController = (ele: Message) => {
-    const mesDate = new Date(ele.date)
-    // if(mesDate.getUTCDate()!==dateChecker?.getUTCDate()){
-    //   setDateChecker(mesDate);
-    //   return [mesDate].map(ele => `${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([],{ hour: '2-digit', minute: '2-digit' })}`)
-    // }
-    // return "";
-    return (
-      ele.timeHint &&
-      [mesDate].map((ele) => (
-        <div
-          key={`datehint_${message.id}`}
-          className={`text-center text-xs text-gray-600 ${message.timeHint ? 'my-3' : ''}`}
-        >{`${ele.toLocaleDateString()}  ${ele.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        })}`}</div>
-      ))
-    )
-  }
-
-  // useEffect(()=>{
-  //   if(!isHover) setOnClikReaction(false)
-  // },[isHover])
 
   const onCheckReply = () => {
     jumpTo(message.reply!.id)
@@ -148,44 +124,6 @@ const Chatblock = ({
     }
   })
 
-  const parser = () => {
-    return reactStringReplace(message.message, /(@\[[^\]]+\]\([A-Za-z0-9]*\))/g, (match) => {
-      const res = match.match(/@\[(.+)\]\(([A-Za-z0-9]*)\)/)
-      const display = res![1]
-      const uid = res![2]
-
-      return (
-        <Link to={`/User/${memberRef[uid]?.username}`}>
-          <span className="text-blue-400 cursor-pointer hover:underline">{display}</span>
-        </Link>
-      )
-    })
-  }
-
-  const replyBlock = message.reply && (
-    <div className={`max-w-xs  flex flex-col -mb-2  ${isForward ? 'items-end ' : 'items-start ml-4'}`} onClick={() => onCheckReply()}>
-      <div className="text-sm  whitespace-nowrap  select-none">
-        {message.reply.uid === loginUser().uid ? 'You' : message.reply.from} replied to
-        <span className="font-semibold"> {message.reply.toId === loginUser().uid ? 'You' : message.reply.to}</span>
-      </div>
-      <div className="max-w-3/4  sm:max-w-xs bg-gray-200 rounded-3xl px-3 py-2 text-sm text-gray-700  whitespace-nowrap overflow-hidden overflow-ellipsis">
-        {message.reply?.image ? <img className="w-10 h-10 rounded object-cover" alt="" src={message.reply?.image}></img> : message.reply.message}
-      </div>
-    </div>
-  )
-
-  const imageBlock = (
-    <img
-      className={` bg-gray-200 cursor-pointer  select-none ${ imageLoaded?"":"h-36 w-40 animate-pulse"} ${message.message.length > 0 && 'rounded-2xl'}`}
-      onClick={() => {
-        if (!onClikReaction) setShowImage(message.image!)
-      }}
-      onLoad={()=>setImageLoaded(true)}
-      alt=""
-      src={message.image}
-    ></img>
-  )
-
   const textBlock = (
     <div
       className={`flex w-full  ${isForward ? 'flex-row-reverse' : 'flex-row'}`}
@@ -201,41 +139,16 @@ const Chatblock = ({
           </div>
         )}
         {message.heart ? (
-          <div
-            className={`flex flex-col mx-4 text-8xl text-red-500  ${isForward ? 'items-end' : 'items-start'}`}
-            onClick={(e) => clickEvent$.next(e)}
-          >
-            {group && !isForward && (message.uid !== previousUid || previousHasReply) && (
-              <div className="text-xs text-gray-600">{memberRef[message.uid].username}</div>
-            )}
-            <div className="relative">
-              <i className=" fas fa-heart"></i>
-              {message?.reaction?.length > 0 && (
-                <div
-                  className="absolute z-10 -bottom-4 right-0 text-xl bg-white border  rounded-full h-8 px-1 flex items-center justify-center cursor-default"
-                  onMouseEnter={() => setIsHoverReaction(true)}
-                  onMouseLeave={() => setIsHoverReaction(false)}
-                >
-                  {message?.reaction!.reduce(reduceDuplicateEmoji, [] as string[]).map((ele, index) => (
-                    <div className="mx-0.5 flex pt-0.5 items-center justify-center" key={`current_heart_reaction_${index}`}>
-                      {ele}
-                    </div>
-                  ))}
-                  <div
-                    className={`absolute z-30 bottom-8 flex-col items-end px-2 py-1 bg-white shadow-xl transition ease-in-out ${
-                      isHoverReaction ? 'opacity-100 visible' : 'opacity-0 invisible'
-                    }`}
-                  >
-                    {message?.reaction!.map((ele, index) => (
-                      <div className="mx-0.5 whitespace-nowrap text-black" key={`current_heart_reactionlist_${index}`}>
-                        {ele.emoji.emoji} <span className=" text-xs">{ele.from}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <Heart
+            message={message}
+            isHoverReaction={isHoverReaction}
+            setIsHoverReaction={setIsHoverReaction}
+            isForward={isForward}
+            group={group}
+            previousUid={previousUid}
+            previousHasReply={previousHasReply}
+            clickEvent$={clickEvent$}
+          />
         ) : (
           <div
             className={`flex flex-col  sm:max-w-none 	 ${isForward ? 'items-end' : 'items-start'} `}
@@ -246,7 +159,7 @@ const Chatblock = ({
             {group && !isForward && !message.reply && (message.uid !== previousUid || previousHasReply) && (
               <div className="text-xs text-gray-600 ml-4">{memberRef[message.uid]?.username || 'User Not Found'}</div>
             )}
-            {replyBlock}
+            <ReplyBlock message={message} isForward={isForward} onCheckReply={onCheckReply} />
             <div
               id={`messageBlock_${message.id}`}
               className={`z-10 border  ${
@@ -261,8 +174,8 @@ const Chatblock = ({
                 } max-w-mini sm:max-w-xs flex   break-all  items-center justify-center`}
               >
                 <div className="flex flex-col ">
-                  <div className=" flex items-center flex-wrap cursor-default select-none sm:select-auto">{parser()}</div>
-                  {message.image &&  <div className="rounded-3xl overflow-hidden"> {imageBlock}</div>}
+                  <div className=" flex items-center flex-wrap cursor-default select-none sm:select-auto">{textParser(message.message)}</div>
+                  <ImageBlock message={message} setShowImage={setShowImage} onClikReaction={onClikReaction} />
                 </div>
 
                 {message?.reaction?.length > 0 && (
@@ -372,30 +285,27 @@ const Chatblock = ({
     </div>
   )
 
-  const block = (
+  const messageContent = () => {
+    if (message.create) return <div className={`text-center text-gray-600 my-3`}>{message.username} has created a new room</div>
+    if (message.notification)
+      return (
+        <div className={`text-center text-gray-600 my-3`}>
+          {message.username} {message.notification}
+        </div>
+      )
+    return textBlock
+  }
+
+  return (
     <div
       className={` select-none sm:select-auto transition-all ease-in-out duration-100 ${message?.reply?.id ? 'mt-3' : ''} ${
         message?.reaction?.length > 0 ? 'mb-7' : 'mb-1'
       }`}
     >
-      {/* date */}
-      {dateController(message)}
-
-      {!message.create ? (
-        message.notification ? (
-          <div className={`text-center text-gray-600 my-3`}>
-            {message.username} {message.notification}
-          </div>
-        ) : (
-          textBlock
-        )
-      ) : (
-        <div className={`text-center text-gray-600 my-3`}>{message.username} has created a new room</div>
-      )}
+      <DateController message={message} />
+      {messageContent()}
     </div>
   )
-
-  return block
 }
 
 export default Chatblock

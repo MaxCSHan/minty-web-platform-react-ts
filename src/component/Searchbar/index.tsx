@@ -1,56 +1,55 @@
 // import { Link } from "react-router-dom";
-import React, { useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import React, { useState } from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
 
-const Skills = ["Photography", "Modeling", "Styling"];
+const Skills = ['Photography', 'Modeling', 'Styling']
 
-const recommendations = ["Jolie", "Eric", "Leo", "Luke"];
+const recommendations = ['Jolie', 'Eric', 'Leo', 'Luke']
 
 type SearchbarProps = {
-  placeholder?: string;
-  onGridSwitch:(isGrid:boolean)=>void
-};
+  placeholder?: string
+  onGridSwitch: (isGrid: boolean) => void
+}
 
-const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
-  const history = useHistory();
-  const search = new URLSearchParams(useLocation().search);
-  const [selectFilter, setSelectFilter] = useState(
-    search.get("cate") || "Photography"
-  );
-  const [inputValue, setInputValue] = useState(search.get("keyword") || "");
-  const [isDropdown, setIsDropdown] = useState(false);
-  const [isFocus, setIsFocus] = useState(false);
-  const [grid, setGrid] = useState(false);
+const Searchbar = ({ placeholder, onGridSwitch }: SearchbarProps) => {
+  const history = useHistory()
+  const search = new URLSearchParams(useLocation().search)
+  const [selectFilter, setSelectFilter] = useState(search.get('cate') || 'Photography')
+  const [inputValue, setInputValue] = useState(search.get('keyword') || '')
+  const [isDropdown, setIsDropdown] = useState(false)
+  const [isFocus, setIsFocus] = useState(false)
+  const [grid, setGrid] = useState(false)
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "") setInputValue("");
+    const value = e.target.value
+    if (value === '') setInputValue('')
     else {
-      setInputValue(value);
+      setInputValue(value)
     }
-  };
+  }
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       if (inputValue.match(/^(?!\s*$).+/)) {
         history.push({
-          pathname: "/search",
+          pathname: '/search',
           search: `?keyword=${inputValue}&cate=${selectFilter}`,
-          state: { keyword: inputValue },
-        });
+          state: { keyword: inputValue }
+        })
       }
+      setIsFocus(false)
     }
-  };
+  }
 
-  const switchGrid = (isGrid:boolean) => {
-    setGrid(isGrid);
-    onGridSwitch(isGrid);
+  const switchGrid = (isGrid: boolean) => {
+    setGrid(isGrid)
+    onGridSwitch(isGrid)
   }
 
   const gridSwitch = (
     <div className="flex mx-2 px-5 justify-around rounded-full py-1 bg-gray-100 bg-opacity-0 hover:bg-opacity-100 transition ease-in-out duration-300 ">
       <div
         className={`h-6 rounded-full mr-6 flex items-center cursor-pointer transition ease-in-out duration-200 ${
-          !grid ? "text-gray-900" : "text-gray-300 hover:text-gray-500"
+          !grid ? 'text-gray-900' : 'text-gray-300 hover:text-gray-500'
         }`}
         onClick={() => switchGrid(false)}
       >
@@ -58,14 +57,14 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
       </div>
       <div
         className={`h-6 rounded-full  flex items-center cursor-pointer transition ease-in-out duration-200 ${
-          grid ? "text-gray-900" : "text-gray-300 hover:text-gray-500"
+          grid ? 'text-gray-900' : 'text-gray-300 hover:text-gray-500'
         }`}
         onClick={() => switchGrid(true)}
       >
         <i className="fas fa-th-large"></i>
       </div>
     </div>
-  );
+  )
 
   return (
     <div className="fixed w-full bg-white dark:bg-gray-800 dark:text-white z-10">
@@ -87,16 +86,14 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
               ></input>
               <div
                 className={`origin-top-left ${
-                  inputValue && isFocus
-                    ? "opacity-100 visible"
-                    : "opacity-0 invisible"
+                  inputValue && isFocus ? 'opacity-100 visible' : 'opacity-0 invisible'
                 } absolute left-0 w-full z-10 shadow-lg bg-white rounded-b-xl focus:outline-none transition-all duration-200 ease-in-out`}
                 role="menu"
                 aria-orientation="vertical"
                 aria-labelledby="menu-button"
               >
                 <div className="h-full flex flex-col">
-                  {[inputValue, ...recommendations].map((ele,index) => (
+                  {[inputValue, ...recommendations].map((ele, index) => (
                     <div className="h-10 pl-2 flex items-center hover:bg-gray-50 last:rounded-b-xl" key={`autocomplete_${index}`}>
                       {ele}
                     </div>
@@ -111,9 +108,7 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
                 <div
                   key={`${index}-${skill}`}
                   className={`h-6 rounded-full px-3 mx-2 whitespace-nowrap hidden first:flex md:flex cursor-pointer items-center md:hover:bg-gray-100    ${
-                    selectFilter === skill
-                      ? "md:bg-blue-500 md:hover:bg-blue-500 md:text-white"
-                      : ""
+                    selectFilter === skill ? 'md:bg-blue-500 md:hover:bg-blue-500 md:text-white' : ''
                   }`}
                   onClick={() => setSelectFilter(skill)}
                 >
@@ -135,13 +130,7 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
                   onClick={() => setIsDropdown(!isDropdown)}
                 >
                   {selectFilter}
-                  <svg
-                    className="-mr-1 ml-2 h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
+                  <svg className="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path
                       fillRule="evenodd"
                       d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -153,7 +142,7 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
 
               <div
                 className={`origin-top-right absolute right-0 mt-2 w-56 z-10 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none ${
-                  isDropdown ? "opacity-100 scale-100" : "opacity-0 scale-90"
+                  isDropdown ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
                 } transition-all duration-200 ease-in-out`}
                 role="menu"
                 aria-orientation="vertical"
@@ -167,8 +156,8 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
                       key={`menu-item-${index}`}
                       id={`menu-item-${index}`}
                       onClick={() => {
-                        setSelectFilter(skill);
-                        setIsDropdown(false);
+                        setSelectFilter(skill)
+                        setIsDropdown(false)
                       }}
                     >
                       {skill}
@@ -192,7 +181,7 @@ const Searchbar = ({ placeholder ,onGridSwitch}: SearchbarProps) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Searchbar;
+export default Searchbar
